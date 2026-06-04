@@ -1,0 +1,117 @@
+/**
+ * Datos mock de certificaciones.
+ * Mismo esquema que el backend NestJS devolverá.
+ */
+export const certificacionesMock = [
+  {
+    id: 301,
+    titulo: 'Operaciones Auxiliares en Limpieza de Unidades de Salud',
+    precio: 150.00,
+    imagen: 'https://images.unsplash.com/photo-1584515933487-779824d29309?w=600&q=80',
+    categoria: 'Salud',
+    modalidad: 'Presencial',
+    horas: 'Evaluación 2 días',
+    vigencia: 2,
+    inicia: '05 Jun 2026',
+    slug: 'limpieza',
+    tipo: 'certificacion',
+    shortDescription: 'Certifica tus competencias en limpieza y manejo de desechos en unidades de salud conforme a normativa vigente.',
+    about: [
+      'La certificación de cualificaciones o competencias laborales es el procedimiento mediante el cual un organismo reconocido determina formalmente que una persona ha alcanzado el desempeño esperado.',
+      'Matsso Certificación actúa como Organismo Evaluador de Conformidad (OEC), otorgando la certificación en una o varias unidades de competencia.',
+    ],
+    features: [
+      { icon: 'fa-regular fa-clock', title: 'Vigencia', desc: '2 años' },
+      { icon: 'fa-solid fa-screwdriver-wrench', title: 'Modalidad', desc: 'Evaluación presencial.\nSedes en Quito, Guayaquil, Riobamba.' },
+      { icon: 'fa-regular fa-file-lines', title: 'Evaluación Teórica', desc: 'Banco de preguntas (mínimo 70%).' },
+      { icon: 'fa-solid fa-chart-line', title: 'Evaluación Práctica', desc: 'Casos prácticos (100%).' },
+    ],
+    requirements: [
+      { number: '01', title: 'Documentos Personales', desc: 'Cédula de Identidad y Papeleta de Votación.' },
+      { number: '02', title: 'Educación', desc: 'Educación general básica.' },
+      { number: '03', title: 'Experiencia', desc: '6 meses en actividades relacionadas.' },
+      { number: '04', title: 'Capacitación', desc: '60 horas en temas relacionados al perfil.' },
+    ],
+  },
+  {
+    id: 302,
+    titulo: 'Prevención de Incendios y Evacuación',
+    precio: 160.00,
+    imagen: 'https://images.unsplash.com/photo-1582139329536-e7284fece509?w=600&q=80',
+    categoria: 'Seguridad',
+    modalidad: 'Presencial',
+    horas: 'Evaluación 2 días',
+    vigencia: 2,
+    inicia: '12 Jun 2026',
+    slug: 'prevencion-incendios',
+    tipo: 'certificacion',
+    shortDescription: 'Certifica tus competencias para la prevención y control de incendios en ambientes laborales.',
+    about: [
+      'Esta certificación avala el dominio de protocolos de seguridad contra incendios en organizaciones públicas y privadas.',
+    ],
+    features: [
+      { icon: 'fa-regular fa-clock', title: 'Vigencia', desc: '2 años' },
+      { icon: 'fa-solid fa-screwdriver-wrench', title: 'Modalidad', desc: 'Evaluación presencial.' },
+      { icon: 'fa-regular fa-file-lines', title: 'Teórica', desc: 'Mínimo 70%.' },
+      { icon: 'fa-solid fa-chart-line', title: 'Práctica', desc: '100%.' },
+    ],
+    requirements: [
+      { number: '01', title: 'Documentos', desc: 'Cédula vigente.' },
+      { number: '02', title: 'Experiencia', desc: '6 meses en el área.' },
+    ],
+  },
+  {
+    id: 303,
+    titulo: 'Seguridad en Trabajos Eléctricos',
+    precio: 180.00,
+    imagen: 'https://images.unsplash.com/photo-1621905252507-b35492cc74b4?w=600&q=80',
+    categoria: 'Electricidad',
+    modalidad: 'Presencial',
+    horas: 'Evaluación 2 días',
+    vigencia: 2,
+    inicia: '20 Jun 2026',
+    slug: 'seguridad-trabajos-electricos',
+    tipo: 'certificacion',
+    shortDescription: 'Certifica tus competencias para el trabajo seguro en instalaciones eléctricas.',
+    about: [
+      'Certifica el dominio de normas de seguridad para trabajo en instalaciones eléctricas de baja y alta tensión.',
+    ],
+    features: [
+      { icon: 'fa-regular fa-clock', title: 'Vigencia', desc: '2 años' },
+      { icon: 'fa-solid fa-screwdriver-wrench', title: 'Modalidad', desc: 'Evaluación presencial.' },
+      { icon: 'fa-regular fa-file-lines', title: 'Teórica', desc: 'Mínimo 70%.' },
+      { icon: 'fa-solid fa-chart-line', title: 'Práctica', desc: '100%.' },
+    ],
+    requirements: [
+      { number: '01', title: 'Documentos', desc: 'Cédula vigente.' },
+      { number: '02', title: 'Experiencia', desc: '1 año en el área eléctrica.' },
+    ],
+  },
+  {
+    id: 304,
+    titulo: 'Trabajo Seguro en Alturas',
+    precio: 175.00,
+    imagen: 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=600&q=80',
+    categoria: 'Seguridad Industrial',
+    modalidad: 'Presencial',
+    horas: 'Evaluación 2 días',
+    vigencia: 2,
+    inicia: '01 Jul 2026',
+    slug: 'trabajo-seguro-alturas',
+    tipo: 'certificacion',
+    shortDescription: 'Certifica tus competencias para operar con seguridad en trabajos a más de 1.8 metros de altura.',
+    about: [
+      'Esta certificación avala el conocimiento y práctica del protocolo de seguridad para trabajo en alturas.',
+    ],
+    features: [
+      { icon: 'fa-regular fa-clock', title: 'Vigencia', desc: '2 años' },
+      { icon: 'fa-solid fa-screwdriver-wrench', title: 'Modalidad', desc: 'Evaluación presencial.' },
+      { icon: 'fa-regular fa-file-lines', title: 'Teórica', desc: 'Mínimo 70%.' },
+      { icon: 'fa-solid fa-chart-line', title: 'Práctica', desc: '100%.' },
+    ],
+    requirements: [
+      { number: '01', title: 'Documentos', desc: 'Cédula vigente.' },
+      { number: '02', title: 'Experiencia', desc: '6 meses en trabajos en alturas.' },
+    ],
+  },
+];

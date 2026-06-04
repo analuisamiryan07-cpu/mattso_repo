@@ -1,0 +1,228 @@
+/* ===========================
+   CATÁLOGO — Capacitaciones & Certificaciones
+   =========================== */
+
+.catalogo-page {
+  background: var(--bg-color);
+  min-height: 100vh;
+}
+
+/* HERO */
+.catalogo-hero {
+  position: relative;
+  height: 280px;
+  background-image: url('https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=1920&q=80');
+  background-size: cover;
+  background-position: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  margin-top: -70px; /* compensa el padding-top del main-content */
+  padding-top: 70px;
+}
+
+.catalogo-hero--cert {
+  background-image: url('https://images.unsplash.com/photo-1551836022-d5d88e9218df?auto=format&fit=crop&w=1920&q=80');
+}
+
+.catalogo-hero-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to right, rgba(0,33,71,0.88), rgba(0,33,71,0.6));
+}
+
+.catalogo-hero-content {
+  position: relative;
+  z-index: 2;
+  color: white;
+  padding: 0 20px;
+}
+
+.catalogo-hero-content h1 {
+  font-size: 2.8rem;
+  font-weight: 800;
+  margin-bottom: 10px;
+}
+
+.catalogo-hero-content p {
+  font-size: 1.1rem;
+  opacity: 0.9;
+  max-width: 600px;
+}
+
+/* BODY */
+.catalogo-body {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  gap: 30px;
+  padding-top: 40px;
+  padding-bottom: 60px;
+  align-items: start;
+}
+
+/* FILTROS */
+.catalogo-filtros {
+  background: white;
+  border-radius: var(--radius-md);
+  padding: 24px;
+  box-shadow: var(--shadow-sm);
+  position: sticky;
+  top: 90px;
+}
+
+.catalogo-filtros h3 {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--primary-blue);
+  margin-bottom: 20px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid var(--primary-yellow);
+}
+
+.filtro-group {
+  margin-bottom: 22px;
+}
+
+.filtro-group label {
+  display: block;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+
+.search-input {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  padding: 8px 12px;
+  background: var(--bg-light);
+}
+
+.search-input i { color: var(--text-muted); font-size: 0.85rem; }
+
+.search-input input {
+  border: none;
+  background: none;
+  font-size: 0.88rem;
+  font-family: inherit;
+  color: var(--text-dark);
+  width: 100%;
+}
+
+.search-input input:focus { outline: none; }
+
+.filtro-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.chip {
+  padding: 5px 12px;
+  border: 1.5px solid var(--border-color);
+  border-radius: 20px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  background: white;
+  cursor: pointer;
+  transition: all var(--transition);
+}
+
+.chip:hover { border-color: var(--primary-blue); color: var(--primary-blue); }
+
+.chip--active {
+  background: var(--primary-blue);
+  border-color: var(--primary-blue);
+  color: white;
+}
+
+/* GRID ÁREA */
+.catalogo-results {
+  font-size: 0.88rem;
+  color: var(--text-muted);
+  margin-bottom: 20px;
+}
+
+.catalogo-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 24px;
+}
+
+.catalogo-empty {
+  text-align: center;
+  padding: 60px 20px;
+  background: white;
+  border-radius: var(--radius-md);
+}
+
+.catalogo-empty i {
+  font-size: 3rem;
+  color: var(--border-color);
+  margin-bottom: 14px;
+}
+
+.catalogo-empty p { color: var(--text-muted); }
+
+/* RESPONSIVE */
+@media (max-width: 900px) {
+  .catalogo-body {
+    grid-template-columns: 1fr;
+  }
+  .catalogo-filtros { position: static; }
+}
+
+@media (max-width: 600px) {
+  .catalogo-hero-content h1 { font-size: 2rem; }
+}
+
+/* Loading and Error States */
+.catalogo-loading,
+.catalogo-error {
+  text-align: center;
+  padding: 80px 20px;
+  background: white;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  min-height: 300px;
+}
+
+.spinner {
+  width: 45px;
+  height: 45px;
+  border: 4px solid rgba(0, 33, 71, 0.1);
+  border-left-color: var(--primary-blue);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.retry-btn {
+  background: var(--primary-blue);
+  color: white;
+  border: none;
+  padding: 10px 22px;
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+  cursor: pointer;
+  transition: background var(--transition);
+}
+
+.retry-btn:hover {
+  background: #001735;
+}

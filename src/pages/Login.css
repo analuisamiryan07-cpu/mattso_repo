@@ -1,0 +1,141 @@
+.login-page {
+  min-height: 100vh;
+  background: linear-gradient(135deg, var(--primary-blue) 0%, #0a3566 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+}
+
+.login-card {
+  background: white;
+  border-radius: var(--radius-md);
+  padding: 40px;
+  width: 100%;
+  max-width: 440px;
+  box-shadow: 0 24px 48px rgba(0,0,0,0.25);
+}
+
+/* Header */
+.login-card__header {
+  text-align: center;
+  margin-bottom: 28px;
+}
+
+.login-logo {
+  height: 60px;
+  margin: 0 auto 12px;
+}
+
+.login-subtitle {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+/* Tabs */
+.login-tabs {
+  display: flex;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  margin-bottom: 28px;
+}
+
+.login-tab {
+  flex: 1;
+  padding: 10px;
+  background: none;
+  border: none;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all var(--transition);
+}
+
+.login-tab--active {
+  background: var(--primary-blue);
+  color: white;
+}
+
+/* Formulario */
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.lf-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.lf-group label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-dark);
+}
+
+.lf-group input {
+  padding: 11px 14px;
+  border: 1.5px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  font-size: 0.93rem;
+  font-family: inherit;
+  transition: border-color var(--transition);
+  color: var(--text-dark);
+}
+
+.lf-group input:focus {
+  outline: none;
+  border-color: var(--primary-blue);
+  box-shadow: 0 0 0 3px rgba(0,33,71,0.08);
+}
+
+.lf-error {
+  font-size: 0.78rem;
+  color: #dc2626;
+}
+
+/* Botón submit */
+.login-submit {
+  width: 100%;
+  padding: 13px;
+  background: var(--primary-yellow);
+  color: var(--primary-blue);
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  margin-top: 4px;
+  transition: all var(--transition);
+}
+
+.login-submit:hover {
+  background: var(--primary-yellow-dark);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(247,166,0,0.35);
+}
+
+.login-submit:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Footer */
+.login-card__footer {
+  text-align: center;
+  margin-top: 24px;
+}
+
+.login-card__footer a {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  transition: color var(--transition);
+}
+
+.login-card__footer a:hover { color: var(--primary-blue); }

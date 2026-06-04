@@ -1,0 +1,158 @@
+/* ======================================
+   CARRUSEL CERTIFICACIONES Y CAPACITACIONES DESTACADAS
+   ====================================== */
+.carousel-wrapper {
+    width: 100%;
+    overflow: hidden;
+    padding: 20px 0 45px;
+    position: relative;
+    max-width: 100vw;
+}
+
+#carousel-track,
+#carousel-track-cap {
+    display: flex;
+    gap: 0;
+    will-change: transform;
+    align-items: stretch;
+}
+
+.carousel-slide {
+    flex: 0 0 320px; /* Tamaño intermedio perfecto (ni gigante, ni mini) */
+    max-width: 320px;
+    padding: 0 10px;
+    box-sizing: border-box;
+    display: flex;
+}
+
+/* ── Compact card overrides for the carousel ── */
+.carousel-slide .catalog-card {
+    width: 100%;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border-radius: 10px;
+}
+.carousel-slide .catalog-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+}
+
+/* Shorter image */
+.carousel-slide .card-image-wrap {
+    height: 150px;
+    flex: 0 0 150px;
+}
+.carousel-slide .card-image-wrap img {
+    transition: transform 0.4s ease;
+}
+.carousel-slide .catalog-card:hover .card-image-wrap img {
+    transform: scale(1.05);
+}
+
+/* Smaller badge */
+.carousel-slide .card-badge {
+    font-size: 10px;
+    padding: 5px 10px;
+    top: 12px;
+    left: 12px;
+}
+
+/* Compact card body */
+.carousel-slide .card-body-modern {
+    padding: 16px;
+}
+
+/* Smaller title */
+.carousel-slide .card-title-modern {
+    font-size: 15px;
+    margin-bottom: 10px;
+    min-height: 40px;
+    line-height: 1.3;
+}
+
+/* Smaller date row */
+.carousel-slide .card-top-info {
+    margin-bottom: 12px;
+}
+.carousel-slide .badge-date-prefix,
+.carousel-slide .badge-date {
+    font-size: 12px;
+}
+
+/* ── All 3 metrics in ONE row ── */
+.carousel-slide .card-metrics-grid {
+    display: flex;
+    justify-content: space-between;
+    gap: 5px;
+    padding: 10px 8px;
+    margin-bottom: 15px;
+    background: #f8fafc;
+    border-radius: 8px;
+}
+.carousel-slide .metric {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+.carousel-slide .metric i {
+    font-size: 14px;
+    margin-right: 0;
+    margin-bottom: 4px;
+    color: #FBB034;
+}
+.carousel-slide .metric-info {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+.carousel-slide .metric-info small {
+    font-size: 9px;
+    letter-spacing: -0.1px;
+}
+.carousel-slide .metric-info span {
+    font-size: 11px;
+    font-weight: 800;
+}
+
+/* Compact price */
+.carousel-slide .card-price-modern {
+    padding-top: 12px;
+    margin-bottom: 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.carousel-slide .card-price-modern span {
+    font-size: 12px;
+}
+.carousel-slide .card-price-modern strong {
+    font-size: 17px;
+}
+
+/* Compact buttons */
+.carousel-slide .card-actions-modern {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: auto;
+}
+.carousel-slide .btn-cart {
+    padding: 10px 8px;
+    font-size: 12px;
+    border-radius: 5px;
+}
+.carousel-slide .btn-info {
+    padding: 8px;
+    font-size: 11px;
+    border-radius: 5px;
+    border-width: 2px;
+}
+
+/* Responsive constraints */
+@media (max-width: 768px) {
+    .carousel-slide {
+        flex: 0 0 260px;
+        max-width: 260px;
+    }
+}

@@ -1,0 +1,419 @@
+/* ==========================================
+   CSS PARA EL DETALLE DE CERTIFICACIÓN
+   ========================================== */
+
+.certification-detail-page {
+  font-family: 'Arial', sans-serif;
+  color: #333;
+  line-height: 1.6;
+}
+
+/* 1. HERO SECTION & FORMULARIO */
+.cert-hero {
+  position: relative;
+  background-image: url('https://images.unsplash.com/photo-1584515979956-d416f5a3406f?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80');
+  background-size: cover;
+  background-position: center;
+  padding: 120px 0 80px;
+  min-height: 500px;
+  display: flex;
+  align-items: center;
+}
+
+.cert-hero-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, rgba(0,33,71,0.9) 0%, rgba(0,33,71,0.6) 100%);
+  z-index: 1;
+}
+
+.cert-hero-container {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 40px;
+}
+
+.cert-hero-content {
+  flex: 1;
+  color: white;
+  max-width: 600px;
+}
+
+.cert-hero-content h1 {
+  font-size: 2.8rem;
+  font-weight: 700;
+  margin-bottom: 20px;
+  line-height: 1.2;
+}
+
+.cert-hero-content p {
+  font-size: 1.1rem;
+  margin-bottom: 30px;
+}
+
+.btn-leer-mas {
+  background-color: var(--primary-yellow);
+  color: var(--primary-blue);
+  border: none;
+  padding: 12px 35px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.btn-leer-mas:hover {
+  background-color: #e09600;
+}
+
+.cert-hero-form {
+  background-color: var(--primary-blue);
+  padding: 30px 40px;
+  width: 400px;
+  color: white;
+  border: 1px solid rgba(255,255,255,0.1);
+}
+
+.cert-hero-form h3 {
+  font-size: 1.3rem;
+  margin-bottom: 10px;
+}
+
+.cert-hero-form p {
+  font-size: 0.85rem;
+  margin-bottom: 25px;
+  line-height: 1.4;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-bottom: 5px;
+}
+
+.form-group input {
+  width: 100%;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid rgba(255,255,255,0.5);
+  color: white;
+  padding: 8px 0;
+  font-size: 1rem;
+}
+
+.form-group input:focus {
+  outline: none;
+  border-bottom-color: var(--primary-yellow);
+}
+
+.form-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 25px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.btn-enviar {
+  width: 100%;
+  background-color: var(--primary-yellow);
+  color: var(--primary-blue);
+  border: none;
+  padding: 12px;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+
+/* 2. SOBRE LA CERTIFICACIÓN */
+.cert-about {
+  padding: 80px 0;
+  background-color: white;
+}
+
+.cert-section-title {
+  text-align: center;
+  color: var(--primary-blue);
+  font-size: 2.2rem;
+  margin-bottom: 40px;
+}
+
+.cert-section-title.left {
+  text-align: left;
+}
+
+.cert-about-text p {
+  margin-bottom: 20px;
+  font-size: 1rem;
+  color: #555;
+  text-align: justify;
+}
+
+
+/* 3. CARACTERÍSTICAS CLAVE (BARRA AZUL) */
+.cert-features {
+  background-color: var(--primary-blue);
+  padding: 50px 0;
+  color: white;
+}
+
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 30px;
+  text-align: center;
+}
+
+.feature-item i {
+  font-size: 2.5rem;
+  margin-bottom: 15px;
+}
+
+.feature-item h4 {
+  font-size: 1.2rem;
+  margin-bottom: 10px;
+  font-weight: 600;
+}
+
+.feature-item p {
+  font-size: 0.9rem;
+  opacity: 0.9;
+  line-height: 1.4;
+  white-space: pre-line;
+}
+
+
+/* 4. RECONOCIMIENTO PROFESIONAL (IMAGEN + CAJA BLANCA) */
+.cert-target {
+  background-color: #f1f3f5;
+}
+
+.target-wrapper {
+  display: flex;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.target-image {
+  flex: 0 0 50%;
+}
+
+.target-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.target-content-box {
+  flex: 0 0 50%;
+  background-color: white;
+  margin: 60px 40px 60px -80px; /* Overlaps image */
+  padding: 50px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+  position: relative;
+  z-index: 2;
+}
+
+.target-content-box h3 {
+  color: var(--primary-blue);
+  font-size: 1.6rem;
+  margin-bottom: 25px;
+}
+
+.target-content-box h4 {
+  color: #333;
+  font-size: 1.1rem;
+  margin-top: 20px;
+  margin-bottom: 10px;
+}
+
+.target-content-box ol {
+  padding-left: 20px;
+  margin-bottom: 20px;
+  font-size: 0.95rem;
+  color: #555;
+}
+
+.target-content-box ol li {
+  margin-bottom: 8px;
+}
+
+.target-content-box p {
+  font-size: 0.95rem;
+  color: #555;
+  margin-bottom: 20px;
+}
+
+.btn-contact-advisor {
+  background-color: var(--primary-yellow);
+  color: var(--primary-blue);
+  border: none;
+  padding: 12px 20px;
+  font-weight: 700;
+  font-size: 0.9rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 30px;
+}
+
+
+/* 5. HABILIDADES Y CONOCIMIENTOS REQUERIDOS */
+.cert-skills-knowledge {
+  background-color: #f8f9fa;
+  padding: 60px 0;
+}
+
+.skills-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 50px;
+}
+
+.skills-grid h3 {
+  color: var(--primary-blue);
+  font-size: 1.5rem;
+  margin-bottom: 20px;
+  border-bottom: 1px solid var(--primary-blue);
+  padding-bottom: 10px;
+  display: inline-block;
+}
+
+.skills-grid ul {
+  list-style: disc;
+  padding-left: 20px;
+  color: #555;
+}
+
+.skills-grid ul li {
+  margin-bottom: 5px;
+  font-size: 0.95rem;
+}
+
+
+/* 6. REQUISITOS (NÚMEROS GRANDES E IMAGEN) */
+.cert-requirements {
+  background-color: white;
+  overflow: hidden;
+}
+
+.requirements-wrapper {
+  display: flex;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.requirements-content {
+  flex: 0 0 50%;
+  padding: 80px 10%;
+}
+
+.req-item {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 30px;
+}
+
+.req-number {
+  color: var(--primary-blue);
+  font-size: 3rem;
+  font-weight: 800;
+  margin-right: 25px;
+  line-height: 1;
+}
+
+.req-text h4 {
+  color: var(--primary-blue);
+  font-size: 1.2rem;
+  margin-bottom: 5px;
+}
+
+.req-text p {
+  color: #555;
+  font-size: 0.95rem;
+  margin: 0;
+}
+
+.requirements-image {
+  flex: 0 0 50%;
+  position: relative;
+}
+
+.requirements-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.blue-squares {
+  position: absolute;
+  top: 40px;
+  right: 40px;
+  z-index: 2;
+}
+
+.square {
+  background-color: var(--primary-blue);
+}
+
+.square.s1 {
+  width: 60px;
+  height: 60px;
+  margin-bottom: 10px;
+}
+
+.square.s2 {
+  width: 30px;
+  height: 30px;
+  margin-left: 30px;
+}
+
+
+/* RESPONSIVE DESIGN */
+@media (max-width: 992px) {
+  .cert-hero-container {
+    flex-direction: column;
+  }
+  .cert-hero-form {
+    width: 100%;
+  }
+  .features-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+  .target-wrapper, .requirements-wrapper {
+    flex-direction: column;
+  }
+  .target-content-box {
+    margin: -40px 20px 40px 20px;
+  }
+  .skills-grid {
+    grid-template-columns: 1fr;
+  }
+  .requirements-content {
+    padding: 50px 20px;
+  }
+  .requirements-image {
+    min-height: 300px;
+  }
+}
+
+@media (max-width: 576px) {
+  .features-grid {
+    grid-template-columns: 1fr;
+  }
+}

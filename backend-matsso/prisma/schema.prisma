@@ -1,0 +1,269 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["multiSchema"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  schemas  = ["public", "matsso"]
+}
+
+// ==========================================
+// SCHEMA: MATSSO (Catálogo Institucional)
+// ==========================================
+
+model Familia {
+  id_familia    Int       @id @default(autoincrement())
+  nombre        String    @unique @db.VarChar(120)
+  descripcion   String?   @db.Text
+  activo        Boolean   @default(true)
+  created_at    DateTime  @default(now()) @db.Timestamptz
+  updated_at    DateTime  @default(now()) @db.Timestamptz
+
+  sectores      Sector[]
+  certificaciones Certificacion[]
+  clientes      Cliente[]
+
+  @@schema("matsso")
+  @@map("familia")
+}
+
+model Sector {
+  id_sector     Int       @id @default(autoincrement())
+  id_familia    Int
+  nombre        String    @unique @db.VarChar(200)
+  codigo_ciiu   String?   @db.VarChar(10)
+  descripcion   String?   @db.Text
+  activo        Boolean   @default(true)
+  created_at    DateTime  @default(now()) @db.Timestamptz
+  updated_at    DateTime  @default(now()) @db.Timestamptz
+
+  familia       Familia   @relation(fields: [id_familia], references: [id_familia])
+  certificaciones Certificacion[]
+  clientes      Cliente[]
+
+  @@schema("matsso")
+  @@map("sector")
+}
+
+model Vigencia {
+  id_vigencia   Int       @id @default(autoincrement())
+  anos          Int       @unique @db.SmallInt
+  etiqueta      String    @db.VarChar(20)
+  activo        Boolean   @default(true)
+  created_at    DateTime  @default(now()) @db.Timestamptz
+  updated_at    DateTime  @default(now()) @db.Timestamptz
+
+  certificaciones Certificacion[]
+
+  @@schema("matsso")
+  @@map("vigencia")
+}
+
+model Certificacion {
+  id_certificacion Int      @id @default(autoincrement())
+  codigo           String   @unique @db.VarChar(20)
+  nombre           String   @unique @db.VarChar(300)
+  descripcion      String   @db.Text
+  id_vigencia      Int
+  id_familia       Int
+  id_sector        Int
+  activo           Boolean  @default(true)
+  created_at       DateTime @default(now()) @db.Timestamptz
+  updated_at       DateTime @default(now()) @db.Timestamptz
+  created_by       String   @default(dbgenerated("CURRENT_USER")) @db.VarChar(100)
+  updated_by       String   @default(dbgenerated("CURRENT_USER")) @db.VarChar(100)
+
+  vigencia         Vigencia @relation(fields: [id_vigencia], references: [id_vigencia])
+  familia          Familia  @relation(fields: [id_familia], references: [id_familia])
+  sector           Sector   @relation(fields: [id_sector], references: [id_sector])
+  perfiles         PerfilDirigido[]
+  requisitos       Requisito[]
+  conocimientos    Conocimiento[]
+  evaluaciones     Evaluacion[]
+  productos        Producto[]
+
+  @@schema("matsso")
+  @@map("certificacion")
+}
+
+model PerfilDirigido {
+  id_perfil        Int      @id @default(autoincrement())
+  id_certificacion Int
+  descripcion      String   @db.Text
+  orden            Int      @default(1) @db.SmallInt
+  activo           Boolean  @default(true)
+  created_at       DateTime @default(now()) @db.Timestamptz
+  updated_at       DateTime @default(now()) @db.Timestamptz
+
+  certificacion    Certificacion @relation(fields: [id_certificacion], references: [id_certificacion], onDelete: Cascade)
+
+  @@schema("matsso")
+  @@map("perfil_dirigido")
+}
+
+model Requisito {
+  id_requisito     Int      @id @default(autoincrement())
+  id_certificacion Int
+  tipo             String   @db.VarChar(50)
+  descripcion      String   @db.Text
+  orden            Int      @default(1) @db.SmallInt
+  activo           Boolean  @default(true)
+  created_at       DateTime @default(now()) @db.Timestamptz
+  updated_at       DateTime @default(now()) @db.Timestamptz
+
+  certificacion    Certificacion @relation(fields: [id_certificacion], references: [id_certificacion], onDelete: Cascade)
+
+  @@schema("matsso")
+  @@map("requisito")
+}
+
+model Conocimiento {
+  id_conocimiento  Int      @id @default(autoincrement())
+  id_certificacion Int
+  descripcion      String   @db.Text
+  orden            Int      @default(1) @db.SmallInt
+  activo           Boolean  @default(true)
+  created_at       DateTime @default(now()) @db.Timestamptz
+  updated_at       DateTime @default(now()) @db.Timestamptz
+
+  certificacion    Certificacion @relation(fields: [id_certificacion], references: [id_certificacion], onDelete: Cascade)
+
+  @@schema("matsso")
+  @@map("conocimiento")
+}
+
+model Evaluacion {
+  id_evaluacion     Int      @id @default(autoincrement())
+  id_certificacion  Int
+  modalidad         String   @db.VarChar(20)
+  descripcion       String   @db.Text
+  porcentaje_minimo Decimal? @db.Decimal(5,2)
+  porcentaje_max    Decimal? @db.Decimal(5,2)
+  activo            Boolean  @default(true)
+  created_at        DateTime @default(now()) @db.Timestamptz
+  updated_at        DateTime @default(now()) @db.Timestamptz
+
+  certificacion     Certificacion @relation(fields: [id_certificacion], references: [id_certificacion], onDelete: Cascade)
+
+  @@schema("matsso")
+  @@map("evaluacion")
+  @@unique([id_certificacion, modalidad])
+}
+
+// ==========================================
+// SCHEMA: PUBLIC (E-Commerce y Operativa)
+// ==========================================
+
+model Cliente {
+  id                  BigInt        @id @default(autoincrement())
+  nombre              String        @db.VarChar(255)
+  cedula              String        @unique @db.VarChar(15)
+  telefono            String?       @db.VarChar(255)
+  correo              String?       @db.VarChar(255)
+  direccion           String?
+  fecha               DateTime      @db.Date
+  ciudad              String?       @db.VarChar(255)
+  lugar               String?       @db.VarChar(255)
+  esquema             String?       @db.VarChar(255)
+  tipo_examen         String?       @db.VarChar(255)
+  puntaje_teorico     String?       @db.VarChar(255)
+  puntaje_practico    String?       @db.VarChar(255)
+  id_familia          Int?
+  id_sector           Int?
+  created_at          DateTime?     @db.Timestamp(0)
+  updated_at          DateTime?     @db.Timestamp(0)
+  nombre_examinador   String?       @db.VarChar(255)
+  cedula_examinador   String?       @db.VarChar(20)
+  telefono_examinador String?       @db.VarChar(20)
+  edad                Int?
+  celular1            String?       @db.VarChar(20)
+  cv_metadata         Json?
+  
+  usuarios_web        UsuarioWeb[]
+  familia             Familia?      @relation(fields: [id_familia], references: [id_familia])
+  sector              Sector?       @relation(fields: [id_sector], references: [id_sector])
+
+  @@schema("public")
+  @@map("clientes")
+}
+
+model UsuarioWeb {
+  id            BigInt    @id @default(autoincrement())
+  cliente_id    BigInt?
+  correo        String    @unique @db.VarChar(255)
+  password_hash String    @db.VarChar(255)
+  rol           String    @default("ESTUDIANTE") @db.VarChar(50)
+  activo        Boolean?  @default(true)
+  created_at    DateTime? @default(now()) @db.Timestamp(0)
+  
+  cliente       Cliente?  @relation(fields: [cliente_id], references: [id])
+  ordenes       Orden[]
+
+  @@schema("public")
+  @@map("usuarios_web")
+}
+
+model Producto {
+  id               BigInt    @id @default(autoincrement())
+  tipo             String    @db.VarChar(50) // CAPACITACION o CERTIFICACION
+  titulo           String    @db.VarChar(255)
+  descripcion      String?
+  precio           Decimal   @db.Decimal(10, 2)
+  horas            Int?
+  modalidad        String?   @db.VarChar(100)
+  imagen_url       String?   @db.VarChar(255)
+  activo           Boolean?  @default(true)
+  id_certificacion Int?
+  created_at       DateTime? @default(now()) @db.Timestamp(0)
+  
+  certificacion    Certificacion? @relation(fields: [id_certificacion], references: [id_certificacion])
+  esquemas         EsquemaCertificacion[]
+  orden_items      OrdenItem[]
+
+  @@schema("public")
+  @@map("productos")
+}
+
+model EsquemaCertificacion {
+  id                 BigInt   @id @default(autoincrement())
+  producto_id        BigInt
+  perfil_profesional String   @db.VarChar(255)
+  nombre_esquema     String   @db.VarChar(255)
+
+  producto           Producto @relation(fields: [producto_id], references: [id], onDelete: Cascade)
+
+  @@schema("public")
+  @@map("esquemas_certificacion")
+}
+
+model Orden {
+  id              BigInt    @id @default(autoincrement())
+  usuario_id      BigInt
+  total           Decimal   @db.Decimal(10, 2)
+  estado          String    @default("PENDIENTE") @db.VarChar(50)
+  fecha_orden     DateTime? @default(now()) @db.Timestamp(0)
+  metodo_pago     String?   @db.VarChar(100)
+  comprobante_url String?   @db.VarChar(255)
+
+  usuario      UsuarioWeb  @relation(fields: [usuario_id], references: [id])
+  items        OrdenItem[]
+
+  @@schema("public")
+  @@map("ordenes")
+}
+
+model OrdenItem {
+  id              BigInt   @id @default(autoincrement())
+  orden_id        BigInt
+  producto_id     BigInt
+  precio_unitario Decimal  @db.Decimal(10, 2)
+  cantidad        Int      @default(1)
+
+  orden           Orden    @relation(fields: [orden_id], references: [id], onDelete: Cascade)
+  producto        Producto @relation(fields: [producto_id], references: [id])
+
+  @@schema("public")
+  @@map("orden_items")
+}

@@ -1,0 +1,130 @@
+.site-footer-v2 {
+  font-family: 'Inter', sans-serif;
+  width: 100%;
+  margin-top: 50px;
+}
+
+.footer-v2-top {
+  background-color: #ffffff;
+  padding: 40px 20px;
+  border-bottom: 6px solid var(--primary-yellow);
+}
+
+.footer-v2-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 30px;
+}
+
+.footer-v2-logo-section {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  max-width: 300px;
+}
+
+.footer-v2-logo {
+  height: 60px;
+  width: auto;
+  margin-bottom: 5px;
+}
+
+.footer-v2-tagline {
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: #333;
+  letter-spacing: 0.5px;
+  text-align: center;
+  width: 100%;
+}
+
+.footer-v2-info-section {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  color: #333333;
+  font-size: 1rem;
+}
+
+.footer-v2-info-section p {
+  display: flex;
+  align-items: center;
+  margin: 0;
+}
+
+.footer-v2-info-section i {
+  color: var(--primary-yellow);
+  width: 25px;
+  font-size: 1.1rem;
+}
+
+.footer-v2-social-section {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.footer-v2-social-section h3 {
+  color: var(--primary-blue);
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin-bottom: 15px;
+}
+
+.social-icons-row {
+  display: flex;
+  gap: 10px;
+}
+
+.social-icon {
+  background-color: var(--primary-blue);
+  color: var(--color-white);
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+}
+
+.social-icon:hover {
+  background-color: var(--primary-yellow);
+  transform: translateY(-3px);
+}
+
+.footer-v2-bottom {
+  background-color: #1b2341;
+  padding: 12px 20px;
+  text-align: center;
+}
+
+.footer-v2-bottom p {
+  color: var(--color-white);
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 400;
+}
+
+@media (max-width: 900px) {
+  .footer-v2-container {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+  
+  .footer-v2-logo-section,
+  .footer-v2-social-section {
+    align-items: center;
+  }
+  
+  .footer-v2-info-section {
+    align-items: center;
+  }
+}

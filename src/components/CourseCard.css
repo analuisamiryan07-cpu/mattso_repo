@@ -1,0 +1,156 @@
+.course-card-modern {
+  background: var(--color-white);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  box-shadow: var(--shadow-md);
+  transition: transform var(--transition), box-shadow var(--transition);
+  display: flex;
+  flex-direction: column;
+}
+
+.course-card-modern:hover {
+  transform: translateY(-8px);
+  box-shadow: var(--shadow-lg);
+}
+
+/* Imagen */
+.ccm__image {
+  position: relative;
+  height: 200px;
+  overflow: hidden;
+}
+
+.ccm__image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s ease;
+}
+
+.course-card-modern:hover .ccm__image img {
+  transform: scale(1.08);
+}
+
+.ccm__badge {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  color: white;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  padding: 5px 12px;
+  border-radius: 20px;
+}
+
+/* Body */
+.ccm__body {
+  padding: 22px;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  gap: 10px;
+}
+
+.ccm__title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--primary-blue);
+  line-height: 1.4;
+  flex: 1;
+}
+
+.ccm__date {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ccm__date i { color: var(--primary-yellow); }
+
+/* Métricas */
+.ccm__metrics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.ccm__metric {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.ccm__metric i { color: var(--primary-blue); }
+
+/* Precio */
+.ccm__price {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.ccm__price span {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.ccm__price strong {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: var(--primary-blue);
+}
+
+/* Acciones */
+.ccm__actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 6px;
+}
+
+.ccm__btn-cart {
+  flex: 1;
+  padding: 10px;
+  background: var(--primary-blue);
+  color: white;
+  border: 2px solid var(--primary-blue);
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all var(--transition);
+}
+
+.ccm__btn-cart:hover {
+  background: var(--primary-yellow);
+  border-color: var(--primary-yellow);
+  color: var(--primary-blue);
+}
+
+.ccm__btn-info {
+  flex: 1;
+  padding: 10px;
+  background: transparent;
+  color: var(--primary-blue);
+  border: 2px solid var(--primary-blue);
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition);
+}
+
+.ccm__btn-info:hover {
+  background: var(--primary-blue);
+  color: white;
+}

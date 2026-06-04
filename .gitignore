@@ -1,0 +1,42 @@
+# Dependencies
+node_modules/
+
+# Build
+dist/
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Migration leftovers (do not commit)
+raw_pages/
+Campus Matsso*_files/
+*.ps1
+extract.js
+fix_css.js
+fix_html.js
+first_lines.txt
+header*.txt
+search_header.txt
+test.txt
+
+# Logs
+*.log
+npm-debug.log*
+
+# Backend
+backend-matsso/dist/
+backend-matsso/node_modules/
+backend-matsso/.env
+backend-matsso/.env.*

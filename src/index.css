@@ -1,0 +1,102 @@
+/* ===========================
+   DESIGN TOKENS — Campus Matsso
+   =========================== */
+:root {
+  --primary-yellow: #f7a600;
+  --primary-yellow-dark: #e09600;
+  --primary-blue: #002147;
+  --primary-blue-light: #0a3566;
+  --color-black: #000000;
+  --color-white: #ffffff;
+  --text-dark: #1a1a1a;
+  --text-muted: #6b7280;
+  --bg-color: #f4f5f7;
+  --bg-light: #f8f9fa;
+  --border-color: #e5e7eb;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
+  --shadow-md: 0 4px 15px rgba(0,0,0,0.10);
+  --shadow-lg: 0 10px 30px rgba(0,0,0,0.12);
+  --radius-sm: 6px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
+  --transition: 0.3s ease;
+}
+
+/* ===========================
+   RESET
+   =========================== */
+*, *::before, *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* ===========================
+   BASE — Inter como fuente única
+   =========================== */
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background-color: var(--bg-color);
+  color: var(--text-dark);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+}
+
+/* ===========================
+   LAYOUT HELPERS
+   =========================== */
+.app-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.main-content {
+  flex: 1;
+  padding-top: 70px; /* Compensa el header fixed */
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+/* ===========================
+   UTILITY — Section titles
+   =========================== */
+.section-title {
+  text-align: center;
+  font-size: 2.2rem;
+  font-weight: 700;
+  color: var(--primary-blue);
+  margin-bottom: 50px;
+  position: relative;
+}
+
+.section-title::after {
+  content: '';
+  position: absolute;
+  bottom: -14px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60px;
+  height: 4px;
+  background-color: var(--primary-yellow);
+  border-radius: 2px;
+}

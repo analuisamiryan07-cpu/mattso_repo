@@ -1,0 +1,371 @@
+/* Estilos específicos para la cabecera personalizada y swiper arrows */
+
+:root {
+    --matsso-yellow: #ddb21d;
+    /* Aproximación al color amarillo del Matsso */
+}
+
+/* Decoración: Triangulo amarillo superior derecho en la cabecera */
+.elementor-element-eaac1bb {
+    position: fixed !important;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 1000;
+    background: transparent !important;
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
+    /* Reduciremos padding desde el container */
+}
+
+/* Clase añadida vía JS al hacer scroll abajo */
+.elementor-element-eaac1bb.header-scrolled {
+    background: #ffffff !important;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* =====================================================
+   Cabecera estática para páginas sin video de fondo
+   (carrito, capacitaciones, certificaciones, login, etc.)
+   ===================================================== */
+.elementor-element-eaac1bb.header-static {
+    background: #ffffff !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* En páginas estáticas, los links del nav y los iconos son oscuros */
+.elementor-element-eaac1bb.header-static .custom-header-nav > ul > li > a,
+.elementor-element-eaac1bb.header-static .custom-header-icons a {
+    color: #333 !important;
+}
+
+.elementor-element-eaac1bb.header-static .custom-header-nav > ul > li > a:hover,
+.elementor-element-eaac1bb.header-static .custom-header-icons a:hover {
+    color: var(--matsso-yellow) !important;
+}
+
+/* Espacio superior para que el contenido no quede bajo la cabecera fija */
+body.page-with-static-header #content {
+    padding-top: 80px;
+}
+
+
+.custom-header-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: 0px 20px;
+    gap: 15px;
+    flex-wrap: wrap;
+    /* Para móviles */
+    position: relative;
+    z-index: 10;
+    /* Por encima del triángulo decorativo */
+}
+
+.custom-header-logo img {
+    max-width: 130px;
+    height: auto;
+}
+
+.circular-logo {
+    border-radius: 50%;
+    /* Recorte circular: ajustado para acercarse a la línea negra dentro del logo amarillo */
+    clip-path: circle(40% at 50% 50%);
+    transform: scale(1.1);
+}
+
+/* AQUI SE CAMBIA EL ANCHO DEL BUSCADOR */
+.custom-header-search {
+    flex-grow: 1;
+    max-width: 600px;
+    /* Más ancho horizonálmente */
+    margin-left: 10px;
+}
+
+/* AQUI SE CAMBIA EL ALTO DEL BUSCADOR */
+.custom-header-search .search-wrap {
+    display: flex;
+    align-items: center;
+    background-color: #f5f5f5 !important;
+    border-radius: 20px;
+    padding: 1px 15px;
+    /* Reducido para hacerlo menos alto */
+    border: 2px solid var(--matsso-yellow);
+}
+
+/* Forzar reset del color de fondo blanco que se ponía al escribir */
+.custom-header-search input,
+.custom-header-search input:focus,
+.custom-header-search input:-webkit-autofill {
+    border: none !important;
+    outline: none !important;
+    padding: 6px 5px !important;
+    /* Altura mínima del input */
+    width: 100% !important;
+    font-family: inherit !important;
+    font-size: 13px !important;
+    background-color: transparent !important;
+    color: #333 !important;
+    box-shadow: none !important;
+    -webkit-box-shadow: 0 0 0px 1000px transparent inset !important;
+    transition: background-color 5000s ease-in-out 0s;
+}
+
+.custom-header-search button {
+    background: transparent;
+    border: none;
+    color: #333;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.custom-header-nav {
+    flex-grow: 2;
+    display: flex;
+    justify-content: flex-end;
+    margin-right: 0;
+    /* Quitamos el espacio que lo empujaba a la izquierda */
+}
+
+.custom-header-nav>ul {
+    list-style: none;
+    display: flex;
+    gap: 25px;
+    margin: 0;
+    padding: 0;
+    align-items: center;
+}
+
+.custom-header-nav a {
+    text-decoration: none;
+    color: #fff;
+    /* Blanco por defecto (sobre el video) */
+    font-weight: 500;
+    font-size: 15px;
+    font-family: 'Roboto', sans-serif;
+    transition: color 0.3s;
+    text-transform: uppercase;
+    position: relative;
+    padding-bottom: 5px;
+}
+
+/* Efecto de línea inferior y cambio de color al acercar el mouse */
+.custom-header-nav>ul>li>a::after {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 2px;
+    bottom: 0;
+    left: 0;
+    background-color: var(--matsso-yellow);
+    transition: width 0.3s ease;
+}
+
+.custom-header-nav>ul>li>a:hover::after {
+    width: 100%;
+}
+
+.custom-header-nav a:hover,
+.custom-header-icons a:hover {
+    color: var(--matsso-yellow);
+}
+
+/* Dropdown para "Recursos" */
+.nav-dropdown {
+    position: relative;
+}
+
+.nav-dropdown>a>i {
+    font-size: 12px;
+    margin-left: 6px;
+    vertical-align: middle;
+}
+
+.dropdown-menu {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    background: #fff;
+    list-style: none;
+    padding: 10px 0;
+    margin: 0;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+    min-width: 160px;
+    border-top: 3px solid var(--matsso-yellow);
+    z-index: 1000;
+}
+
+.dropdown-menu li {
+    padding: 0;
+}
+
+.dropdown-menu li a {
+    padding: 10px 20px;
+    display: block;
+    color: #333 !important;
+    /* Siempre oscuro en el dropdown */
+    font-size: 13px;
+    text-transform: none;
+}
+
+.dropdown-menu li a::after {
+    display: none;
+}
+
+.dropdown-menu li a:hover {
+    background-color: #f9f9f9;
+    color: var(--matsso-yellow);
+}
+
+.nav-dropdown:hover .dropdown-menu {
+    display: block;
+}
+
+.custom-header-icons {
+    display: flex;
+    gap: 30px;
+    align-items: center;
+    margin-left: 30px;
+    /* Separación directa de los iconos con el menu */
+}
+
+.custom-header-icons a {
+    color: #fff;
+    /* Blanco por defecto */
+    font-size: 20px;
+    text-decoration: none;
+    transition: color 0.3s;
+    position: relative;
+    padding-bottom: 5px;
+}
+
+/* Efecto de hover amarillo en iconos */
+.custom-header-icons a::after {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 2px;
+    bottom: 0;
+    left: 0;
+    background-color: var(--matsso-yellow);
+    transition: width 0.3s ease;
+}
+
+.custom-header-icons a:hover::after {
+    width: 100%;
+}
+
+/* Colores originales al hacer scroll */
+.elementor-element-eaac1bb.header-scrolled .custom-header-nav>ul>li>a,
+.elementor-element-eaac1bb.header-scrolled .custom-header-icons a {
+    color: #000;
+}
+
+.elementor-element-eaac1bb.header-scrolled .custom-header-nav>ul>li>a:hover,
+.elementor-element-eaac1bb.header-scrolled .custom-header-icons a:hover {
+    color: var(--matsso-yellow);
+}
+
+/* Adjusting Swiper Icons so they look good */
+.elementor-swiper-button i.fas {
+    font-size: 40px !important;
+    color: #fff !important;
+    text-shadow: 0px 4px 6px rgba(0, 0, 0, 0.5);
+    background: transparent !important;
+}
+
+/* RESPONSIVE */
+@media (max-width: 991px) {
+    .custom-header-container {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+
+    .custom-header-nav>ul {
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 15px;
+    }
+
+    .custom-header-search {
+        order: 3;
+        margin-top: 10px;
+        max-width: 100%;
+        width: 100%;
+        margin-left: 0;
+    }
+
+    .custom-header-nav {
+        order: 2;
+        margin-top: 10px;
+        margin-right: 0;
+    }
+
+    .custom-header-icons {
+        order: 1;
+        margin-top: 5px;
+        margin-left: 0;
+    }
+}
+
+/* --- ESTILOS DE LOS BOTONES DEL VIDEO --- */
+.btn-cursos-gratuitos,
+.btn-cursos-ofertas {
+    padding: 15px 35px;
+    border-radius: 5px;
+    text-decoration: none;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 700;
+    font-size: 16px;
+    text-transform: uppercase;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+    transition: transform 0.2s, background-color 0.2s, border-color 0.2s;
+    color: #fff !important;
+}
+
+.btn-cursos-gratuitos {
+    background-color: #1E2247;
+    border: 2px solid #1E2247;
+}
+
+.btn-cursos-gratuitos:hover {
+    background-color: #141b3d;
+    border-color: #141b3d;
+    transform: scale(1.05);
+}
+
+.btn-cursos-ofertas {
+    background-color: #a80011;
+    border: 2px solid #a80011;
+}
+
+.btn-cursos-ofertas:hover {
+    background-color: #bd2130;
+    border-color: #bd2130;
+    transform: scale(1.05);
+}
+
+/* --- Ajuste de altura y color del cuadro azul (beneficios) --- */
+.elementor-element-dba497f,
+.elementor-element-dba497f .elementor-column,
+.elementor-element-dba497f .elementor-widget-wrap,
+.elementor-element-dba497f .elementor-inner-section {
+    background: #1E2247 !important;
+    background-color: #1E2247 !important;
+    background-image: none !important;
+}
+
+.elementor-element-dba497f {
+    padding-top: 25px !important;
+    padding-bottom: 25px !important;
+}
+
+.elementor-element-dba497f .elementor-widget-image img {
+    height: 340px !important;
+    width: 100% !important;
+    object-fit: cover !important;
+    object-position: top center !important;
+}
