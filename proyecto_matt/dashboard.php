@@ -613,6 +613,12 @@ $usuarioActual = $_SESSION['usuario'];
                     </svg>
                     Certificaciones
                 </a>
+                <a href="pagos.php" class="panel-btn" style="border-color:#16a34a; color:#16a34a;">
+                    <svg viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M20 4H4c-1.11 0-2 .89-2 2v12c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z"/>
+                    </svg>
+                    Aprobación de Pagos
+                </a>
             </div>
 
             <div class="panel-grid-2">
