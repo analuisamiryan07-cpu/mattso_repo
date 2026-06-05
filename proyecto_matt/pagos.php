@@ -15,11 +15,19 @@ if (!isset($_SESSION['usuario'])) {
 // ── Configuración ────────────────────────────────────────────────────────────
 // Ajusta estas dos variables a tu entorno de producción
 $BACKEND_URL = getenv('BACKEND_URL') ?: 'http://localhost:3000';
+if (!filter_var($BACKEND_URL, FILTER_VALIDATE_URL)) {
+    $BACKEND_URL = 'http://localhost:3000';
+}
 $ADMIN_KEY   = getenv('ADMIN_API_KEY') ?: 'matsso_admin_key_local';
 
 // ── Función helper: llamada cURL al backend ───────────────────────────────────
 function callApi(string $method, string $url, string $adminKey, array $body = []): array
 {
+    // Validar formato de URL antes de iniciar cURL
+    if (!filter_var($url, FILTER_VALIDATE_URL)) {
+        return ['code' => 400, 'data' => ['error' => 'URL inválida']];
+    }
+
     $ch = curl_init($url);
     curl_setopt_array($ch, [
         CURLOPT_RETURNTRANSFER => true,
@@ -352,7 +360,11 @@ $totalRechazada = count(array_filter($orders, fn($o) => $o['estado'] === 'RECHAZ
                             <h4 style="margin-top:1.2rem;">🧾 Comprobante</h4>
                             <div class="comprobante-box">
                                 <?php if (!empty($orden['comprobante_url'])): ?>
-                                    <a href="<?= htmlspecialchars($BACKEND_URL . $orden['comprobante_url']) ?>" target="_blank" rel="noopener">
+                                    <?php 
+                                        $fullUrl = $BACKEND_URL . $orden['comprobante_url'];
+                                        $safeUrl = filter_var($fullUrl, FILTER_VALIDATE_URL) ? $fullUrl : '#';
+                                    ?>
+                                    <a href="<?= htmlspecialchars($safeUrl, ENT_QUOTES, 'UTF-8') ?>" target="_blank" rel="noopener">
                                         🖼️ Ver Comprobante
                                     </a>
                                 <?php else: ?>
