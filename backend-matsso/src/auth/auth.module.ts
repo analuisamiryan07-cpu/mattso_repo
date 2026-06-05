@@ -9,8 +9,9 @@ import { JwtStrategy } from './jwt.strategy';
   imports: [
     PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.register({
-      secret: process.env.JWT_SECRET || 'matsso_jwt_secret_dev_2026',
-      signOptions: { expiresIn: '24h' },
+      // FIX [Authentication.Credentials.Unprotected]: Sin fallback hardcodeado
+      secret: process.env.JWT_SECRET,
+      signOptions: { expiresIn: '8h' },
     }),
   ],
   controllers: [AuthController],

@@ -60,6 +60,13 @@ $docsSeleccionados = $_POST['docs'] ?? [];
 $carpetaPlantillas = __DIR__ . '/plantillas/';
 $carpetaGenerados = __DIR__ . '/generados/';
 
+// FIX [PathTraversal]: Definir lista blanca de documentos permitidos antes de usar los datos
+$ALLOWED_DOCS = ['c02', 'c05', 'c08', 'c09', 'c10', 'c12'];
+$docsSeleccionados = array_filter(
+    array_map('strtolower', (array)$docsSeleccionados),
+    fn($d) => in_array($d, $ALLOWED_DOCS, true)
+);
+
 // --- GUARDAR EN BASE DE DATOS LOCAL ---
 require_once __DIR__ . '/includes/db.php';
 $clienteId = null;
@@ -95,7 +102,9 @@ try {
         $clienteId = $ins->fetchColumn();
     }
 } catch (PDOException $e) {
-    header('Location: index.php?error=' . urlencode('Error BD: ' . $e->getMessage()));
+    // FIX [HTTP Response Splitting]: eliminar \r\n del mensaje antes de inyectarlo en Location
+    $errMsg = str_replace(["\r", "\n"], '', $e->getMessage());
+    header('Location: index.php?error=' . urlencode('Error BD: ' . $errMsg));
     exit;
 }
 // --------------------------------------
@@ -238,6 +247,8 @@ foreach ($docsSeleccionados as $doc) {
 // ── Empaquetar en ZIP y descargar ────────────────────────────────────────────
 if (empty($archivosGenerados)) {
     $msg = !empty($errores) ? implode('; ', $errores) : 'No se generó ningún documento';
+    // FIX [HTTP Response Splitting]: eliminar \r\n del mensaje antes de inyectarlo en Location
+    $msg = str_replace(["\r", "\n"], '', $msg);
     header('Location: index.php?error=' . urlencode($msg));
     exit;
 }
@@ -272,7 +283,9 @@ if ($zip->open($zipPath, ZipArchive::CREATE | ZipArchive::OVERWRITE) === true) {
     }
 
     header('Content-Type: application/zip');
-    header('Content-Disposition: attachment; filename="Certificacion_' . $datos['NOMBRE'] . '.zip"');
+    // FIX [Reflected XSS + HTTP Response Splitting]: sanitizar nombre en Content-Disposition
+    $safeNombre = preg_replace('/[^\w\s\-]/', '_', $datos['NOMBRE']);
+    header('Content-Disposition: attachment; filename="Certificacion_' . $safeNombre . '.zip"');
     header('Content-Length: ' . filesize($zipPath));
     readfile($zipPath);
     exit;
