@@ -64,7 +64,7 @@ export class OrdersController {
   // ── GET /api/ordenes — Listar órdenes (protegido por API key del panel admin) ──
   @Get()
   async getAllOrders(@Headers('x-admin-key') adminKey: string) {
-    if (adminKey !== process.env.ADMIN_API_KEY) {
+    if (!process.env.ADMIN_API_KEY || adminKey !== process.env.ADMIN_API_KEY) {
       throw new UnauthorizedException('Clave de administrador inválida.');
     }
     return this.ordersService.getAllOrders();
@@ -77,7 +77,7 @@ export class OrdersController {
     @Body('estado') estado: string,
     @Headers('x-admin-key') adminKey: string,
   ) {
-    if (adminKey !== process.env.ADMIN_API_KEY) {
+    if (!process.env.ADMIN_API_KEY || adminKey !== process.env.ADMIN_API_KEY) {
       throw new UnauthorizedException('Clave de administrador inválida.');
     }
     if (!['PAGADA', 'RECHAZADA'].includes(estado)) {

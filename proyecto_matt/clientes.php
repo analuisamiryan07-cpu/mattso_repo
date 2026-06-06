@@ -585,7 +585,7 @@ else: ?>
                             <td>
                                 <div class="actions">
                                     <button class="btn-icon"
-                                        onclick="abrirModal(<?= htmlspecialchars(json_encode($r['archivos']))?>, '<?= addslashes($r['carpeta'])?>')">
+                                        onclick="abrirModal(<?= htmlspecialchars(json_encode($r['archivos']))?>, '<?= htmlspecialchars(addslashes($r['carpeta']), ENT_QUOTES, 'UTF-8')?>')">
                                         <svg width="13" height="13" viewBox="0 0 24 24">
                                             <path
                                                 d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8a3 3 0 100 6 3 3 0 000-6z" />
