@@ -1,11 +1,11 @@
 <?php
 // includes/db.php
 
-$host = 'localhost';
-$port = '5432';
-$dbname = 'matssoecuador';
-$user = 'postgres';
-$password = '123qwe';
+$host = getenv('DB_HOST') ?: 'localhost';
+$port = getenv('DB_PORT') ?: '5432';
+$dbname = getenv('DB_NAME') ?: 'matssoecuador';
+$user = getenv('DB_USER') ?: 'postgres';
+$password = getenv('DB_PASSWORD') ?: '123qwe';
 
 try {
     $dsn = "pgsql:host=$host;port=$port;dbname=$dbname";
@@ -15,5 +15,5 @@ try {
         PDO::ATTR_EMULATE_PREPARES => false,
     ]);
 } catch (PDOException $e) {
-    die("Error de conexión a la base de datos: " . $e->getMessage());
+    die("Error de conexión a la base de datos. Por seguridad, no se revelan detalles técnicos.");
 }

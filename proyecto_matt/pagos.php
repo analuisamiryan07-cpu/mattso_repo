@@ -66,6 +66,41 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         );
         if ($res['code'] === 200) {
             $accionMsg = $res['data']['mensaje'] ?? 'Estado actualizado.';
+            
+            // Sincronización automática de datos de cliente a la base de datos local
+            if ($accion === 'PAGADA' && !empty($res['data']['cliente'])) {
+                require_once __DIR__ . '/includes/db.php';
+                $c = $res['data']['cliente'];
+                try {
+                    $stmt = $pdo->prepare("INSERT INTO public.clientes 
+                        (nombre, cedula, correo, telefono, direccion, fecha, ciudad, lugar, esquema, tipo_examen, created_at, updated_at)
+                        VALUES (:nombre, :cedula, :correo, :telefono, :direccion, CURRENT_DATE, :ciudad, :lugar, :esquema, :tipo_examen, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+                        ON CONFLICT (cedula) DO UPDATE SET
+                            nombre = EXCLUDED.nombre,
+                            correo = EXCLUDED.correo,
+                            telefono = EXCLUDED.telefono,
+                            direccion = EXCLUDED.direccion,
+                            ciudad = EXCLUDED.ciudad,
+                            lugar = EXCLUDED.lugar,
+                            esquema = EXCLUDED.esquema,
+                            tipo_examen = EXCLUDED.tipo_examen,
+                            updated_at = CURRENT_TIMESTAMP");
+                    $stmt->execute([
+                        ':nombre'      => $c['nombre'],
+                        ':cedula'      => $c['cedula'],
+                        ':correo'      => $c['correo'] ?: null,
+                        ':telefono'    => $c['telefono'] ?: null,
+                        ':direccion'   => $c['direccion'] ?: null,
+                        ':ciudad'      => $c['ciudad'] ?: null,
+                        ':lugar'       => $c['lugar'] ?: null,
+                        ':esquema'     => $c['esquema'] ?: null,
+                        ':tipo_examen' => $c['tipo_examen'] ?: null,
+                    ]);
+                    $accionMsg .= ' Cliente sincronizado localmente con éxito.';
+                } catch (PDOException $ex) {
+                    $accionErr = 'Pago aprobado, pero falló la sincronización local: ' . $ex->getMessage();
+                }
+            }
         } else {
             $accionErr = 'Error al actualizar la orden. Código: ' . $res['code'];
         }
