@@ -126,12 +126,32 @@ export class OrdersService {
     const updated = await this.prisma.orden.update({
       where: { id: BigInt(id) },
       data: { estado },
+      include: {
+        usuario: {
+          include: {
+            cliente: true,
+          },
+        },
+      },
     });
 
     return {
       id: Number(updated.id),
       estado: updated.estado,
       mensaje: estado === 'PAGADA' ? 'Pago aprobado con éxito.' : 'Orden rechazada.',
+      cliente: updated.usuario.cliente
+        ? {
+            nombre: updated.usuario.cliente.nombre,
+            cedula: updated.usuario.cliente.cedula,
+            correo: updated.usuario.cliente.correo,
+            telefono: updated.usuario.cliente.telefono,
+            direccion: updated.usuario.cliente.direccion,
+            ciudad: updated.usuario.cliente.ciudad,
+            lugar: updated.usuario.cliente.lugar,
+            esquema: updated.usuario.cliente.esquema,
+            tipo_examen: updated.usuario.cliente.tipo_examen,
+          }
+        : null,
     };
   }
 }
