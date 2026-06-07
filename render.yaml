@@ -1,0 +1,32 @@
+# render.yaml — Configuración de despliegue automático en Render.com
+# Commit este archivo en la raíz del repo. Render lo detecta automáticamente.
+
+services:
+  - type: web
+    name: matsso-backend
+    runtime: docker
+    dockerfilePath: ./backend-matsso/Dockerfile
+    dockerContext: ./backend-matsso
+    plan: free              # Cambiar a "starter" o superior en producción real
+    region: oregon          # Elegir la región más cercana a Ecuador: oregon o frankfurt
+    branch: main
+    healthCheckPath: /api/health
+
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3000
+      - key: DATABASE_URL
+        sync: false         # Se configura manualmente en el dashboard de Render
+      - key: JWT_SECRET
+        generateValue: true # Render genera un valor aleatorio automáticamente
+      - key: ADMIN_API_KEY
+        sync: false         # Se configura manualmente
+      - key: FRONTEND_URL
+        sync: false         # URL de Vercel una vez desplegado el frontend
+
+    disk:
+      name: uploads
+      mountPath: /app/uploads
+      sizeGB: 1

@@ -39,8 +39,30 @@ npm-debug.log*
 backend-matsso/dist/
 backend-matsso/node_modules/
 backend-matsso/.env
-backend-matsso/.env.*
+backend-matsso/.env.local
+backend-matsso/.env.*.local
+!backend-matsso/.env.example
 
 # PHP Vendor
 proyecto_matt/vendor/
+
+# PHP env files
+proyecto_matt/.env
+proyecto_matt/.env.local
+
+# Archivos generados por el módulo de documentos (no deben ir a Git)
+proyecto_matt/generados/
+proyecto_matt/test_clean.txt
+proyecto_matt/test_xml.txt
+
+# Comprobantes de pago subidos al backend
+backend-matsso/uploads/
+
+# Scan reports SAST (archivos de auditoría locales)
+*.pdf
+scan*.manifest
+scan*.json
+SASTAgent_*.log
+analyzer_*.log
+report_text.txt
 
