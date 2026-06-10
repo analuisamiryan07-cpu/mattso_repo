@@ -21,7 +21,7 @@ WORKDIR /app
 
 ENV NODE_ENV=production
 
-# Solo instalar dependencias de producción
+# Solo instalar dependencias de producción (incluye prisma CLI ahora en dependencies)
 COPY package*.json ./
 COPY prisma ./prisma/
 RUN npm ci --only=production && npm cache clean --force
@@ -35,5 +35,5 @@ RUN mkdir -p uploads
 
 EXPOSE 3000
 
-# Ejecutar migraciones y luego iniciar la app
-CMD ["node", "dist/main.js"]
+# Sincronizar esquema con la BD y luego iniciar la app
+CMD ["sh", "-c", "node_modules/.bin/prisma db push --skip-generate --accept-data-loss && node dist/main.js"]

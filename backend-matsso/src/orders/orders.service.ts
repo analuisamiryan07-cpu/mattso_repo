@@ -1,5 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import * as bcrypt from 'bcrypt';
+import { randomBytes } from 'crypto';
 
 @Injectable()
 export class OrdersService {
@@ -39,10 +41,12 @@ export class OrdersService {
       let userWeb = await tx.usuarioWeb.findUnique({ where: { correo: cliente.email } });
 
       if (!userWeb) {
+        const tempPassword = randomBytes(16).toString('hex');
+        const passwordHash = await bcrypt.hash(tempPassword, 10);
         userWeb = await tx.usuarioWeb.create({
           data: {
             correo: cliente.email,
-            password_hash: '$2b$10$dummyhashplaceholderforcheckout',
+            password_hash: passwordHash,
             cliente_id: dbCliente.id,
             rol: 'ESTUDIANTE',
           },

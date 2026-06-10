@@ -12,8 +12,9 @@ if (!isset($_SESSION['usuario'])) {
     exit;
 }
 
+require_once __DIR__ . '/includes/bootstrap.php';
+
 // ── Configuración ────────────────────────────────────────────────────────────
-// Ajusta estas dos variables a tu entorno de producción
 $BACKEND_URL = getenv('BACKEND_URL') ?: 'http://localhost:3000';
 if (!filter_var($BACKEND_URL, FILTER_VALIDATE_URL)) {
     $BACKEND_URL = 'http://localhost:3000';

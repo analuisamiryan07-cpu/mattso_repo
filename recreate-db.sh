@@ -28,10 +28,7 @@ sudo docker exec -i mi-postgres-local psql -U postgres -d matssoecuador < "./db_
 echo "🔍 Creando índices y vistas (04_indices_vistas_datos.sql)..."
 sudo docker exec -i mi-postgres-local psql -U postgres -d matssoecuador < "./db_scripts/04_indices_vistas_datos.sql"
 
-echo "🔐 Inicializando tablas de PHP Backoffice (setup.sql)..."
-sudo docker exec -i mi-postgres-local psql -U postgres -d matssoecuador < "/home/andres/Documentos/proyecto_matt/setup.sql"
-
-echo "👤 Inicializando administradores locales (05_setup_local_admin.sql)..."
+echo "🔐 Inicializando tablas de PHP Backoffice (05_setup_local_admin.sql)..."
 sudo docker exec -i mi-postgres-local psql -U postgres -d matssoecuador < "./db_scripts/05_setup_local_admin.sql"
 
 echo "🎉 ¡Base de datos recreada, inicializada y poblada al 100% con éxito!"

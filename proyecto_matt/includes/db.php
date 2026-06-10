@@ -1,5 +1,6 @@
 <?php
 // includes/db.php
+require_once __DIR__ . '/bootstrap.php';
 
 $host = getenv('DB_HOST') ?: 'localhost';
 $port = getenv('DB_PORT') ?: '5432';
