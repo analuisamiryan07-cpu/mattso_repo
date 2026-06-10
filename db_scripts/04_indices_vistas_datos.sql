@@ -47,6 +47,7 @@ BEGIN
 END;
 $$ language 'plpgsql';
 
+DROP TRIGGER IF EXISTS trg_update_cliente_modtime ON public.clientes;
 CREATE TRIGGER trg_update_cliente_modtime
     BEFORE UPDATE ON public.clientes
     FOR EACH ROW
