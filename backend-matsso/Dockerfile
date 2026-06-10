@@ -3,6 +3,8 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 
+RUN apk add --no-cache openssl
+
 # Instalar dependencias primero (aprovecha el cache de Docker)
 COPY package*.json ./
 COPY prisma ./prisma/
@@ -18,6 +20,8 @@ RUN npm run build
 FROM node:20-alpine AS production
 
 WORKDIR /app
+
+RUN apk add --no-cache openssl
 
 ENV NODE_ENV=production
 
@@ -35,5 +39,4 @@ RUN mkdir -p uploads
 
 EXPOSE 3000
 
-# Sincronizar esquema con la BD y luego iniciar la app
-CMD ["sh", "-c", "node_modules/.bin/prisma db push --skip-generate --accept-data-loss && node dist/main.js"]
+CMD ["node", "dist/main.js"]
