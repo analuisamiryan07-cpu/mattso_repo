@@ -1,8 +1,9 @@
-import React, { useRef, useState } from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useCart } from '@context/CartContext';
 import { useToast } from '@context/ToastContext';
 import { cursosService } from '@api/cursosService';
+import { authService } from '@api/authService';
 import './Carrito.css';
 
 const Carrito = () => {
@@ -10,8 +11,15 @@ const Carrito = () => {
   const { addToast } = useToast();
   const navigate = useNavigate();
 
-  // Formulario controlado con useState (sin document.getElementById)
-  const [form, setForm] = useState({ nombre: '', cedula: '', email: '', celular: '' });
+  const isLoggedIn = authService.isAuthenticated();
+  const currentUser = authService.getCurrentUser();
+
+  const [form, setForm] = useState({
+    nombre:  currentUser?.nombre  || '',
+    cedula:  currentUser?.cedula  || '',
+    email:   currentUser?.correo  || '',
+    celular: currentUser?.telefono || '',
+  });
   const [comprobanteFile, setComprobanteFile] = useState(null);
   const [formErrors, setFormErrors] = useState({});
   const [loading, setLoading] = useState(false);
@@ -20,7 +28,6 @@ const Carrito = () => {
   const subtotal = getCartTotal();
   const iva = subtotal * TASA_IVA;
   const total = subtotal + iva;
-
   const fmt = (n) => `$${n.toFixed(2)}`;
 
   const handleChange = (e) => {
@@ -75,13 +82,13 @@ const Carrito = () => {
           nombre: form.nombre,
           cedula: form.cedula,
           email: form.email,
-          celular: form.celular
+          celular: form.celular,
         },
         items: cartItems.map(item => ({
           id: Number(item.id),
           cantidad: item.cantidad,
-          precio: Number(item.precio)
-        }))
+          precio: Number(item.precio),
+        })),
       };
       await cursosService.crearOrden(orderData, comprobanteFile);
       addToast(`¡Gracias ${form.nombre}! Tu pedido ha sido registrado y está en verificación.`, 'success');
@@ -89,7 +96,10 @@ const Carrito = () => {
       navigate('/');
     } catch (err) {
       console.error('Error procesando orden:', err);
-      addToast('Ocurrió un error al procesar tu pedido. Inténtalo de nuevo.', 'error');
+      const msg = err.code === 'ECONNABORTED'
+        ? 'El servidor está iniciando, por favor intenta de nuevo en unos segundos.'
+        : 'Ocurrió un error al procesar tu pedido. Inténtalo de nuevo.';
+      addToast(msg, 'error');
     } finally {
       setLoading(false);
     }
@@ -119,7 +129,7 @@ const Carrito = () => {
               <div className="carrito-empty">
                 <i className="fa-solid fa-basket-shopping" />
                 <p>Tu carrito está vacío</p>
-                <Link to="/capacitaciones" className="btn-primary">Ver cursos</Link>
+                <Link to="/certificaciones" className="btn-primary">Ver certificaciones</Link>
               </div>
             ) : (
               cartItems.map((item) => (
@@ -156,122 +166,153 @@ const Carrito = () => {
             )}
           </div>
 
-          {/* FORMULARIO DE CHECKOUT Y PAGO */}
+          {/* SECCIÓN DE CHECKOUT */}
           {cartItems.length > 0 && (
-            <form className="facturacion-form" onSubmit={handleSubmit} noValidate>
-              <div className="form-section">
-                <h3>Datos de Facturación</h3>
-                <div className="form-row">
-                  <div className="form-group">
-                    <label>Nombres Completos</label>
-                    <input
-                      type="text" name="nombre" value={form.nombre}
-                      onChange={handleChange} placeholder="Ej: Juan Pérez"
-                    />
-                    {formErrors.nombre && <span className="form-error">{formErrors.nombre}</span>}
-                  </div>
-                  <div className="form-group">
-                    <label>Cédula o RUC</label>
-                    <input
-                      type="text" name="cedula" value={form.cedula}
-                      onChange={handleChange} placeholder="Ej: 1712345678"
-                    />
-                    {formErrors.cedula && <span className="form-error">{formErrors.cedula}</span>}
-                  </div>
-                </div>
-                <div className="form-row">
-                  <div className="form-group">
-                    <label>Correo Electrónico</label>
-                    <input
-                      type="email" name="email" value={form.email}
-                      onChange={handleChange} placeholder="Ej: juan@email.com"
-                    />
-                    {formErrors.email && <span className="form-error">{formErrors.email}</span>}
-                  </div>
-                  <div className="form-group">
-                    <label>Celular</label>
-                    <input
-                      type="tel" name="celular" value={form.celular}
-                      onChange={handleChange} placeholder="Ej: 0991234567"
-                    />
-                    {formErrors.celular && <span className="form-error">{formErrors.celular}</span>}
-                  </div>
+            !isLoggedIn ? (
+              /* ── Bloqueo de login ── */
+              <div className="login-required-box">
+                <i className="fa-solid fa-lock" />
+                <h3>Inicia sesión para continuar</h3>
+                <p>Necesitas una cuenta para completar tu compra. Es rápido y gratuito.</p>
+                <div className="login-required-actions">
+                  <Link
+                    to="/login"
+                    state={{ from: '/carrito' }}
+                    className="btn-primary"
+                  >
+                    <i className="fa-regular fa-user" /> Iniciar Sesión
+                  </Link>
+                  <Link
+                    to="/login"
+                    state={{ from: '/carrito', tab: 'register' }}
+                    className="btn-secondary"
+                  >
+                    Crear Cuenta
+                  </Link>
                 </div>
               </div>
-
-              <div className="form-section payment-method-section">
-                <h3>Método de Pago</h3>
-                <div className="payment-options">
-                  <div className="payment-option active">
-                    <div className="payment-option__radio">
-                      <input type="radio" checked readOnly />
-                      <label>Deuna / Transferencia Bancaria Directa</label>
+            ) : (
+              /* ── Formulario de checkout ── */
+              <form className="facturacion-form" onSubmit={handleSubmit} noValidate>
+                <div className="form-section">
+                  <h3>Datos de Facturación</h3>
+                  {currentUser && (
+                    <p className="logged-as-note">
+                      <i className="fa-solid fa-circle-check" style={{ color: '#16a34a', marginRight: 6 }} />
+                      Comprando como <strong>{currentUser.nombre}</strong> — <span style={{ color: '#6b7280' }}>{currentUser.correo}</span>
+                    </p>
+                  )}
+                  <div className="form-row">
+                    <div className="form-group">
+                      <label>Nombres Completos</label>
+                      <input
+                        type="text" name="nombre" value={form.nombre}
+                        onChange={handleChange} placeholder="Ej: Juan Pérez"
+                      />
+                      {formErrors.nombre && <span className="form-error">{formErrors.nombre}</span>}
                     </div>
-                    <span className="payment-option__badge">Recomendado</span>
+                    <div className="form-group">
+                      <label>Cédula o RUC</label>
+                      <input
+                        type="text" name="cedula" value={form.cedula}
+                        onChange={handleChange} placeholder="Ej: 1712345678"
+                      />
+                      {formErrors.cedula && <span className="form-error">{formErrors.cedula}</span>}
+                    </div>
+                  </div>
+                  <div className="form-row">
+                    <div className="form-group">
+                      <label>Correo Electrónico</label>
+                      <input
+                        type="email" name="email" value={form.email}
+                        onChange={handleChange} placeholder="Ej: juan@email.com"
+                      />
+                      {formErrors.email && <span className="form-error">{formErrors.email}</span>}
+                    </div>
+                    <div className="form-group">
+                      <label>Celular</label>
+                      <input
+                        type="tel" name="celular" value={form.celular}
+                        onChange={handleChange} placeholder="Ej: 0991234567"
+                      />
+                      {formErrors.celular && <span className="form-error">{formErrors.celular}</span>}
+                    </div>
                   </div>
                 </div>
 
-                <div className="payment-instructions">
-                  <div className="payment-instructions__grid">
-                    <div className="payment-qr-container">
-                      <img src="/qr_deuna.png" alt="Deuna QR Code" className="payment-qr-image" />
-                      <span className="payment-qr-caption">Escanea con Deuna o Pichincha Banca Móvil</span>
+                <div className="form-section payment-method-section">
+                  <h3>Método de Pago</h3>
+                  <div className="payment-options">
+                    <div className="payment-option active">
+                      <div className="payment-option__radio">
+                        <input type="radio" checked readOnly />
+                        <label>Deuna / Transferencia Bancaria Directa</label>
+                      </div>
+                      <span className="payment-option__badge">Recomendado</span>
                     </div>
-                    <div className="payment-details-container">
-                      <h4>Detalles de la cuenta:</h4>
-                      <ul className="bank-details-list">
-                        <li><strong>Banco:</strong> Banco Pichincha</li>
-                        <li><strong>Tipo de Cuenta:</strong> Ahorros</li>
-                        <li><strong>Número de Cuenta:</strong> 2201234567</li>
-                        <li><strong>Titular:</strong> MATSSO ECUADOR S.A.S.</li>
-                        <li><strong>RUC:</strong> 1793084729001</li>
-                        <li><strong>Correo:</strong> pagos@campusmatsso.com</li>
-                      </ul>
-                      <div className="payment-alert">
-                        <i className="fa-solid fa-circle-info" />
-                        <span>Transfiere el valor exacto de <strong>{fmt(total)}</strong> y sube una foto o captura del comprobante a continuación.</span>
+                  </div>
+
+                  <div className="payment-instructions">
+                    <div className="payment-instructions__grid">
+                      <div className="payment-qr-container">
+                        <img src="/qr_deuna.png" alt="Deuna QR Code" className="payment-qr-image" />
+                        <span className="payment-qr-caption">Escanea con Deuna o Pichincha Banca Móvil</span>
+                      </div>
+                      <div className="payment-details-container">
+                        <h4>Detalles de la cuenta:</h4>
+                        <ul className="bank-details-list">
+                          <li><strong>Banco:</strong> Banco Pichincha</li>
+                          <li><strong>Tipo de Cuenta:</strong> Ahorros</li>
+                          <li><strong>Número de Cuenta:</strong> 2201234567</li>
+                          <li><strong>Titular:</strong> MATSSO ECUADOR S.A.S.</li>
+                          <li><strong>RUC:</strong> 1793084729001</li>
+                          <li><strong>Correo:</strong> pagos@campusmatsso.com</li>
+                        </ul>
+                        <div className="payment-alert">
+                          <i className="fa-solid fa-circle-info" />
+                          <span>Transfiere el valor exacto de <strong>{fmt(total)}</strong> y sube una foto o captura del comprobante a continuación.</span>
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
 
-                <div className="comprobante-upload-group form-group">
-                  <label>Comprobante de Pago (Captura o PDF)</label>
-                  <div className={`file-upload-wrapper ${comprobanteFile ? 'has-file' : ''}`}>
-                    <input
-                      type="file"
-                      id="comprobante-input"
-                      accept="image/*,.pdf"
-                      onChange={handleFileChange}
-                      style={{ display: 'none' }}
-                    />
-                    <label htmlFor="comprobante-input" className="file-upload-trigger">
-                      {comprobanteFile ? (
-                        <div className="file-upload-trigger-content">
-                          <i className="fa-solid fa-file-circle-check" />
-                          <div className="file-info">
-                            <span className="file-name">{comprobanteFile.name}</span>
-                            <span className="file-size">{(comprobanteFile.size / 1024 / 1024).toFixed(2)} MB</span>
+                  <div className="comprobante-upload-group form-group">
+                    <label>Comprobante de Pago (Captura o PDF)</label>
+                    <div className={`file-upload-wrapper ${comprobanteFile ? 'has-file' : ''}`}>
+                      <input
+                        type="file"
+                        id="comprobante-input"
+                        accept="image/*,.pdf"
+                        onChange={handleFileChange}
+                        style={{ display: 'none' }}
+                      />
+                      <label htmlFor="comprobante-input" className="file-upload-trigger">
+                        {comprobanteFile ? (
+                          <div className="file-upload-trigger-content">
+                            <i className="fa-solid fa-file-circle-check" />
+                            <div className="file-info">
+                              <span className="file-name">{comprobanteFile.name}</span>
+                              <span className="file-size">{(comprobanteFile.size / 1024 / 1024).toFixed(2)} MB</span>
+                            </div>
+                            <button type="button" className="btn-remove-file" onClick={handleRemoveFile} title="Eliminar comprobante">
+                              <i className="fa-solid fa-xmark" />
+                            </button>
                           </div>
-                          <button type="button" className="btn-remove-file" onClick={handleRemoveFile} title="Eliminar comprobante">
-                            <i className="fa-solid fa-xmark" />
-                          </button>
-                        </div>
-                      ) : (
-                        <div className="file-upload-trigger-content">
-                          <i className="fa-solid fa-cloud-arrow-up" />
-                          <span>Seleccionar comprobante (PNG, JPG, PDF - Máx. 5MB)</span>
-                        </div>
-                      )}
-                    </label>
+                        ) : (
+                          <div className="file-upload-trigger-content">
+                            <i className="fa-solid fa-cloud-arrow-up" />
+                            <span>Seleccionar comprobante (PNG, JPG, PDF - Máx. 5MB)</span>
+                          </div>
+                        )}
+                      </label>
+                    </div>
+                    {formErrors.comprobante && <span className="form-error">{formErrors.comprobante}</span>}
                   </div>
-                  {formErrors.comprobante && <span className="form-error">{formErrors.comprobante}</span>}
                 </div>
-              </div>
 
-              {/* Botón de submit oculto — se activa desde el panel derecho */}
-              <button type="submit" id="submit-carrito" style={{ display: 'none' }} />
-            </form>
+                <button type="submit" id="submit-carrito" style={{ display: 'none' }} />
+              </form>
+            )
           )}
         </div>
 
@@ -286,15 +327,21 @@ const Carrito = () => {
               <span>Subtotal <b>{fmt(subtotal)}</b></span>
               <span>IVA 15% <b>{fmt(iva)}</b></span>
             </div>
-            <button
-              className="btn-primary btn-checkout"
-              disabled={cartItems.length === 0 || loading}
-              onClick={() => document.getElementById('submit-carrito').click()}
-            >
-              {loading ? 'Procesando...' : (<>Continuar <i className="fa-solid fa-arrow-right" /></>)}
-            </button>
-            <Link to="/capacitaciones" className="btn-secondary btn-mas-cursos">
-              <i className="fa-solid fa-magnifying-glass" /> Ver más cursos
+            {isLoggedIn ? (
+              <button
+                className="btn-primary btn-checkout"
+                disabled={cartItems.length === 0 || loading}
+                onClick={() => document.getElementById('submit-carrito').click()}
+              >
+                {loading ? 'Procesando...' : (<>Continuar <i className="fa-solid fa-arrow-right" /></>)}
+              </button>
+            ) : (
+              <Link to="/login" state={{ from: '/carrito' }} className="btn-primary btn-checkout" style={{ textAlign: 'center' }}>
+                <i className="fa-regular fa-user" /> Iniciar Sesión
+              </Link>
+            )}
+            <Link to="/certificaciones" className="btn-secondary btn-mas-cursos">
+              <i className="fa-solid fa-magnifying-glass" /> Ver más certificaciones
             </Link>
           </div>
         </div>

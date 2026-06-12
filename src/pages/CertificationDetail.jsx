@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { useCart } from '@context/CartContext';
 import { useToast } from '@context/ToastContext';
 import { cursosService } from '@api/cursosService';
+import { certificacionesMock } from '@data/certificaciones';
 import './CertificationDetail.css';
 
 const CertificationDetail = () => {
@@ -10,34 +11,20 @@ const CertificationDetail = () => {
   const { addToCart } = useCart();
   const { addToast } = useToast();
 
-  const [cert, setCert] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [cert, setCert] = useState(() => certificacionesMock.find((c) => c.slug === slug) || null);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // Formulario de contacto asesor
   const [contactoForm, setContactoForm] = useState({ nombre: '', email: '', telefono: '' });
   const [sendingContacto, setSendingContacto] = useState(false);
 
-  const fetchCertDetail = async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const data = await cursosService.getCertificacionBySlug(slug);
-      if (data) {
-        setCert(data);
-      } else {
-        throw new Error('Certificación no encontrada en la base de datos.');
-      }
-    } catch (err) {
-      console.error('Error fetching certification detail:', err);
-      setError('No se pudo cargar la información de la certificación.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
-    fetchCertDetail();
+    const found = certificacionesMock.find((c) => c.slug === slug);
+    if (found) {
+      setCert(found);
+    } else {
+      setError('Certificación no encontrada.');
+    }
   }, [slug]);
 
   const handleAddToCart = () => {
@@ -67,15 +54,6 @@ const CertificationDetail = () => {
     }
   };
 
-  if (loading) {
-    return (
-      <div style={{ textAlign: 'center', padding: '120px 20px', minHeight: '60vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '16px' }}>
-        <div className="spinner" style={{ width: '50px', height: '50px', border: '4px solid rgba(0,33,71,0.1)', borderLeftColor: 'var(--primary-blue)', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></div>
-        <p style={{ color: 'var(--text-muted)' }}>Cargando información de la certificación...</p>
-      </div>
-    );
-  }
-
   if (error || !cert) {
     return (
       <div style={{ textAlign: 'center', padding: '100px 20px', minHeight: '50vh' }}>
@@ -83,14 +61,9 @@ const CertificationDetail = () => {
         <p style={{ color: '#6b7280', marginTop: '10px' }}>
           {error || `No existe una certificación con el identificador "${slug}".`}
         </p>
-        <div style={{ marginTop: '24px', display: 'flex', gap: '12px', justifyContent: 'center' }}>
-          <button onClick={fetchCertDetail} className="retry-btn" style={{ padding: '8px 20px', background: 'var(--primary-blue)', color: 'white', border: 'none', borderRadius: '4px', fontWeight: 600, cursor: 'pointer' }}>
-            Reintentar
-          </button>
-          <Link to="/certificaciones" style={{ padding: '8px 20px', border: '1px solid var(--border-color)', borderRadius: '4px', color: 'var(--text-dark)', fontWeight: 600, textDecoration: 'none' }}>
-            Ver todas
-          </Link>
-        </div>
+        <Link to="/certificaciones" style={{ display: 'inline-block', marginTop: '24px', padding: '8px 20px', border: '1px solid var(--border-color)', borderRadius: '4px', color: 'var(--text-dark)', fontWeight: 600, textDecoration: 'none' }}>
+          Ver todas las certificaciones
+        </Link>
       </div>
     );
   }

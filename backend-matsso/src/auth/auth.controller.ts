@@ -12,6 +12,9 @@ class RegisterDto {
   correo: string;
   password: string;
   cedula?: string;
+  telefono?: string;
+  ciudad?: string;
+  direccion?: string;
 }
 
 @Controller('api/auth')

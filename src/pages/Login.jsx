@@ -13,7 +13,10 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
 
   const [loginForm, setLoginForm] = useState({ email: '', password: '' });
-  const [registerForm, setRegisterForm] = useState({ nombre: '', email: '', password: '', confirm: '' });
+  const [registerForm, setRegisterForm] = useState({
+    nombre: '', cedula: '', email: '', telefono: '',
+    ciudad: '', direccion: '', password: '', confirm: '',
+  });
   const [errors, setErrors] = useState({});
 
   const handleLoginChange = (e) =>
@@ -45,8 +48,10 @@ const Login = () => {
   const handleRegister = async (e) => {
     e.preventDefault();
     const errs = {};
-    if (!registerForm.nombre) errs.nombre = 'Campo requerido';
-    if (!registerForm.email) errs.email = 'Campo requerido';
+    if (!registerForm.nombre)   errs.nombre   = 'Campo requerido';
+    if (!registerForm.cedula)   errs.cedula   = 'Campo requerido';
+    if (!registerForm.email)    errs.email    = 'Campo requerido';
+    if (!registerForm.telefono) errs.telefono = 'Campo requerido';
     if (!registerForm.password || registerForm.password.length < 6)
       errs.password = 'Mínimo 6 caracteres';
     if (registerForm.password !== registerForm.confirm)
@@ -55,7 +60,15 @@ const Login = () => {
 
     setLoading(true);
     try {
-      await authService.register(registerForm.nombre, registerForm.email, registerForm.password);
+      await authService.register(
+        registerForm.nombre,
+        registerForm.email,
+        registerForm.password,
+        registerForm.cedula,
+        registerForm.telefono,
+        registerForm.ciudad,
+        registerForm.direccion,
+      );
       addToast('¡Cuenta creada! Bienvenido a Campus Matsso.', 'success');
       navigate('/');
     } catch (err) {
@@ -122,37 +135,79 @@ const Login = () => {
         {tab === 'register' && (
           <form className="login-form" onSubmit={handleRegister} noValidate>
             <div className="lf-group">
-              <label>Nombre completo</label>
+              <label>Nombres Completos <span className="lf-req">*</span></label>
               <input
                 type="text" name="nombre" value={registerForm.nombre}
-                onChange={handleRegisterChange} placeholder="Juan Pérez"
+                onChange={handleRegisterChange} placeholder="Ej: Juan Carlos Pérez"
               />
               {errors.nombre && <span className="lf-error">{errors.nombre}</span>}
             </div>
+
+            <div className="lf-row">
+              <div className="lf-group">
+                <label>Cédula de Identidad <span className="lf-req">*</span></label>
+                <input
+                  type="text" name="cedula" value={registerForm.cedula}
+                  onChange={handleRegisterChange} placeholder="Ej: 1712345678"
+                  maxLength={13}
+                />
+                {errors.cedula && <span className="lf-error">{errors.cedula}</span>}
+              </div>
+              <div className="lf-group">
+                <label>Teléfono / Celular <span className="lf-req">*</span></label>
+                <input
+                  type="tel" name="telefono" value={registerForm.telefono}
+                  onChange={handleRegisterChange} placeholder="Ej: 0991234567"
+                />
+                {errors.telefono && <span className="lf-error">{errors.telefono}</span>}
+              </div>
+            </div>
+
             <div className="lf-group">
-              <label>Correo Electrónico</label>
+              <label>Correo Electrónico <span className="lf-req">*</span></label>
               <input
                 type="email" name="email" value={registerForm.email}
                 onChange={handleRegisterChange} placeholder="tucorreo@ejemplo.com"
               />
               {errors.email && <span className="lf-error">{errors.email}</span>}
             </div>
-            <div className="lf-group">
-              <label>Contraseña</label>
-              <input
-                type="password" name="password" value={registerForm.password}
-                onChange={handleRegisterChange} placeholder="Mínimo 6 caracteres"
-              />
-              {errors.password && <span className="lf-error">{errors.password}</span>}
+
+            <div className="lf-row">
+              <div className="lf-group">
+                <label>Ciudad</label>
+                <input
+                  type="text" name="ciudad" value={registerForm.ciudad}
+                  onChange={handleRegisterChange} placeholder="Ej: Quito"
+                />
+              </div>
+              <div className="lf-group">
+                <label>Dirección</label>
+                <input
+                  type="text" name="direccion" value={registerForm.direccion}
+                  onChange={handleRegisterChange} placeholder="Ej: Av. Principal 123"
+                />
+              </div>
             </div>
-            <div className="lf-group">
-              <label>Confirmar Contraseña</label>
-              <input
-                type="password" name="confirm" value={registerForm.confirm}
-                onChange={handleRegisterChange} placeholder="Repite tu contraseña"
-              />
-              {errors.confirm && <span className="lf-error">{errors.confirm}</span>}
+
+            <div className="lf-row">
+              <div className="lf-group">
+                <label>Contraseña <span className="lf-req">*</span></label>
+                <input
+                  type="password" name="password" value={registerForm.password}
+                  onChange={handleRegisterChange} placeholder="Mínimo 6 caracteres"
+                />
+                {errors.password && <span className="lf-error">{errors.password}</span>}
+              </div>
+              <div className="lf-group">
+                <label>Confirmar Contraseña <span className="lf-req">*</span></label>
+                <input
+                  type="password" name="confirm" value={registerForm.confirm}
+                  onChange={handleRegisterChange} placeholder="Repite tu contraseña"
+                />
+                {errors.confirm && <span className="lf-error">{errors.confirm}</span>}
+              </div>
             </div>
+
             <button type="submit" className="login-submit" disabled={loading}>
               {loading ? 'Creando cuenta...' : 'Crear Cuenta'}
             </button>

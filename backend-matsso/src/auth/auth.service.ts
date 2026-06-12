@@ -47,11 +47,14 @@ export class AuthService {
         correo: user.correo,
         nombre: user.cliente?.nombre || 'Usuario',
         rol: user.rol,
+        cedula: user.cliente?.cedula || null,
+        telefono: user.cliente?.telefono || null,
+        ciudad: user.cliente?.ciudad || null,
       },
     };
   }
 
-  async register(data: { nombre: string; correo: string; password: string; cedula?: string }) {
+  async register(data: { nombre: string; correo: string; password: string; cedula?: string; telefono?: string; ciudad?: string; direccion?: string }) {
     const existing = await this.prisma.usuarioWeb.findUnique({
       where: { correo: data.correo },
     });
@@ -79,6 +82,9 @@ export class AuthService {
             nombre: data.nombre,
             cedula: data.cedula || `WEB-${Date.now()}`,
             correo: data.correo,
+            telefono: data.telefono || null,
+            ciudad: data.ciudad || null,
+            direccion: data.direccion || null,
             fecha: new Date(),
             created_at: new Date(),
             updated_at: new Date(),
@@ -113,6 +119,9 @@ export class AuthService {
         correo: result.usuarioWeb.correo,
         nombre: result.cliente.nombre,
         rol: result.usuarioWeb.rol,
+        cedula: result.cliente.cedula || null,
+        telefono: result.cliente.telefono || null,
+        ciudad: result.cliente.ciudad || null,
       },
     };
   }

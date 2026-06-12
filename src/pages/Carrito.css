@@ -606,3 +606,43 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* ── Login required block ─────────────────────────────── */
+.login-required-box {
+  background: #f0f4ff;
+  border: 1.5px solid #c7d7f8;
+  border-radius: 12px;
+  padding: 36px 28px;
+  text-align: center;
+  margin-top: 24px;
+}
+.login-required-box i {
+  font-size: 2.2rem;
+  color: var(--primary-blue);
+  margin-bottom: 12px;
+}
+.login-required-box h3 {
+  font-size: 1.2rem;
+  color: var(--text-dark);
+  margin-bottom: 8px;
+}
+.login-required-box p {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  margin-bottom: 20px;
+}
+.login-required-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.logged-as-note {
+  font-size: 0.85rem;
+  color: #374151;
+  margin-bottom: 16px;
+  padding: 8px 12px;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: 8px;
+}

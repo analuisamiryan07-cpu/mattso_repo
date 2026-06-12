@@ -60,7 +60,6 @@ const Header = () => {
           <ul className="nav-list">
             {/* Rutas (Links) hacia las diferentes páginas. onClick cierra el menú en móviles. */}
             <li><Link to="/" onClick={() => setIsMenuOpen(false)}>Inicio</Link></li>
-            <li><Link to="/capacitaciones" onClick={() => setIsMenuOpen(false)}>Capacitaciones</Link></li>
             <li><Link to="/certificaciones" onClick={() => setIsMenuOpen(false)}>Certificaciones</Link></li>
             <li><Link to="/contacto" onClick={() => setIsMenuOpen(false)}>Contacto</Link></li>
           </ul>

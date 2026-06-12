@@ -1,43 +1,18 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import CourseCard from '@components/CourseCard';
-import { cursosService } from '@api/cursosService';
+import { certificacionesMock } from '@data/certificaciones';
 import './Catalogo.css';
 
-const MODALIDADES = ['Todas', 'Virtual', 'Presencial'];
+const MODALIDADES = ['Todas', 'Presencial'];
 
 const Certificaciones = () => {
-  const [certs, setCerts] = useState([]);
-  const [categorias, setCategorias] = useState(['Todas']);
-  const [filtroModalidad, setFiltroModalidad] = useState('Todas');
   const [filtroCategoria, setFiltroCategoria] = useState('Todas');
+  const [filtroModalidad, setFiltroModalidad] = useState('Todas');
   const [busqueda, setBusqueda] = useState('');
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
 
-  const fetchCerts = async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const data = await cursosService.getCertificaciones();
-      if (Array.isArray(data)) {
-        setCerts(data);
-        setCategorias(['Todas', ...new Set(data.map(c => c.categoria))]);
-      } else {
-        throw new Error('La respuesta del servidor no es un catálogo válido.');
-      }
-    } catch (err) {
-      console.error('Error fetching catalog:', err);
-      setError('No se pudo cargar la lista de certificaciones. Por favor, verifica tu conexión o vuelve a intentarlo.');
-    } finally {
-      setLoading(false);
-    }
-  };
+  const categorias = ['Todas', ...new Set(certificacionesMock.map((c) => c.categoria))].sort();
 
-  useEffect(() => {
-    fetchCerts();
-  }, []);
-
-  const filtered = certs.filter((c) => {
+  const filtered = certificacionesMock.filter((c) => {
     const matchMod = filtroModalidad === 'Todas' || c.modalidad === filtroModalidad;
     const matchCat = filtroCategoria === 'Todas' || c.categoria === filtroCategoria;
     const matchSearch = c.titulo.toLowerCase().includes(busqueda.toLowerCase());
@@ -105,37 +80,18 @@ const Certificaciones = () => {
         </aside>
 
         <main className="catalogo-grid-area">
-          {loading && (
-            <div className="catalogo-loading">
-              <div className="spinner"></div>
-              <p>Cargando certificaciones...</p>
+          <p className="catalogo-results">
+            {filtered.length} certificación{filtered.length !== 1 ? 'es' : ''} encontrada{filtered.length !== 1 ? 's' : ''}
+          </p>
+          {filtered.length === 0 ? (
+            <div className="catalogo-empty">
+              <i className="fa-solid fa-box-open" />
+              <p>No hay resultados para esa búsqueda.</p>
             </div>
-          )}
-
-          {error && (
-            <div className="catalogo-error">
-              <i className="fa-solid fa-triangle-exclamation" style={{ fontSize: '3rem', color: '#dc3545' }} />
-              <p>{error}</p>
-              <button className="retry-btn" onClick={fetchCerts}>Reintentar</button>
+          ) : (
+            <div className="catalogo-grid">
+              {filtered.map((c) => <CourseCard key={c.id} course={c} />)}
             </div>
-          )}
-
-          {!loading && !error && (
-            <>
-              <p className="catalogo-results">
-                {filtered.length} certificación{filtered.length !== 1 ? 'es' : ''} encontrada{filtered.length !== 1 ? 's' : ''}
-              </p>
-              {filtered.length === 0 ? (
-                <div className="catalogo-empty">
-                  <i className="fa-solid fa-box-open" />
-                  <p>No hay resultados para esa búsqueda.</p>
-                </div>
-              ) : (
-                <div className="catalogo-grid">
-                  {filtered.map((c) => <CourseCard key={c.id} course={c} />)}
-                </div>
-              )}
-            </>
           )}
         </main>
 

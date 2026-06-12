@@ -24,8 +24,10 @@ export const authService = {
   /**
    * Registra un nuevo usuario.
    */
-  async register(nombre, email, password) {
-    const { data } = await apiClient.post('/auth/register', { nombre, correo: email, password });
+  async register(nombre, email, password, cedula, telefono, ciudad, direccion) {
+    const { data } = await apiClient.post('/auth/register', {
+      nombre, correo: email, password, cedula, telefono, ciudad, direccion,
+    });
     localStorage.setItem('matsso_token', data.access_token);
     localStorage.setItem('matsso_user', JSON.stringify(data.user));
     return data;
