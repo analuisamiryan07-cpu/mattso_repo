@@ -6,11 +6,11 @@ import { join } from 'path';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  // FIX [Access Control]: CORS restringido a orígenes conocidos
-  const allowedOrigins = [
-    process.env.FRONTEND_URL || 'http://localhost:5173',
-    'https://matsso.vercel.app',
-  ];
+  // CORS: leer FRONTEND_URL (puede ser lista separada por comas para múltiples dominios)
+  const allowedOrigins = (process.env.FRONTEND_URL || 'http://localhost:5173')
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean);
   app.enableCors({
     origin: (origin, callback) => {
       if (!origin || allowedOrigins.includes(origin)) {
