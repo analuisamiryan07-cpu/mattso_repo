@@ -75,7 +75,7 @@ export class AuthService {
         });
       }
 
-      // Si no existe, crear nuevo cliente
+      // Si no existe, crear nuevo cliente; si ya existe, actualizar datos de contacto web
       if (!cliente) {
         cliente = await tx.cliente.create({
           data: {
@@ -87,6 +87,18 @@ export class AuthService {
             direccion: data.direccion || null,
             fecha: new Date(),
             created_at: new Date(),
+            updated_at: new Date(),
+          },
+        });
+      } else {
+        // Actualiza datos de contacto (no sobrescribe campos de examen ni puntajes)
+        cliente = await tx.cliente.update({
+          where: { id: cliente.id },
+          data: {
+            correo: data.correo,
+            telefono: data.telefono || cliente.telefono,
+            ciudad: data.ciudad || cliente.ciudad,
+            direccion: data.direccion || cliente.direccion,
             updated_at: new Date(),
           },
         });

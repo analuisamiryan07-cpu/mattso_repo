@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { authService } from '@api/authService';
 import { useToast } from '@context/ToastContext';
 import './Login.css';
-import logoImg from '../../recursos/logo_matsso_qhse_raw.png';
+const logoImg = '/logo_matsso_qhse_raw.png';
 
 const Login = () => {
   const navigate = useNavigate();

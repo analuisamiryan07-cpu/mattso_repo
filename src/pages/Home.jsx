@@ -3,9 +3,10 @@ import { Link } from 'react-router-dom';
 import { useCart } from '@context/CartContext';
 import { useToast } from '@context/ToastContext';
 import StatItem from '@components/StatItem';
-import './Home.css';
-import videoBg from '../../recursos/imagenes/inicio/demostracion.mp4';
 import { capacitacionesMock } from '@data/capacitaciones';
+import './Home.css';
+
+const videoBg = '/demostracion.mp4';
 
 const Home = () => {
   const { addToCart } = useCart();

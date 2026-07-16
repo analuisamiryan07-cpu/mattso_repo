@@ -2,8 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, NavLink, useLocation } from 'react-router-dom';
 import { useCart } from '@context/CartContext';
 import './Header.css';
-// Importamos el logo local para que cargue inmediatamente sin saltos ni roturas
-import logoImg from '../../../recursos/logo_matsso_qhse_raw.png';
+const logoImg = '/logo_matsso_qhse_raw.png';
 
 const Header = () => {
   const { getCartCount } = useCart();

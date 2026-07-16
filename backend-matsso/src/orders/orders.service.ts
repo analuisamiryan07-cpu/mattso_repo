@@ -1,11 +1,21 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, Optional, Logger } from '@nestjs/common';
+import { InjectQueue } from '@nestjs/bullmq';
+import { Queue } from 'bullmq';
 import { PrismaService } from '../prisma/prisma.service';
+import { EmailService } from '../email/email.service';
 import * as bcrypt from 'bcrypt';
 import { randomBytes } from 'crypto';
+import { EMAIL_QUEUE, EMAIL_JOBS } from '../queue/queue.constants';
 
 @Injectable()
 export class OrdersService {
-  constructor(private readonly prisma: PrismaService) {}
+  private readonly logger = new Logger(OrdersService.name);
+
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly emailService: EmailService,
+    @Optional() @InjectQueue(EMAIL_QUEUE) private readonly emailQueue?: Queue,
+  ) {}
 
   async createOrder(dto: {
     cliente: { nombre: string; cedula: string; email: string; celular: string };
@@ -18,7 +28,7 @@ export class OrdersService {
       throw new Error('La orden debe contener al menos un item.');
     }
 
-    const total = items.reduce((acc, item) => acc + (item.precio * item.cantidad), 0);
+    const total = items.reduce((acc, item) => acc + item.precio * item.cantidad, 0);
     const totalConIva = total * 1.15;
 
     const order = await this.prisma.$transaction(async (tx) => {
@@ -74,21 +84,39 @@ export class OrdersService {
         });
       }
 
-      return dbOrder;
+      return { dbOrder, dbCliente };
     });
 
+    // Encolar email de confirmación de forma asíncrona
+    const emailPayload = {
+      to: cliente.email,
+      nombre: cliente.nombre,
+      orderId: Number(order.dbOrder.id),
+      total: totalConIva,
+      items: items.map((i) => ({ producto: `Certificación #${i.id}`, precio: i.precio })),
+    };
+
+    if (this.emailQueue) {
+      await this.emailQueue
+        .add(EMAIL_JOBS.ORDER_CREATED, emailPayload)
+        .catch((err) => this.logger.error('Error encolando email de confirmación:', err));
+    } else {
+      // Sin Redis: enviar email directamente (síncrono, no bloquea al usuario porque está en try/catch)
+      this.emailService.sendOrderConfirmation(emailPayload).catch((err) =>
+        this.logger.error('Error enviando email de confirmación:', err),
+      );
+    }
+
     return {
-      id: Number(order.id),
-      usuario_id: Number(order.usuario_id),
-      total: Number(order.total),
-      estado: order.estado,
-      fecha_orden: order.fecha_orden,
-      metodo_pago: order.metodo_pago,
-      comprobante_url: order.comprobante_url,
+      id: Number(order.dbOrder.id),
+      usuario_id: Number(order.dbOrder.usuario_id),
+      total: Number(order.dbOrder.total),
+      estado: order.dbOrder.estado,
+      fecha_orden: order.dbOrder.fecha_orden,
+      metodo_pago: order.dbOrder.metodo_pago,
+      comprobante_url: order.dbOrder.comprobante_url,
     };
   }
-
-  // ── Módulo Aprobación de Pagos ─────────────────────────────────────────────
 
   async getAllOrders() {
     const orders = await this.prisma.orden.findMany({
@@ -124,20 +152,47 @@ export class OrdersService {
   }
 
   async updateOrderStatus(id: number, estado: 'PAGADA' | 'RECHAZADA') {
-    const order = await this.prisma.orden.findUnique({ where: { id: BigInt(id) } });
+    const order = await this.prisma.orden.findUnique({
+      where: { id: BigInt(id) },
+      include: { usuario: { include: { cliente: true } }, items: { include: { producto: true } } },
+    });
     if (!order) throw new NotFoundException(`Orden ${id} no encontrada`);
 
     const updated = await this.prisma.orden.update({
       where: { id: BigInt(id) },
       data: { estado },
-      include: {
-        usuario: {
-          include: {
-            cliente: true,
-          },
-        },
-      },
+      include: { usuario: { include: { cliente: true } } },
     });
+
+    const correo = updated.usuario.cliente?.correo || updated.usuario.correo;
+    const nombre = updated.usuario.cliente?.nombre || updated.usuario.correo;
+
+    if (correo) {
+      const jobName =
+        estado === 'PAGADA' ? EMAIL_JOBS.PAYMENT_APPROVED : EMAIL_JOBS.PAYMENT_REJECTED;
+
+      const emailPayload =
+        estado === 'PAGADA'
+          ? {
+              to: correo,
+              nombre,
+              orderId: id,
+              items: order.items.map((i) => ({ producto: i.producto.titulo })),
+            }
+          : { to: correo, nombre, orderId: id };
+
+      if (this.emailQueue) {
+        await this.emailQueue
+          .add(jobName, emailPayload)
+          .catch((err) => this.logger.error('Error encolando email de estado:', err));
+      } else {
+        const sendFn =
+          estado === 'PAGADA'
+            ? this.emailService.sendPaymentApproved(emailPayload as any)
+            : this.emailService.sendPaymentRejected(emailPayload as any);
+        sendFn.catch((err) => this.logger.error('Error enviando email de estado:', err));
+      }
+    }
 
     return {
       id: Number(updated.id),

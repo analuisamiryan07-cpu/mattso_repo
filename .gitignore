@@ -50,6 +50,9 @@ proyecto_matt/vendor/
 proyecto_matt/.env
 proyecto_matt/.env.local
 
+# Credenciales de sincronización (van en /etc/matsso/ en el servidor)
+scripts/.env.sync
+
 # Archivos generados por el módulo de documentos (no deben ir a Git)
 proyecto_matt/generados/
 proyecto_matt/test_clean.txt
@@ -65,4 +68,21 @@ scan*.json
 SASTAgent_*.log
 analyzer_*.log
 report_text.txt
+
+# Scripts del servidor (configuración interna, referencias a credenciales)
+scripts/
+
+# Servicios independientes (no se despliegan en cloud)
+certibot/
+
+# Paquetes de entrega y documentación interna
+entrega_servidor_2026-07-15/
+A Detalle/
+ENTREGA_MATSSO_SERVIDOR_2026-07-15.zip.sha256
+
+# Scripts SQL del servidor (esquema completo de BD — información sensible)
+db_scripts/
+
+# Storage en tiempo de ejecución del backend
+backend-matsso/src/storage/
 
