@@ -86,3 +86,6 @@ db_scripts/
 # Storage en tiempo de ejecución del backend
 backend-matsso/src/storage/
 
+# Backoffice interno — corre en servidor local (192.168.100.18), no en la nube
+proyecto_matt/
+
