@@ -3,7 +3,6 @@ import { useParams, Link } from 'react-router-dom';
 import { useCart } from '@context/CartContext';
 import { useToast } from '@context/ToastContext';
 import { cursosService } from '@api/cursosService';
-import { certificacionesMock } from '@data/certificaciones';
 import './CertificationDetail.css';
 
 const CertificationDetail = () => {
@@ -11,20 +10,25 @@ const CertificationDetail = () => {
   const { addToCart } = useCart();
   const { addToast } = useToast();
 
-  const [cert, setCert] = useState(() => certificacionesMock.find((c) => c.slug === slug) || null);
-  const [loading, setLoading] = useState(false);
+  const [cert, setCert] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   const [contactoForm, setContactoForm] = useState({ nombre: '', email: '', telefono: '' });
   const [sendingContacto, setSendingContacto] = useState(false);
 
   useEffect(() => {
-    const found = certificacionesMock.find((c) => c.slug === slug);
-    if (found) {
-      setCert(found);
-    } else {
-      setError('Certificación no encontrada.');
-    }
+    setLoading(true);
+    setError(null);
+    cursosService.getCertificacionBySlug(slug)
+      .then(data => {
+        setCert(data);
+        setLoading(false);
+      })
+      .catch(() => {
+        setError('Certificación no encontrada.');
+        setLoading(false);
+      });
   }, [slug]);
 
   const handleAddToCart = () => {
@@ -53,6 +57,15 @@ const CertificationDetail = () => {
       setSendingContacto(false);
     }
   };
+
+  if (loading) {
+    return (
+      <div style={{ textAlign: 'center', padding: '100px 20px', minHeight: '50vh' }}>
+        <i className="fa-solid fa-circle-notch fa-spin" style={{ fontSize: '2rem', color: 'var(--primary)' }} />
+        <p style={{ marginTop: '16px', color: '#6b7280' }}>Cargando...</p>
+      </div>
+    );
+  }
 
   if (error || !cert) {
     return (

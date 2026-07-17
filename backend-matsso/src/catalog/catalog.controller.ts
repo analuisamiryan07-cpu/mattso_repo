@@ -6,8 +6,12 @@ export class CatalogController {
   constructor(private readonly catalogService: CatalogService) {}
 
   @Get()
-  async getCatalog(@Query('tipo') tipo?: string) {
-    return this.catalogService.getCatalog(tipo);
+  async getCatalog(
+    @Query('tipo') tipo?: string,
+    @Query('destacado') destacado?: string,
+  ) {
+    const destacadoBool = destacado === 'true' ? true : destacado === 'false' ? false : undefined;
+    return this.catalogService.getCatalog(tipo, destacadoBool);
   }
 
   @Get(':slug')

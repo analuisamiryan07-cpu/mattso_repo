@@ -27,6 +27,11 @@ export const cursosService = {
     return data;
   },
 
+  async getDestacados() {
+    const { data } = await apiClient.get('/catalog?destacado=true');
+    return data;
+  },
+
   async getCertificacionBySlug(slug) {
     const { data } = await apiClient.get(`/catalog/${slug}`);
     return data;

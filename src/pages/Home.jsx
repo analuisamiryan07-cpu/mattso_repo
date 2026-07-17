@@ -1,9 +1,9 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useCart } from '@context/CartContext';
 import { useToast } from '@context/ToastContext';
 import StatItem from '@components/StatItem';
-import { capacitacionesMock } from '@data/capacitaciones';
+import { cursosService } from '@api/cursosService';
 import './Home.css';
 
 const videoBg = '/demostracion.mp4';
@@ -11,9 +11,13 @@ const videoBg = '/demostracion.mp4';
 const Home = () => {
   const { addToCart } = useCart();
   const { addToast } = useToast();
+  const [featuredCourses, setFeaturedCourses] = useState([]);
 
-  // Solo mostramos los primeros 3 cursos como "destacados"
-  const featuredCourses = capacitacionesMock.slice(0, 3);
+  useEffect(() => {
+    cursosService.getDestacados()
+      .then(data => setFeaturedCourses(data))
+      .catch(() => setFeaturedCourses([]));
+  }, []);
 
   const benefitsData = [
     { id: 1, icon: 'fa-regular fa-clock', text: 'Modalidades flexibles de aprendizaje, elige dónde y cuándo estudiar' },
@@ -81,28 +85,30 @@ const Home = () => {
       </section>
 
       {/* CURSOS DESTACADOS */}
-      <section className="featured-section">
-        <div className="container">
-          <h2 className="section-title">Capacitaciones Destacadas</h2>
-          <div className="courses-grid">
-            {featuredCourses.map((course) => (
-              <div key={course.id} className="course-card">
-                <div className="course-image">
-                  <img src={course.imagen} alt={course.titulo} />
-                  <span className="course-badge">{course.categoria}</span>
+      {featuredCourses.length > 0 && (
+        <section className="featured-section">
+          <div className="container">
+            <h2 className="section-title">Capacitaciones Destacadas</h2>
+            <div className="courses-grid">
+              {featuredCourses.map((course) => (
+                <div key={course.id} className="course-card">
+                  <div className="course-image">
+                    <img src={course.imagen} alt={course.titulo} />
+                    <span className="course-badge">{course.categoria}</span>
+                  </div>
+                  <div className="course-info">
+                    <h3>{course.titulo}</h3>
+                    <p className="course-price">${course.precio.toFixed(2)}</p>
+                    <button className="add-to-cart-btn" onClick={() => handleAddToCart(course)}>
+                      <i className="fa-solid fa-cart-plus" /> Agregar al carrito
+                    </button>
+                  </div>
                 </div>
-                <div className="course-info">
-                  <h3>{course.titulo}</h3>
-                  <p className="course-price">${course.precio.toFixed(2)}</p>
-                  <button className="add-to-cart-btn" onClick={() => handleAddToCart(course)}>
-                    <i className="fa-solid fa-cart-plus" /> Agregar al carrito
-                  </button>
-                </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* POR QUÉ ELEGIRNOS */}
       <section className="why-section">

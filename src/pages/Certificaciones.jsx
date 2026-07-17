@@ -1,18 +1,32 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import CourseCard from '@components/CourseCard';
-import { certificacionesMock } from '@data/certificaciones';
+import { cursosService } from '@api/cursosService';
 import './Catalogo.css';
 
-const MODALIDADES = ['Todas', 'Presencial'];
-
 const Certificaciones = () => {
+  const [certificaciones, setCertificaciones] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [filtroCategoria, setFiltroCategoria] = useState('Todas');
   const [filtroModalidad, setFiltroModalidad] = useState('Todas');
   const [busqueda, setBusqueda] = useState('');
 
-  const categorias = ['Todas', ...new Set(certificacionesMock.map((c) => c.categoria))].sort();
+  useEffect(() => {
+    cursosService.getCertificaciones()
+      .then(data => {
+        setCertificaciones(data);
+        setLoading(false);
+      })
+      .catch(() => {
+        setError('No se pudieron cargar las certificaciones. Intenta de nuevo más tarde.');
+        setLoading(false);
+      });
+  }, []);
 
-  const filtered = certificacionesMock.filter((c) => {
+  const categorias = ['Todas', ...new Set(certificaciones.map((c) => c.categoria))].sort();
+  const modalidades = ['Todas', ...new Set(certificaciones.map((c) => c.modalidad).filter(Boolean))].sort();
+
+  const filtered = certificaciones.filter((c) => {
     const matchMod = filtroModalidad === 'Todas' || c.modalidad === filtroModalidad;
     const matchCat = filtroCategoria === 'Todas' || c.categoria === filtroCategoria;
     const matchSearch = c.titulo.toLowerCase().includes(busqueda.toLowerCase());
@@ -51,7 +65,7 @@ const Certificaciones = () => {
           <div className="filtro-group">
             <label>Modalidad</label>
             <div className="filtro-chips">
-              {MODALIDADES.map((m) => (
+              {modalidades.map((m) => (
                 <button
                   key={m}
                   className={`chip ${filtroModalidad === m ? 'chip--active' : ''}`}
@@ -80,18 +94,32 @@ const Certificaciones = () => {
         </aside>
 
         <main className="catalogo-grid-area">
-          <p className="catalogo-results">
-            {filtered.length} certificación{filtered.length !== 1 ? 'es' : ''} encontrada{filtered.length !== 1 ? 's' : ''}
-          </p>
-          {filtered.length === 0 ? (
+          {loading ? (
             <div className="catalogo-empty">
-              <i className="fa-solid fa-box-open" />
-              <p>No hay resultados para esa búsqueda.</p>
+              <i className="fa-solid fa-circle-notch fa-spin" />
+              <p>Cargando certificaciones...</p>
+            </div>
+          ) : error ? (
+            <div className="catalogo-empty">
+              <i className="fa-solid fa-triangle-exclamation" />
+              <p>{error}</p>
             </div>
           ) : (
-            <div className="catalogo-grid">
-              {filtered.map((c) => <CourseCard key={c.id} course={c} />)}
-            </div>
+            <>
+              <p className="catalogo-results">
+                {filtered.length} certificación{filtered.length !== 1 ? 'es' : ''} encontrada{filtered.length !== 1 ? 's' : ''}
+              </p>
+              {filtered.length === 0 ? (
+                <div className="catalogo-empty">
+                  <i className="fa-solid fa-box-open" />
+                  <p>No hay resultados para esa búsqueda.</p>
+                </div>
+              ) : (
+                <div className="catalogo-grid">
+                  {filtered.map((c) => <CourseCard key={c.id} course={c} />)}
+                </div>
+              )}
+            </>
           )}
         </main>
 
