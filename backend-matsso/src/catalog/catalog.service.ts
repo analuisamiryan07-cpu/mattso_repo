@@ -6,7 +6,7 @@ export class CatalogService {
   constructor(private readonly prisma: PrismaService) {}
 
   async getCatalog(tipo?: string, destacado?: boolean) {
-    const whereClause: any = { activo: true };
+    const whereClause: any = { activo: { not: false } };
     if (tipo) {
       whereClause.tipo = tipo.toUpperCase();
     }
