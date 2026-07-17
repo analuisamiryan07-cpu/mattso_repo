@@ -216,6 +216,7 @@ model Producto {
   modalidad        String?   @db.VarChar(100)
   imagen_url       String?   @db.VarChar(255)
   activo           Boolean?  @default(true)
+  destacado        Boolean   @default(false)
   id_certificacion Int?
   created_at       DateTime? @default(now()) @db.Timestamp(0)
   

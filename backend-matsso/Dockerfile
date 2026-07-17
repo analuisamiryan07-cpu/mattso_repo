@@ -9,7 +9,7 @@ RUN apk add --no-cache openssl
 COPY package*.json ./
 COPY prisma ./prisma/
 
-RUN npm ci --only=production=false
+RUN npm install
 
 # Copiar fuente y compilar TypeScript
 COPY . .
@@ -28,7 +28,7 @@ ENV NODE_ENV=production
 # Solo instalar dependencias de producción (incluye prisma CLI ahora en dependencies)
 COPY package*.json ./
 COPY prisma ./prisma/
-RUN npm ci --only=production && npm cache clean --force
+RUN npm install --omit=dev && npm cache clean --force
 
 # Copiar binarios Prisma y build compilado
 COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
