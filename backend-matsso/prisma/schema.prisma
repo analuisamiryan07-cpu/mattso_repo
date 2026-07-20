@@ -83,6 +83,8 @@ model Certificacion {
   requisitos       Requisito[]
   conocimientos    Conocimiento[]
   evaluaciones     Evaluacion[]
+  competencias     Competencia[]
+  habilidades      Habilidad[]
   productos        Producto[]
 
   @@schema("matsso")
@@ -151,6 +153,37 @@ model Evaluacion {
   @@schema("matsso")
   @@map("evaluacion")
   @@unique([id_certificacion, modalidad])
+}
+
+model Competencia {
+  id_competencia   Int      @id @default(autoincrement())
+  id_certificacion Int
+  descripcion      String   @db.Text
+  orden            Int      @default(1) @db.SmallInt
+  activo           Boolean  @default(true)
+  created_at       DateTime @default(now()) @db.Timestamptz
+  updated_at       DateTime @default(now()) @db.Timestamptz
+
+  certificacion    Certificacion @relation(fields: [id_certificacion], references: [id_certificacion], onDelete: Cascade)
+
+  @@schema("matsso")
+  @@map("competencia")
+}
+
+model Habilidad {
+  id_habilidad     Int      @id @default(autoincrement())
+  id_certificacion Int
+  tipo             String   @db.VarChar(10)
+  descripcion      String   @db.Text
+  orden            Int      @default(1) @db.SmallInt
+  activo           Boolean  @default(true)
+  created_at       DateTime @default(now()) @db.Timestamptz
+  updated_at       DateTime @default(now()) @db.Timestamptz
+
+  certificacion    Certificacion @relation(fields: [id_certificacion], references: [id_certificacion], onDelete: Cascade)
+
+  @@schema("matsso")
+  @@map("habilidad")
 }
 
 // ==========================================

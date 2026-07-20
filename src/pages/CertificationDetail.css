@@ -11,13 +11,24 @@
 /* 1. HERO SECTION & FORMULARIO */
 .cert-hero {
   position: relative;
-  background-image: url('https://images.unsplash.com/photo-1584515979956-d416f5a3406f?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80');
+  background-color: var(--primary-blue);
   background-size: cover;
   background-position: center;
   padding: 120px 0 80px;
   min-height: 500px;
   display: flex;
   align-items: center;
+}
+
+/* Eyebrow label above H1 */
+.cert-hero-eyebrow {
+  display: inline-block;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--primary-yellow);
+  margin-bottom: 12px;
 }
 
 .cert-hero-overlay {
@@ -163,13 +174,54 @@
 }
 
 
-/* 3. CARACTERÍSTICAS CLAVE (BARRA AZUL) */
+/* 3. COMPETENCIAS LABORALES (barra azul) */
 .cert-features {
   background-color: var(--primary-blue);
-  padding: 50px 0;
+  padding: 60px 0;
   color: white;
 }
 
+.cert-competencias {}
+
+.cert-features-title {
+  color: white;
+  font-size: 1.8rem;
+  font-weight: 700;
+  margin-bottom: 36px;
+  text-align: center;
+}
+
+.competencias-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.competencia-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 20px;
+  background: rgba(255,255,255,0.08);
+  border-left: 4px solid var(--primary-yellow);
+  padding: 18px 24px;
+}
+
+.competencia-num {
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: var(--primary-yellow);
+  line-height: 1;
+  min-width: 42px;
+}
+
+.competencia-item p {
+  font-size: 0.97rem;
+  line-height: 1.6;
+  margin: 0;
+  opacity: 0.95;
+}
+
+/* Legacy feature grid (kept for backward compatibility) */
 .features-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -285,13 +337,44 @@
   gap: 50px;
 }
 
+.skills-col h3 {
+  color: var(--primary-blue);
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 20px;
+  border-bottom: 2px solid var(--primary-blue);
+  padding-bottom: 10px;
+}
+
+.skills-subheading {
+  color: #444;
+  font-size: 1rem;
+  font-weight: 700;
+  margin: 16px 0 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.skills-col ul {
+  list-style: disc;
+  padding-left: 20px;
+  color: #555;
+  margin-bottom: 8px;
+}
+
+.skills-col ul li {
+  margin-bottom: 6px;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+/* Legacy selectors kept for any external references */
 .skills-grid h3 {
   color: var(--primary-blue);
   font-size: 1.5rem;
   margin-bottom: 20px;
   border-bottom: 1px solid var(--primary-blue);
   padding-bottom: 10px;
-  display: inline-block;
 }
 
 .skills-grid ul {
@@ -410,10 +493,20 @@
   .requirements-image {
     min-height: 300px;
   }
+  .competencia-item {
+    flex-direction: column;
+    gap: 8px;
+  }
 }
 
 @media (max-width: 576px) {
   .features-grid {
     grid-template-columns: 1fr;
+  }
+  .cert-hero-content h1 {
+    font-size: 1.9rem;
+  }
+  .competencias-list {
+    gap: 14px;
   }
 }

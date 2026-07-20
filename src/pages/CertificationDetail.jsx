@@ -13,7 +13,6 @@ const CertificationDetail = () => {
   const [cert, setCert] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
   const [contactoForm, setContactoForm] = useState({ nombre: '', email: '', telefono: '' });
   const [sendingContacto, setSendingContacto] = useState(false);
 
@@ -21,14 +20,8 @@ const CertificationDetail = () => {
     setLoading(true);
     setError(null);
     cursosService.getCertificacionBySlug(slug)
-      .then(data => {
-        setCert(data);
-        setLoading(false);
-      })
-      .catch(() => {
-        setError('Certificación no encontrada.');
-        setLoading(false);
-      });
+      .then(data => { setCert(data); setLoading(false); })
+      .catch(() => { setError('Certificación no encontrada.'); setLoading(false); });
   }, [slug]);
 
   const handleAddToCart = () => {
@@ -37,9 +30,8 @@ const CertificationDetail = () => {
     addToast(`"${cert.titulo}" añadido al carrito`, 'success');
   };
 
-  const handleContactoChange = (e) => {
+  const handleContactoChange = (e) =>
     setContactoForm(p => ({ ...p, [e.target.name]: e.target.value }));
-  };
 
   const handleContactoSubmit = async (e) => {
     e.preventDefault();
@@ -51,7 +43,7 @@ const CertificationDetail = () => {
       });
       addToast('¡Mensaje enviado! Un asesor te contactará pronto.', 'success');
       setContactoForm({ nombre: '', email: '', telefono: '' });
-    } catch (err) {
+    } catch {
       addToast('Error al enviar el mensaje. Inténtalo de nuevo.', 'error');
     } finally {
       setSendingContacto(false);
@@ -74,60 +66,75 @@ const CertificationDetail = () => {
         <p style={{ color: '#6b7280', marginTop: '10px' }}>
           {error || `No existe una certificación con el identificador "${slug}".`}
         </p>
-        <Link to="/certificaciones" style={{ display: 'inline-block', marginTop: '24px', padding: '8px 20px', border: '1px solid var(--border-color)', borderRadius: '4px', color: 'var(--text-dark)', fontWeight: 600, textDecoration: 'none' }}>
+        <Link
+          to="/certificaciones"
+          style={{ display: 'inline-block', marginTop: '24px', padding: '8px 20px', border: '1px solid var(--border-color)', borderRadius: '4px', color: 'var(--text-dark)', fontWeight: 600, textDecoration: 'none' }}
+        >
           Ver todas las certificaciones
         </Link>
       </div>
     );
   }
 
+  // ── Datos que vienen 100% de la API (base de datos) ──
+  const competencias     = cert.competencias  || [];
+  const habilidadesTeo   = cert.habilidades?.teoricas  || [];
+  const habilidadesPrac  = cert.habilidades?.practicas || [];
+  const conocimientos    = cert.conocimientos || [];
+  const dirigidoA        = cert.perfiles?.length
+    ? cert.perfiles.join(', ')
+    : cert.categoria || '';
+
+  // Requisitos: siempre empieza con Documentos Personales
+  const buildRequirements = () => {
+    const docBase = { number: '01', title: 'Documentos Personales', desc: 'Cédula de Identidad y Papeleta de Votación.' };
+    const apiReqs = cert.requirements || [];
+    const yaIncluye = apiReqs.length > 0 && apiReqs[0].title?.toLowerCase().includes('document');
+    if (yaIncluye) return apiReqs.map((r, i) => ({ ...r, number: String(i + 1).padStart(2, '0') }));
+    return [docBase, ...apiReqs.map((r, i) => ({ ...r, number: String(i + 2).padStart(2, '0') }))];
+  };
+  const requirements = buildRequirements();
+
+  const primeraCompetencia = competencias[0] || '';
+
   return (
     <div className="certification-detail-page">
 
-      {/* 1. HERO */}
-      <section className="cert-hero">
+      {/* ── 1. PORTADA / HERO ── */}
+      <section
+        className="cert-hero"
+        style={cert.imagen ? { backgroundImage: `url('${cert.imagen}')` } : undefined}
+      >
         <div className="cert-hero-overlay" />
         <div className="container cert-hero-container">
           <div className="cert-hero-content">
+            <span className="cert-hero-eyebrow">CERTIFICACIÓN</span>
             <h1>{cert.titulo}</h1>
-            <p>{cert.shortDescription || cert.descripcion}</p>
+            <p>
+              La Certificación reconoce tus habilidades, conocimientos y experiencia
+              {cert.descripcion ? ` al ${cert.descripcion.replace(/\.$/, '').toLowerCase()}.` : '.'}
+            </p>
             <button className="btn-leer-mas" onClick={handleAddToCart}>
-              <i className="fa-solid fa-cart-plus" /> Inscribirme
+              <i className="fa-solid fa-cart-plus" /> Añadir al carrito de compras
             </button>
           </div>
+
+          {/* Formulario de contacto */}
           <div className="cert-hero-form">
             <h3>Quiero ser contactado por un asesor</h3>
             <p>Envíanos tus datos y nos pondremos en contacto contigo.</p>
             <form onSubmit={handleContactoSubmit}>
               <div className="form-group">
                 <label>Nombre</label>
-                <input
-                  type="text"
-                  name="nombre"
-                  value={contactoForm.nombre}
-                  onChange={handleContactoChange}
-                  required
-                />
+                <input type="text" name="nombre" value={contactoForm.nombre} onChange={handleContactoChange} required />
               </div>
               <div className="form-group">
                 <label>Email</label>
-                <input
-                  type="email"
-                  name="email"
-                  value={contactoForm.email}
-                  onChange={handleContactoChange}
-                  required
-                />
+                <input type="email" name="email" value={contactoForm.email} onChange={handleContactoChange} required />
               </div>
               <div className="form-group">
                 <label>Teléfono</label>
-                <input
-                  type="tel"
-                  name="telefono"
-                  value={contactoForm.telefono}
-                  onChange={handleContactoChange}
-                  placeholder="Ej: 0991234567"
-                />
+                <input type="tel" name="telefono" value={contactoForm.telefono} onChange={handleContactoChange} placeholder="Ej: 0991234567" />
               </div>
               <div className="form-checkbox">
                 <input type="checkbox" id="terms" required />
@@ -141,28 +148,45 @@ const CertificationDetail = () => {
         </div>
       </section>
 
-      {/* 2. SOBRE LA CERTIFICACIÓN */}
-      {cert.about && (
-        <section className="cert-about">
-          <div className="container">
-            <h2 className="cert-section-title">Sobre la certificación</h2>
-            <div className="cert-about-text">
-              {cert.about.map((p, i) => <p key={i}>{p}</p>)}
-            </div>
+      {/* ── 2. SOBRE LA CERTIFICACIÓN ── */}
+      <section className="cert-about">
+        <div className="container">
+          <h2 className="cert-section-title">Sobre la certificación</h2>
+          <div className="cert-about-text">
+            <p>
+              La certificación de cualificaciones o competencias laborales es el procedimiento
+              mediante el cual un organismo, reconocido por la Subsecretaría de Cualificaciones
+              Profesionales del Ministerio del Trabajo, determina formalmente que una persona ha
+              alcanzado el desempeño esperado, y ha demostrado contar con los conocimientos,
+              destrezas, aptitudes y habilidades, conforme a un estándar ocupacional o a una
+              Norma de Certificación de Cualificación.
+            </p>
+            <p>
+              La Subsecretaría de Cualificaciones Profesionales y Gestión Artesanal del
+              Ministerio del Trabajo, luego de un proceso riguroso de evaluación, reconoce a
+              Matsso Certificación y Capacitación Profesional, para que actúe como Organismo
+              Evaluador de Conformidad (OEC), a fin de que otorgue la certificación de personas
+              en una o varias unidades de competencia.
+            </p>
+            <p>
+              Para conseguir la Certificación en <strong>{cert.titulo}</strong>, deberás cumplir
+              con los requisitos detallados en esta página web y pasar por un proceso de
+              Evaluación Teórico y Práctico.
+            </p>
           </div>
-        </section>
-      )}
+        </div>
+      </section>
 
-      {/* 3. CARACTERÍSTICAS CLAVE */}
-      {cert.features && (
-        <section className="cert-features">
+      {/* ── 3. COMPETENCIAS LABORALES (barra azul) — datos de matsso.competencia ── */}
+      {competencias.length > 0 && (
+        <section className="cert-features cert-competencias">
           <div className="container">
-            <div className="features-grid">
-              {cert.features.map((f, i) => (
-                <div className="feature-item" key={i}>
-                  <i className={f.icon} />
-                  <h4>{f.title}</h4>
-                  <p>{f.desc}</p>
+            <h2 className="cert-features-title">Competencias Laborales</h2>
+            <div className="competencias-list">
+              {competencias.map((c, i) => (
+                <div className="competencia-item" key={i}>
+                  <div className="competencia-num">{String(i + 1).padStart(2, '0')}</div>
+                  <p>{c}</p>
                 </div>
               ))}
             </div>
@@ -170,33 +194,89 @@ const CertificationDetail = () => {
         </section>
       )}
 
-      {/* 4. REQUISITOS */}
-      {cert.requirements && (
-        <section className="cert-requirements">
-          <div className="requirements-wrapper">
-            <div className="requirements-content">
-              <h2 className="cert-section-title left">Requisitos</h2>
-              <div className="req-list">
-                {cert.requirements.map((req, i) => (
-                  <div className="req-item" key={i}>
-                    <div className="req-number">{req.number}</div>
-                    <div className="req-text">
-                      <h4>{req.title}</h4>
-                      <p>{req.desc}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-            <div className="requirements-image">
-              <img
-                src="https://images.unsplash.com/photo-1581056771107-24ca5f033842?auto=format&fit=crop&w=800&q=80"
-                alt="Profesionales Matsso"
-              />
+      {/* ── 4. RECONOCIMIENTO PROFESIONAL ── */}
+      <section className="cert-target">
+        <div className="target-wrapper">
+          <div className="target-image">
+            {cert.imagen && <img src={cert.imagen} alt={cert.titulo} />}
+          </div>
+          <div className="target-content-box">
+            <h3>Reconocimiento profesional que mereces</h3>
+            {primeraCompetencia && (
+              <>
+                <h4>Competencia laboral:</h4>
+                <p>{primeraCompetencia}</p>
+              </>
+            )}
+            {dirigidoA && (
+              <>
+                <h4>Dirigido a:</h4>
+                <p>{dirigidoA}.</p>
+              </>
+            )}
+            <button className="btn-contact-advisor" onClick={handleAddToCart}>
+              <i className="fa-solid fa-cart-plus" /> Añadir al carrito de compras
+            </button>
+          </div>
+        </div>
+      </section>
+
+      {/* ── 5. HABILIDADES Y CONOCIMIENTOS — datos de matsso.habilidad y matsso.conocimiento ── */}
+      {(habilidadesTeo.length > 0 || habilidadesPrac.length > 0 || conocimientos.length > 0) && (
+        <section className="cert-skills-knowledge">
+          <div className="container">
+            <h2 className="cert-section-title">Habilidades y Conocimientos Requeridos</h2>
+            <div className="skills-grid">
+              {(habilidadesTeo.length > 0 || habilidadesPrac.length > 0) && (
+                <div className="skills-col">
+                  <h3>Habilidades Evaluables</h3>
+                  {habilidadesTeo.length > 0 && (
+                    <>
+                      <h4 className="skills-subheading">Teóricas</h4>
+                      <ul>{habilidadesTeo.map((h, i) => <li key={i}>{h}</li>)}</ul>
+                    </>
+                  )}
+                  {habilidadesPrac.length > 0 && (
+                    <>
+                      <h4 className="skills-subheading">Prácticas</h4>
+                      <ul>{habilidadesPrac.map((h, i) => <li key={i}>{h}</li>)}</ul>
+                    </>
+                  )}
+                </div>
+              )}
+              {conocimientos.length > 0 && (
+                <div className="skills-col">
+                  <h3>Conocimientos Requeridos</h3>
+                  <ul>{conocimientos.map((c, i) => <li key={i}>{c}</li>)}</ul>
+                </div>
+              )}
             </div>
           </div>
         </section>
       )}
+
+      {/* ── 6. REQUISITOS — datos de matsso.requisito ── */}
+      <section className="cert-requirements">
+        <div className="requirements-wrapper">
+          <div className="requirements-content">
+            <h2 className="cert-section-title left">Requisitos</h2>
+            <div className="req-list">
+              {requirements.map((req, i) => (
+                <div className="req-item" key={i}>
+                  <div className="req-number">{req.number}</div>
+                  <div className="req-text">
+                    <h4>{req.title}</h4>
+                    <p>{req.desc}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="requirements-image">
+            {cert.imagen && <img src={cert.imagen} alt={cert.titulo} />}
+          </div>
+        </div>
+      </section>
 
     </div>
   );

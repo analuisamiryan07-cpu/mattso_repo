@@ -19,10 +19,15 @@ export class CatalogService {
       include: {
         certificacion: {
           include: {
-            requisitos: true,
+            requisitos:    { orderBy: { orden: 'asc' } },
+            perfiles:      { orderBy: { orden: 'asc' } },
+            conocimientos: { orderBy: { orden: 'asc' } },
+            competencias:  { orderBy: { orden: 'asc' } },
+            habilidades:   { orderBy: { orden: 'asc' } },
+            evaluaciones:  true,
             vigencia: true,
-            familia: true,
-            sector: true,
+            familia:  true,
+            sector:   true,
           }
         }
       }
@@ -41,11 +46,14 @@ export class CatalogService {
         'Fortalece tus competencias con nuestros cursos avalados por las autoridades correspondientes.'
       ];
 
+      const evalTeorico  = cert?.evaluaciones?.find((e: any) => /teor/i.test(e.modalidad || ''));
+      const evalPractico = cert?.evaluaciones?.find((e: any) => /prac/i.test(e.modalidad || ''));
+
       const features = [
-        { icon: 'fa-regular fa-clock', title: 'Vigencia', desc: cert?.vigencia?.etiqueta || '2 años' },
-        { icon: 'fa-solid fa-screwdriver-wrench', title: 'Modalidad', desc: p.modalidad || 'Virtual' },
-        { icon: 'fa-regular fa-file-lines', title: 'Evaluación Teórica', desc: 'Banco de preguntas (mínimo 70%).' },
-        { icon: 'fa-solid fa-chart-line', title: 'Evaluación Práctica', desc: 'Casos prácticos (100%).' }
+        { icon: 'fa-regular fa-clock',        title: 'Vigencia',              desc: cert?.vigencia?.etiqueta || '2 años' },
+        { icon: 'fa-solid fa-screwdriver-wrench', title: 'Modalidad',         desc: p.modalidad || 'Virtual' },
+        { icon: 'fa-regular fa-file-lines',   title: 'Evaluación Teórica',    desc: evalTeorico?.descripcion  || 'Banco de preguntas (mínimo 70%).' },
+        { icon: 'fa-solid fa-chart-line',     title: 'Evaluación Práctica',   desc: evalPractico?.descripcion || 'Casos prácticos (100%).' }
       ];
 
       const requirements = cert && cert.requisitos.length > 0
@@ -82,7 +90,14 @@ export class CatalogService {
         shortDescription,
         about,
         features,
-        requirements
+        requirements,
+        perfiles:      cert ? cert.perfiles.map((pf: any) => pf.descripcion) : [],
+        conocimientos: cert ? cert.conocimientos.map((k: any) => k.descripcion) : [],
+        competencias:  cert ? cert.competencias.map((c: any) => c.descripcion) : [],
+        habilidades:   cert ? {
+          teoricas:  cert.habilidades.filter((h: any) => h.tipo === 'TEORICA').map((h: any) => h.descripcion),
+          practicas: cert.habilidades.filter((h: any) => h.tipo === 'PRACTICA').map((h: any) => h.descripcion),
+        } : { teoricas: [], practicas: [] },
       };
     });
   }
