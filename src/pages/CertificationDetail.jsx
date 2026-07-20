@@ -95,7 +95,6 @@ const CertificationDetail = () => {
   };
   const requirements = buildRequirements();
 
-  const primeraCompetencia = competencias[0] || '';
 
   return (
     <div className="certification-detail-page">
@@ -177,16 +176,16 @@ const CertificationDetail = () => {
         </div>
       </section>
 
-      {/* ── 3. COMPETENCIAS LABORALES (barra azul) — datos de matsso.competencia ── */}
-      {competencias.length > 0 && (
-        <section className="cert-features cert-competencias">
+      {/* ── 3. VIGENCIA / MODALIDAD / EVALUACIONES — datos de matsso.vigencia, matsso.evaluacion, public.productos ── */}
+      {cert.features && cert.features.length > 0 && (
+        <section className="cert-features">
           <div className="container">
-            <h2 className="cert-features-title">Competencias Laborales</h2>
-            <div className="competencias-list">
-              {competencias.map((c, i) => (
-                <div className="competencia-item" key={i}>
-                  <div className="competencia-num">{String(i + 1).padStart(2, '0')}</div>
-                  <p>{c}</p>
+            <div className="features-grid">
+              {cert.features.map((f, i) => (
+                <div className="feature-item" key={i}>
+                  <i className={f.icon} />
+                  <h4>{f.title}</h4>
+                  <p>{f.desc}</p>
                 </div>
               ))}
             </div>
@@ -202,10 +201,12 @@ const CertificationDetail = () => {
           </div>
           <div className="target-content-box">
             <h3>Reconocimiento profesional que mereces</h3>
-            {primeraCompetencia && (
+            {competencias.length > 0 && (
               <>
-                <h4>Competencia laboral:</h4>
-                <p>{primeraCompetencia}</p>
+                <h4>Competencias Laborales:</h4>
+                <ol>
+                  {competencias.map((c, i) => <li key={i}>{c}</li>)}
+                </ol>
               </>
             )}
             {dirigidoA && (
