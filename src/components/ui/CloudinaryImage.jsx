@@ -41,7 +41,7 @@ const CloudinaryImage = ({
       className={className}
       loading={eager ? 'eager' : 'lazy'}
       decoding="async"
-      onError={(e) => { e.currentTarget.src = fallback; }}
+      onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.srcset = ''; e.currentTarget.src = fallback; }}
       {...rest}
     />
   );
