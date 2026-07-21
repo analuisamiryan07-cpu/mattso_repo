@@ -4,9 +4,11 @@ import { useCart } from '@context/CartContext';
 import { useToast } from '@context/ToastContext';
 import StatItem from '@components/StatItem';
 import { useCatalog } from '@context/CatalogContext';
+import CloudinaryImage from '@components/ui/CloudinaryImage';
+import { cloudinaryVideoUrl } from '@utils/cloudinary';
 import './Home.css';
 
-const videoBg = '/demostracion.mp4';
+const videoBg = cloudinaryVideoUrl('home/Video_Home');
 
 const Home = () => {
   const { addToCart } = useCart();
@@ -59,9 +61,12 @@ const Home = () => {
           </h2>
           <div className="benefits-wrapper">
             <div className="benefits-image-col">
-              <img
-                src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=800&q=80"
+              <CloudinaryImage
+                publicId="home/H_Imagen1"
                 alt="Beneficios Campus Matsso"
+                width={800}
+                height={600}
+                eager
               />
             </div>
             <div className="benefits-content-col">
@@ -87,7 +92,12 @@ const Home = () => {
               {featuredCourses.map((course) => (
                 <div key={course.id} className="course-card">
                   <div className="course-image">
-                    <img src={course.imagen} alt={course.titulo} />
+                    <CloudinaryImage
+                      publicId={`${course.cloudinaryFolder}/Inicio_Fondo`}
+                      alt={course.titulo}
+                      width={600}
+                      height={400}
+                    />
                     <span className="course-badge">{course.categoria}</span>
                   </div>
                   <div className="course-info">

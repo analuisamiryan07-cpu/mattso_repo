@@ -4,6 +4,8 @@ import { useCart } from '@context/CartContext';
 import { useToast } from '@context/ToastContext';
 import { cursosService } from '@api/cursosService';
 import { useCatalog } from '@context/CatalogContext';
+import CloudinaryImage from '@components/ui/CloudinaryImage';
+import { cloudinaryUrl } from '@utils/cloudinary';
 import './CertificationDetail.css';
 
 const CertificationDetail = () => {
@@ -116,7 +118,9 @@ const CertificationDetail = () => {
       {/* ── 1. PORTADA / HERO ── */}
       <section
         className="cert-hero"
-        style={cert.imagen ? { backgroundImage: `url('${cert.imagen}')` } : undefined}
+        style={cert.cloudinaryFolder
+          ? { backgroundImage: `url('${cloudinaryUrl(`${cert.cloudinaryFolder}/Inicio_Fondo`, { width: 1920, height: 700 })}')` }
+          : undefined}
       >
         <div className="cert-hero-overlay" />
         <div className="container cert-hero-container">
@@ -211,7 +215,12 @@ const CertificationDetail = () => {
       <section className="cert-target">
         <div className="target-wrapper">
           <div className="target-image">
-            {cert.imagen && <img src={cert.imagen} alt={cert.titulo} />}
+            <CloudinaryImage
+              publicId={`${cert.cloudinaryFolder}/Izquierda`}
+              alt={cert.titulo}
+              width={700}
+              height={520}
+            />
           </div>
           <div className="target-content-box">
             <h3>Reconocimiento profesional que mereces</h3>
@@ -288,7 +297,12 @@ const CertificationDetail = () => {
             </div>
           </div>
           <div className="requirements-image">
-            {cert.imagen && <img src={cert.imagen} alt={cert.titulo} />}
+            <CloudinaryImage
+              publicId={`${cert.cloudinaryFolder}/Derecha`}
+              alt={cert.titulo}
+              width={700}
+              height={520}
+            />
           </div>
         </div>
       </section>

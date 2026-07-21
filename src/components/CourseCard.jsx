@@ -1,6 +1,7 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useCart } from '@context/CartContext';
 import { useToast } from '@context/ToastContext';
+import CloudinaryImage from '@components/ui/CloudinaryImage';
 import './CourseCard.css';
 
 /**
@@ -28,12 +29,11 @@ const CourseCard = ({ course }) => {
   return (
     <div className="course-card-modern">
       <div className="ccm__image">
-        <img
-          src={course.imagen}
+        <CloudinaryImage
+          publicId={`${course.cloudinaryFolder}/Inicio_Fondo`}
           alt={course.titulo}
-          onError={(e) => {
-            e.target.src = 'https://placehold.co/400x250/002147/ffffff?text=Matsso';
-          }}
+          width={400}
+          height={250}
         />
         <span className="ccm__badge" style={{ background: badgeColor }}>
           {badgeText}
