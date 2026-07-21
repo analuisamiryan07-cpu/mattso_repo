@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useLocation } from 'react-router-dom';
 import { useCart } from '@context/CartContext';
 import { useToast } from '@context/ToastContext';
 import { cursosService } from '@api/cursosService';
@@ -7,16 +7,19 @@ import './CertificationDetail.css';
 
 const CertificationDetail = () => {
   const { slug } = useParams();
+  const location = useLocation();
   const { addToCart } = useCart();
   const { addToast } = useToast();
 
-  const [cert, setCert] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const preloaded = location.state?.cert;
+  const [cert, setCert] = useState(preloaded || null);
+  const [loading, setLoading] = useState(!preloaded);
   const [error, setError] = useState(null);
   const [contactoForm, setContactoForm] = useState({ nombre: '', email: '', telefono: '' });
   const [sendingContacto, setSendingContacto] = useState(false);
 
   useEffect(() => {
+    if (preloaded) return;
     setLoading(true);
     setError(null);
     cursosService.getCertificacionBySlug(slug)

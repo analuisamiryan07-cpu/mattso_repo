@@ -75,7 +75,7 @@ const CourseCard = ({ course }) => {
           <button className="ccm__btn-cart" onClick={handleAddToCart}>
             <i className="fa-solid fa-cart-plus" /> Agregar
           </button>
-          <Link to={detailPath} className="ccm__btn-info">
+          <Link to={detailPath} state={{ cert: course }} className="ccm__btn-info">
             Ver más
           </Link>
         </div>
