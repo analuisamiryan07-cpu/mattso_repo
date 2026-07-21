@@ -64,10 +64,11 @@ export class CatalogService {
 
       const evalTeorico  = cert?.evaluaciones?.find((e: any) => /teor/i.test(e.modalidad || ''));
       const evalPractico = cert?.evaluaciones?.find((e: any) => /prac/i.test(e.modalidad || ''));
+      const evalSede     = cert?.evaluaciones?.find((e: any) => /sede/i.test(e.modalidad || ''));
 
       const features = [
         { icon: 'fa-regular fa-clock',        title: 'Vigencia',              desc: cert?.vigencia?.etiqueta || '2 años' },
-        { icon: 'fa-solid fa-screwdriver-wrench', title: 'Modalidad',         desc: p.modalidad || 'Virtual' },
+        { icon: 'fa-solid fa-screwdriver-wrench', title: 'Modalidad',         desc: evalSede?.descripcion || p.modalidad || 'Virtual' },
         { icon: 'fa-regular fa-file-lines',   title: 'Evaluación Teórica',    desc: evalTeorico?.descripcion  || 'Banco de preguntas (mínimo 70%).' },
         { icon: 'fa-solid fa-chart-line',     title: 'Evaluación Práctica',   desc: evalPractico?.descripcion || 'Casos prácticos (100%).' }
       ];
