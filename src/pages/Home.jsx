@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
 import { useCart } from '@context/CartContext';
 import { useToast } from '@context/ToastContext';
 import StatItem from '@components/StatItem';
-import { cursosService } from '@api/cursosService';
+import { useCatalog } from '@context/CatalogContext';
 import './Home.css';
 
 const videoBg = '/demostracion.mp4';
@@ -11,13 +11,7 @@ const videoBg = '/demostracion.mp4';
 const Home = () => {
   const { addToCart } = useCart();
   const { addToast } = useToast();
-  const [featuredCourses, setFeaturedCourses] = useState([]);
-
-  useEffect(() => {
-    cursosService.getDestacados()
-      .then(data => setFeaturedCourses(data))
-      .catch(() => setFeaturedCourses([]));
-  }, []);
+  const { destacados: featuredCourses } = useCatalog();
 
   const benefitsData = [
     { id: 1, icon: 'fa-regular fa-clock', text: 'Modalidades flexibles de aprendizaje, elige dónde y cuándo estudiar' },

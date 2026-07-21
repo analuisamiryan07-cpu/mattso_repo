@@ -12,6 +12,7 @@ import Chatbot from './components/ui/Chatbot';
 import AdminLogin from '@pages/admin/AdminLogin';
 import AdminDashboard from '@pages/admin/AdminDashboard';
 import { AdminProvider } from './context/AdminContext';
+import { CatalogProvider } from './context/CatalogContext';
 
 // Layout del panel admin (sin Header/Footer/Chatbot del sitio público)
 function AdminLayout() {
@@ -58,10 +59,12 @@ function App() {
   return (
     <Router>
       <AdminProvider>
-        <Routes>
-          <Route path="/admin/*" element={<AdminLayout />} />
-          <Route path="/*"       element={<PublicLayout />} />
-        </Routes>
+        <CatalogProvider>
+          <Routes>
+            <Route path="/admin/*" element={<AdminLayout />} />
+            <Route path="/*"       element={<PublicLayout />} />
+          </Routes>
+        </CatalogProvider>
       </AdminProvider>
     </Router>
   );

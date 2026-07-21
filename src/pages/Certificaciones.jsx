@@ -1,27 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import CourseCard from '@components/CourseCard';
-import { cursosService } from '@api/cursosService';
+import { useCatalog } from '@context/CatalogContext';
 import './Catalogo.css';
 
 const Certificaciones = () => {
-  const [certificaciones, setCertificaciones] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const { certificaciones, loading } = useCatalog();
+  const error = null;
   const [filtroCategoria, setFiltroCategoria] = useState('Todas');
   const [filtroModalidad, setFiltroModalidad] = useState('Todas');
   const [busqueda, setBusqueda] = useState('');
-
-  useEffect(() => {
-    cursosService.getCertificaciones()
-      .then(data => {
-        setCertificaciones(data);
-        setLoading(false);
-      })
-      .catch(() => {
-        setError('No se pudieron cargar las certificaciones. Intenta de nuevo más tarde.');
-        setLoading(false);
-      });
-  }, []);
 
   const categorias = ['Todas', ...new Set(certificaciones.map((c) => c.categoria))].sort();
   const modalidades = ['Todas', ...new Set(certificaciones.map((c) => c.modalidad).filter(Boolean))].sort();

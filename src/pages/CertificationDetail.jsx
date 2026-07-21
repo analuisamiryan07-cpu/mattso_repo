@@ -3,6 +3,7 @@ import { useParams, Link, useLocation } from 'react-router-dom';
 import { useCart } from '@context/CartContext';
 import { useToast } from '@context/ToastContext';
 import { cursosService } from '@api/cursosService';
+import { useCatalog } from '@context/CatalogContext';
 import './CertificationDetail.css';
 
 const CertificationDetail = () => {
@@ -10,6 +11,7 @@ const CertificationDetail = () => {
   const location = useLocation();
   const { addToCart } = useCart();
   const { addToast } = useToast();
+  const { getCertBySlug, loading: catalogLoading } = useCatalog();
 
   const preloaded = location.state?.cert;
   const [cert, setCert] = useState(preloaded || null);
@@ -20,12 +22,21 @@ const CertificationDetail = () => {
 
   useEffect(() => {
     if (preloaded) return;
+
+    // Primero intenta desde el contexto (ya cargado, sin llamada a la API)
+    const fromContext = getCertBySlug(slug);
+    if (fromContext) { setCert(fromContext); setLoading(false); return; }
+
+    // Si el contexto aún está cargando, esperar a que termine
+    if (catalogLoading) return;
+
+    // Fallback: el usuario entró directamente por URL y el contexto falló
     setLoading(true);
     setError(null);
     cursosService.getCertificacionBySlug(slug)
       .then(data => { setCert(data); setLoading(false); })
       .catch(() => { setError('Certificación no encontrada.'); setLoading(false); });
-  }, [slug]);
+  }, [slug, preloaded, getCertBySlug, catalogLoading]);
 
   const handleAddToCart = () => {
     if (!cert) return;
