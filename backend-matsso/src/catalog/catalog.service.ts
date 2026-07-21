@@ -3,19 +3,35 @@ import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
 export class CatalogService {
+  private _cache: { data: any[]; expiresAt: number } | null = null;
+
   constructor(private readonly prisma: PrismaService) {}
 
-  async getCatalog(tipo?: string, destacado?: boolean) {
-    const whereClause: any = { activo: { not: false } };
-    if (tipo) {
-      whereClause.tipo = tipo.toUpperCase();
-    }
-    if (destacado !== undefined) {
-      whereClause.destacado = destacado;
-    }
+  private async getAllFromCache(): Promise<any[]> {
+    const now = Date.now();
+    if (this._cache && now < this._cache.expiresAt) return this._cache.data;
+    const data = await this._queryAndMap();
+    this._cache = { data, expiresAt: now + 5 * 60 * 1000 };
+    return data;
+  }
 
+  async getCatalog(tipo?: string, destacado?: boolean) {
+    const all = await this.getAllFromCache();
+    return all.filter(p => {
+      if (tipo && p.tipo !== tipo.toLowerCase()) return false;
+      if (destacado !== undefined && p.destacado !== destacado) return false;
+      return true;
+    });
+  }
+
+  async getProductBySlug(slug: string) {
+    const all = await this.getAllFromCache();
+    return all.find(p => p.slug === slug) || null;
+  }
+
+  private async _queryAndMap(): Promise<any[]> {
     const productos = await this.prisma.producto.findMany({
-      where: whereClause,
+      where: { activo: { not: false } },
       include: {
         certificacion: {
           include: {
@@ -100,10 +116,5 @@ export class CatalogService {
         } : { teoricas: [], practicas: [] },
       };
     });
-  }
-
-  async getProductBySlug(slug: string) {
-    const catalog = await this.getCatalog();
-    return catalog.find(p => p.slug === slug) || null;
   }
 }
