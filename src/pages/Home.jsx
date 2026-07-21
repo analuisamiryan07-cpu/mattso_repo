@@ -8,7 +8,7 @@ import CloudinaryImage from '@components/ui/CloudinaryImage';
 import { cloudinaryVideoUrl } from '@utils/cloudinary';
 import './Home.css';
 
-const videoBg = cloudinaryVideoUrl('home/Video_Home');
+const videoBg = cloudinaryVideoUrl('Home/Video_Home');
 
 const Home = () => {
   const { addToCart } = useCart();
@@ -62,7 +62,7 @@ const Home = () => {
           <div className="benefits-wrapper">
             <div className="benefits-image-col">
               <CloudinaryImage
-                publicId="home/H_Imagen1"
+                publicId="Home/H_Imagen1"
                 alt="Beneficios Campus Matsso"
                 width={800}
                 height={600}

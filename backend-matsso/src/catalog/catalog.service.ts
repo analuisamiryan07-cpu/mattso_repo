@@ -101,7 +101,7 @@ export class CatalogService {
         vigencia: cert?.vigencia?.anos || 2,
         inicia: 'Inscripciones Abiertas',
         slug: p.titulo.toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, ''),
-        cloudinaryFolder: `certificaciones/${p.titulo}`,
+        cloudinaryFolder: `Certificaciones/${p.titulo}`,
         tipo: p.tipo.toLowerCase(),
         descripcion: p.descripcion || 'Sin descripción',
         destacado: p.destacado ?? false,
