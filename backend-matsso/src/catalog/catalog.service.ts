@@ -158,8 +158,8 @@ export class CatalogService {
         inicia: 'Inscripciones Abiertas',
         slug: p.titulo.toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, ''),
         cloudinaryFolder: cloudinaryNum
-          ? `Certificaciones/${CLOUDINARY_FOLDER[cloudinaryNum]}`
-          : `Certificaciones/${p.titulo}`,
+          ? `Home/Certificaciones/${CLOUDINARY_FOLDER[cloudinaryNum]}`
+          : `Home/Certificaciones/${p.titulo}`,
         cloudinaryNum,
         tipo: p.tipo.toLowerCase(),
         descripcion: p.descripcion || 'Sin descripción',
