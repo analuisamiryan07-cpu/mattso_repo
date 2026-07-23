@@ -138,7 +138,7 @@ const Carrito = () => {
                   <div className="carrito-item__img">
                     <CloudinaryImage
                       publicId={item.cloudinaryNum
-                        ? `${item.cloudinaryFolder}/${item.cloudinaryNum}_portada`
+                        ? `${item.cloudinaryNum}_portada`
                         : undefined}
                       alt={item.titulo}
                       width={120}
