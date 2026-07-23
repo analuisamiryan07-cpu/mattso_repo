@@ -118,8 +118,8 @@ const CertificationDetail = () => {
       {/* ── 1. PORTADA / HERO ── */}
       <section
         className="cert-hero"
-        style={cert.cloudinaryFolder
-          ? { backgroundImage: `url('${cloudinaryUrl(`${cert.cloudinaryFolder}/hero`, { width: 1920, height: 700 })}')` }
+        style={cert.cloudinaryFolder && cert.cloudinaryNum
+          ? { backgroundImage: `url('${cloudinaryUrl(`${cert.cloudinaryFolder}/${cert.cloudinaryNum}_hero`, { width: 1920, height: 700 })}')` }
           : undefined}
       >
         <div className="cert-hero-overlay" />
@@ -216,7 +216,9 @@ const CertificationDetail = () => {
         <div className="target-wrapper">
           <div className="target-image">
             <CloudinaryImage
-              publicId={`${cert.cloudinaryFolder}/izquierda`}
+              publicId={cert.cloudinaryNum
+                ? `${cert.cloudinaryFolder}/${cert.cloudinaryNum}_izquierda`
+                : undefined}
               alt={cert.titulo}
               width={700}
               height={520}
@@ -298,7 +300,9 @@ const CertificationDetail = () => {
           </div>
           <div className="requirements-image">
             <CloudinaryImage
-              publicId={`${cert.cloudinaryFolder}/derecha`}
+              publicId={cert.cloudinaryNum
+                ? `${cert.cloudinaryFolder}/${cert.cloudinaryNum}_derecha`
+                : undefined}
               alt={cert.titulo}
               width={700}
               height={520}

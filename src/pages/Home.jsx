@@ -93,7 +93,9 @@ const Home = () => {
                 <div key={course.id} className="course-card">
                   <div className="course-image">
                     <CloudinaryImage
-                      publicId={`${course.cloudinaryFolder}/hero`}
+                      publicId={course.cloudinaryNum
+                        ? `${course.cloudinaryFolder}/${course.cloudinaryNum}_portada`
+                        : undefined}
                       alt={course.titulo}
                       width={600}
                       height={400}

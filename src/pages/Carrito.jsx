@@ -4,6 +4,7 @@ import { useCart } from '@context/CartContext';
 import { useToast } from '@context/ToastContext';
 import { cursosService } from '@api/cursosService';
 import { authService } from '@api/authService';
+import CloudinaryImage from '@components/ui/CloudinaryImage';
 import './Carrito.css';
 
 const Carrito = () => {
@@ -135,10 +136,14 @@ const Carrito = () => {
               cartItems.map((item) => (
                 <div key={item.id} className="carrito-item">
                   <div className="carrito-item__img">
-                    <img
-                      src={item.imagen}
+                    <CloudinaryImage
+                      publicId={item.cloudinaryNum
+                        ? `${item.cloudinaryFolder}/${item.cloudinaryNum}_portada`
+                        : undefined}
                       alt={item.titulo}
-                      onError={(e) => { e.target.src = 'https://placehold.co/120x80/002147/fff?text=Matsso'; }}
+                      width={120}
+                      height={80}
+                      fallback={item.imagen || 'https://placehold.co/120x80/002147/fff?text=Matsso'}
                     />
                   </div>
                   <div className="carrito-item__body">

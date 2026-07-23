@@ -14,4 +14,6 @@ export const normalizeCartItem = (item) => ({
   modalidad: item.modalidad ?? 'Virtual',
   tipo: item.tipo ?? 'capacitacion',
   cantidad: 1,
+  cloudinaryNum: item.cloudinaryNum ?? null,
+  cloudinaryFolder: item.cloudinaryFolder ?? null,
 });

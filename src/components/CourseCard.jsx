@@ -30,7 +30,9 @@ const CourseCard = ({ course }) => {
     <div className="course-card-modern">
       <div className="ccm__image">
         <CloudinaryImage
-          publicId={`${course.cloudinaryFolder}/hero`}
+          publicId={course.cloudinaryNum
+            ? `${course.cloudinaryFolder}/${course.cloudinaryNum}_portada`
+            : undefined}
           alt={course.titulo}
           width={400}
           height={250}
