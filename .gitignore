@@ -82,6 +82,7 @@ ENTREGA_MATSSO_SERVIDOR_2026-07-15.zip.sha256
 
 # Scripts SQL del servidor (esquema completo de BD — información sensible)
 db_scripts/
+*.sql
 
 # Comprobantes subidos en tiempo de ejecución (ya excluidos arriba)
 # backend-matsso/src/storage/ ← NO excluir: es código fuente del módulo
