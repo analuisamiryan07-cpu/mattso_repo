@@ -86,7 +86,7 @@ const Home = () => {
           <div className="programas-banner-grid">
             <Link to="/capacitaciones" className="programa-banner-card">
               <img
-                src={cloudinaryUrl('023_portada', { width: 800, height: 500, crop: 'fill' })}
+                src="https://res.cloudinary.com/ehglt8h8/image/upload/v1784928429/Capacitaciones.png"
                 alt="Capacitaciones"
               />
               <div className="programa-banner-overlay" />
@@ -100,7 +100,7 @@ const Home = () => {
             </Link>
             <Link to="/certificaciones" className="programa-banner-card">
               <img
-                src={cloudinaryUrl('022_portada', { width: 800, height: 500, crop: 'fill' })}
+                src="https://res.cloudinary.com/ehglt8h8/image/upload/v1784928496/certificaciones.png"
                 alt="Certificaciones"
               />
               <div className="programa-banner-overlay" />
