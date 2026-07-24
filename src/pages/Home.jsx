@@ -88,6 +88,7 @@ const Home = () => {
               <img
                 src="https://res.cloudinary.com/ehglt8h8/image/upload/v1784928429/Capacitaciones.png"
                 alt="Capacitaciones"
+                style={{ objectPosition: 'center top' }}
               />
               <div className="programa-banner-overlay" />
               <div className="programa-banner-content">
