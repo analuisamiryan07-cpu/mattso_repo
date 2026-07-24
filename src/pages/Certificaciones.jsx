@@ -13,12 +13,14 @@ const Certificaciones = () => {
   const categorias = ['Todas', ...new Set(certificaciones.map((c) => c.categoria))].sort();
   const modalidades = ['Todas', ...new Set(certificaciones.map((c) => c.modalidad).filter(Boolean))].sort();
 
-  const filtered = certificaciones.filter((c) => {
-    const matchMod = filtroModalidad === 'Todas' || c.modalidad === filtroModalidad;
-    const matchCat = filtroCategoria === 'Todas' || c.categoria === filtroCategoria;
-    const matchSearch = c.titulo.toLowerCase().includes(busqueda.toLowerCase());
-    return matchMod && matchCat && matchSearch;
-  });
+  const filtered = certificaciones
+    .filter((c) => {
+      const matchMod = filtroModalidad === 'Todas' || c.modalidad === filtroModalidad;
+      const matchCat = filtroCategoria === 'Todas' || c.categoria === filtroCategoria;
+      const matchSearch = c.titulo.toLowerCase().includes(busqueda.toLowerCase());
+      return matchMod && matchCat && matchSearch;
+    })
+    .sort((a, b) => a.titulo.localeCompare(b.titulo, 'es'));
 
   return (
     <div className="catalogo-page">
@@ -42,7 +44,7 @@ const Certificaciones = () => {
               <i className="fa-solid fa-magnifying-glass" />
               <input
                 type="text"
-                placeholder="Nombre de la certificación..."
+                placeholder="Buscar..."
                 value={busqueda}
                 onChange={(e) => setBusqueda(e.target.value)}
               />

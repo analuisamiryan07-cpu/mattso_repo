@@ -69,7 +69,15 @@
   box-shadow: var(--shadow-sm);
   position: sticky;
   top: 90px;
+  max-height: calc(100vh - 120px);
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--primary-yellow) transparent;
 }
+
+.catalogo-filtros::-webkit-scrollbar { width: 4px; }
+.catalogo-filtros::-webkit-scrollbar-track { background: transparent; }
+.catalogo-filtros::-webkit-scrollbar-thumb { background: var(--primary-yellow); border-radius: 2px; }
 
 .catalogo-filtros h3 {
   font-size: 1rem;
@@ -121,6 +129,7 @@
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
+  justify-content: flex-start;
 }
 
 .chip {

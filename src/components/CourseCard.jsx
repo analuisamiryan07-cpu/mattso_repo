@@ -47,15 +47,11 @@ const CourseCard = ({ course }) => {
 
         {course.inicia && (
           <p className="ccm__date">
-            <i className="fa-regular fa-calendar" /> Inicia: {course.inicia}
+            <i className="fa-regular fa-calendar" /> {course.inicia}
           </p>
         )}
 
         <div className="ccm__metrics">
-          <div className="ccm__metric">
-            <i className="fa-regular fa-clock" />
-            <span>{course.horas}</span>
-          </div>
           <div className="ccm__metric">
             <i className={course.modalidad === 'Presencial' ? 'fa-solid fa-users' : 'fa-solid fa-laptop'} />
             <span>{course.modalidad}</span>
@@ -63,7 +59,7 @@ const CourseCard = ({ course }) => {
           {course.vigencia && (
             <div className="ccm__metric">
               <i className="fa-solid fa-shield-halved" />
-              <span>{course.vigencia} año{course.vigencia !== 1 ? 's' : ''}</span>
+              <span>Vigencia: {course.vigencia} año{course.vigencia !== 1 ? 's' : ''}</span>
             </div>
           )}
         </div>

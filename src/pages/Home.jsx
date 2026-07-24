@@ -4,8 +4,9 @@ import { useCart } from '@context/CartContext';
 import { useToast } from '@context/ToastContext';
 import StatItem from '@components/StatItem';
 import { useCatalog } from '@context/CatalogContext';
+import CourseCard from '@components/CourseCard';
 import CloudinaryImage from '@components/ui/CloudinaryImage';
-import { cloudinaryVideoUrl } from '@utils/cloudinary';
+import { cloudinaryVideoUrl, cloudinaryUrl } from '@utils/cloudinary';
 import './Home.css';
 
 const videoBg = cloudinaryVideoUrl('Home/video');
@@ -22,11 +23,6 @@ const Home = () => {
     { id: 4, icon: 'fa-solid fa-users-viewfinder', text: 'Crea conexiones significativas con profesionales dentro de tu grupo' },
   ];
 
-  const handleAddToCart = (course) => {
-    addToCart(course);
-    addToast(`"${course.titulo}" añadido al carrito`, 'success');
-  };
-
   return (
     <div className="home-page">
 
@@ -39,7 +35,7 @@ const Home = () => {
         <div className="hero-content">
           <h1>Especialistas en Formación y Capacitación Continua</h1>
           <p>Potencia tu perfil profesional con nuestras certificaciones avaladas.</p>
-          <Link to="/capacitaciones" className="cta-button">Ver Catálogo</Link>
+          <Link to="/certificaciones" className="cta-button">Ver Catálogo</Link>
         </div>
       </section>
 
@@ -49,7 +45,7 @@ const Home = () => {
           <StatItem end={15000} title="Personas Capacitadas" />
           <StatItem end={10000} title="Personas Certificadas" />
           <StatItem end={500}   title="Empresas Satisfechas" />
-          <StatItem end={10}    title="Años de Experiencia" />
+          <StatItem end={13}    title="Años de Experiencia" />
         </div>
       </section>
 
@@ -83,33 +79,51 @@ const Home = () => {
         </div>
       </section>
 
-      {/* CURSOS DESTACADOS */}
+      {/* PROGRAMAS BANNER */}
+      <section className="programas-banner-section">
+        <div className="container">
+          <h2 className="section-title">Nuestros Programas</h2>
+          <div className="programas-banner-grid">
+            <Link to="/capacitaciones" className="programa-banner-card">
+              <img
+                src={cloudinaryUrl('023_portada', { width: 800, height: 500, crop: 'fill' })}
+                alt="Capacitaciones"
+              />
+              <div className="programa-banner-overlay" />
+              <div className="programa-banner-content">
+                <span className="programa-banner-label">PROGRAMAS</span>
+                <h3>Capacitaciones</h3>
+                <span className="programa-banner-cta">
+                  Ver todos <i className="fa-solid fa-arrow-right" />
+                </span>
+              </div>
+            </Link>
+            <Link to="/certificaciones" className="programa-banner-card">
+              <img
+                src={cloudinaryUrl('009_portada', { width: 800, height: 500, crop: 'fill' })}
+                alt="Certificaciones"
+              />
+              <div className="programa-banner-overlay" />
+              <div className="programa-banner-content">
+                <span className="programa-banner-label">PROGRAMAS</span>
+                <h3>Certificaciones</h3>
+                <span className="programa-banner-cta">
+                  Ver todas <i className="fa-solid fa-arrow-right" />
+                </span>
+              </div>
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* DESTACADOS */}
       {featuredCourses.length > 0 && (
         <section className="featured-section">
           <div className="container">
-            <h2 className="section-title">Capacitaciones Destacadas</h2>
-            <div className="courses-grid">
+            <h2 className="section-title">Destacados</h2>
+            <div className="home-featured-grid">
               {featuredCourses.map((course) => (
-                <div key={course.id} className="course-card">
-                  <div className="course-image">
-                    <CloudinaryImage
-                      publicId={course.cloudinaryNum
-                        ? `${course.cloudinaryNum}_portada`
-                        : undefined}
-                      alt={course.titulo}
-                      width={600}
-                      height={400}
-                    />
-                    <span className="course-badge">{course.categoria}</span>
-                  </div>
-                  <div className="course-info">
-                    <h3>{course.titulo}</h3>
-                    <p className="course-price">${course.precio.toFixed(2)}</p>
-                    <button className="add-to-cart-btn" onClick={() => handleAddToCart(course)}>
-                      <i className="fa-solid fa-cart-plus" /> Agregar al carrito
-                    </button>
-                  </div>
-                </div>
+                <CourseCard key={course.id} course={course} />
               ))}
             </div>
           </div>
@@ -132,8 +146,8 @@ const Home = () => {
             </div>
             <div className="why-item">
               <i className="fa-solid fa-laptop-file" />
-              <h3>Modalidad Virtual</h3>
-              <p>Estudia a tu propio ritmo, desde cualquier lugar.</p>
+              <h3>Modalidad Presencial</h3>
+              <p>Evaluaciones presenciales con metodologías prácticas.</p>
             </div>
           </div>
         </div>

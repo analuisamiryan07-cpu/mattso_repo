@@ -61,8 +61,8 @@
 .nav-list > li > .nav-dropdown-toggle {
   text-decoration: none;
   color: var(--color-white);
-  font-weight: 500;
-  font-size: 15px;
+  font-weight: 600;
+  font-size: 17px;
   transition: color 0.3s ease;
   position: relative;
   text-shadow: 1px 1px 3px rgba(0,0,0,0.8);

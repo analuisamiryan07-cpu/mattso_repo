@@ -64,7 +64,7 @@ const Nosotros = () => {
           <StatItem end={15000} title="Personas Capacitadas" />
           <StatItem end={10000} title="Personas Certificadas" />
           <StatItem end={500}   title="Empresas Satisfechas" />
-          <StatItem end={10}    title="Años de Experiencia" />
+          <StatItem end={13}    title="Años de Experiencia" />
         </div>
       </section>
 
