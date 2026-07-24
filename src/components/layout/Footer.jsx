@@ -26,7 +26,6 @@ const Footer = () => {
               alt="Matsso Logo"
               className="footer-v2-logo"
             />
-            <p className="footer-v2-tagline">CERTIFICACIÓN Y CAPACITACIÓN PROFESIONAL</p>
           </div>
 
           {/* COLUMNA 2: INFORMACIÓN DE CONTACTO */}

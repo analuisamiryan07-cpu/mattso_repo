@@ -31,7 +31,7 @@
 
 /* ─── Logo ─────────────────────────────────────── */
 .logo-img {
-  height: 50px;
+  height: 68px;
   width: auto;
   transition: transform 0.3s ease;
   filter: drop-shadow(0 0 5px rgba(255,255,255,0.8));
@@ -155,7 +155,7 @@
 .header-socials {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 16px;
 }
 
 .header-social-icon {
