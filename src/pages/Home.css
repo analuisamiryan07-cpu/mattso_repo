@@ -383,6 +383,58 @@
 }
 
 /* ===========================
+   CEO QUOTE
+   =========================== */
+.ceo-quote-section {
+  position: relative;
+  padding: 100px 20px;
+  background-image: url('https://res.cloudinary.com/ehglt8h8/image/upload/v1784930136/Excelencia.png');
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: left;
+}
+
+.ceo-quote-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 33, 71, 0.65);
+}
+
+.ceo-quote-content {
+  position: relative;
+  z-index: 1;
+  max-width: 860px;
+}
+
+.ceo-quote-text {
+  font-size: 2.4rem;
+  font-weight: 700;
+  color: #ffffff;
+  line-height: 1.35;
+  margin: 0 0 28px 0;
+}
+
+.ceo-quote-author {
+  font-size: 1.1rem;
+  font-style: italic;
+  color: var(--primary-yellow);
+  font-weight: 500;
+  margin: 0;
+}
+
+@media (max-width: 768px) {
+  .ceo-quote-text { font-size: 1.6rem; }
+  .ceo-quote-section {
+    background-attachment: scroll;
+    padding: 70px 20px;
+  }
+}
+
+/* ===========================
    WHY US
    =========================== */
 .why-section {

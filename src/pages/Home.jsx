@@ -132,6 +132,17 @@ const Home = () => {
         </section>
       )}
 
+      {/* FRASE CEO */}
+      <section className="ceo-quote-section">
+        <div className="ceo-quote-overlay" />
+        <div className="ceo-quote-content">
+          <blockquote className="ceo-quote-text">
+            "Que la excelencia sea una filosofía en cada uno de vosotros."
+          </blockquote>
+          <p className="ceo-quote-author">- Marco Chicaiza Ayala, C.E.O.</p>
+        </div>
+      </section>
+
       {/* POR QUÉ ELEGIRNOS */}
       <section className="why-section">
         <div className="container">
