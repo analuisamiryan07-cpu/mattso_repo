@@ -72,20 +72,41 @@
 
 /* Métricas */
 .ccm__metrics {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px 12px;
 }
 
-.ccm__metric {
+.ccm__metric-block {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.ccm__metric-row {
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 0.85rem;
-  color: var(--text-muted);
 }
 
-.ccm__metric i { color: var(--primary-blue); }
+.ccm__metric-row i {
+  color: var(--primary-blue);
+  font-size: 0.9rem;
+  width: 14px;
+  text-align: center;
+}
+
+.ccm__metric-label {
+  font-weight: 700;
+  color: var(--primary-blue);
+  font-size: 0.82rem;
+}
+
+.ccm__metric-value {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  padding-left: 20px;
+}
 
 /* Precio */
 .ccm__price {

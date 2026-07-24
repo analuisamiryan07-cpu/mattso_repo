@@ -151,35 +151,33 @@
   color: var(--primary-yellow) !important;
 }
 
-/* ─── Social icons (desktop header) ──────────── */
-.header-socials {
+/* ─── Social circles (desktop header) ────────── */
+.header-social-circles {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 8px;
+  flex-shrink: 0;
 }
 
-.header-social-icon {
-  color: var(--color-white);
+.header-social-circle {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--primary-blue);
+  color: #fff;
   font-size: 13px;
-  text-shadow: 1px 1px 3px rgba(0,0,0,0.6);
-  transition: color 0.25s;
-  text-decoration: none;
-  width: 26px;
-  height: 26px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 50%;
+  text-decoration: none;
+  transition: background 0.2s, transform 0.2s;
+  flex-shrink: 0;
 }
 
-.header-social-icon:hover { color: var(--primary-yellow); }
-
-.site-header.scrolled .header-social-icon {
-  color: var(--primary-blue);
-  text-shadow: none;
+.header-social-circle:hover {
+  background: var(--primary-yellow);
+  transform: scale(1.1);
 }
-
-.site-header.scrolled .header-social-icon:hover { color: var(--primary-yellow); }
 
 /* ─── Header actions ───────────────────────────── */
 .header-actions {
@@ -350,9 +348,9 @@
 
 /* ─── Responsive ────────────────────────────────── */
 
-/* Hide social icons below 1100px so nav still fits */
+/* Hide social circles below 1100px so nav still fits */
 @media (max-width: 1100px) {
-  .header-socials { display: none; }
+  .header-social-circles { display: none; }
   .nav-social-mobile { display: block; }
 }
 
@@ -463,22 +461,21 @@
   }
 
   .nav-social-link {
-    color: var(--primary-blue);
-    font-size: 16px;
+    color: #fff;
+    font-size: 15px;
     width: 36px;
     height: 36px;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: #f0f4ff;
+    background: var(--primary-blue);
     border-radius: 50%;
-    transition: background 0.2s, color 0.2s;
+    transition: background 0.2s;
     text-decoration: none;
   }
 
   .nav-social-link:hover {
     background: var(--primary-yellow);
-    color: #fff;
   }
 
   /* Hide desktop user menu on mobile */

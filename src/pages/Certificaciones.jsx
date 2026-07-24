@@ -10,8 +10,8 @@ const Certificaciones = () => {
   const [filtroModalidad, setFiltroModalidad] = useState('Todas');
   const [busqueda, setBusqueda] = useState('');
 
-  const categorias = ['Todas', ...new Set(certificaciones.map((c) => c.categoria))].sort();
-  const modalidades = ['Todas', ...new Set(certificaciones.map((c) => c.modalidad).filter(Boolean))].sort();
+  const categorias = ['Todas', ...[...new Set(certificaciones.map((c) => c.categoria))].sort()];
+  const modalidades = ['Todas', ...[...new Set(certificaciones.map((c) => c.modalidad).filter(Boolean))].sort()];
 
   const filtered = certificaciones
     .filter((c) => {
