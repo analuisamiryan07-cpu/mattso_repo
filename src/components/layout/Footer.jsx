@@ -22,7 +22,7 @@ const Footer = () => {
           {/* COLUMNA 1: LOGO Y TEXTO */}
           <div className="footer-v2-logo-section">
             <img
-              src="https://campusmatsso.com/wp-content/uploads/2024/07/LOGO-MATSSO-02-1.png"
+              src="https://res.cloudinary.com/ehglt8h8/image/upload/v1784925646/Logo_1.png"
               alt="Matsso Logo"
               className="footer-v2-logo"
             />

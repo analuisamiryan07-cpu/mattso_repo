@@ -5,7 +5,7 @@ import { useToast } from '@context/ToastContext';
 import { authService } from '@api/authService';
 import './Header.css';
 
-const logoImg = '/logo_matsso_qhse_raw.png';
+const logoImg = 'https://res.cloudinary.com/ehglt8h8/image/upload/v1784925646/Logo_1.png';
 
 const SOCIAL_LINKS = [
   { icon: 'fa-brands fa-facebook-f', href: 'https://www.facebook.com/matssoecu',      label: 'Facebook'  },

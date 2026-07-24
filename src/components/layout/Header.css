@@ -160,16 +160,13 @@
 
 .header-social-icon {
   color: var(--color-white);
-  font-size: 13px;
+  font-size: 17px;
   text-shadow: 1px 1px 3px rgba(0,0,0,0.6);
   transition: color 0.25s;
   text-decoration: none;
-  width: 26px;
-  height: 26px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 50%;
 }
 
 .header-social-icon:hover { color: var(--primary-yellow); }
@@ -198,7 +195,7 @@
   cursor: pointer;
   color: var(--color-white);
   font-weight: 600;
-  font-size: 14px;
+  font-size: 17px;
   text-shadow: 1px 1px 3px rgba(0,0,0,0.8);
   display: flex;
   align-items: center;
@@ -291,7 +288,7 @@
   text-decoration: none;
   color: var(--color-white);
   font-weight: 600;
-  font-size: 14px;
+  font-size: 17px;
   transition: color 0.3s ease;
   text-shadow: 1px 1px 3px rgba(0,0,0,0.8);
   white-space: nowrap;
@@ -306,7 +303,7 @@
 .login-btn:hover,
 .cart-btn:hover { color: var(--primary-yellow); }
 
-.cart-btn { font-size: 20px; }
+.cart-btn { font-size: 17px; }
 
 .cart-icon-wrapper { position: relative; }
 
