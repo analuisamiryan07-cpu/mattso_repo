@@ -142,6 +142,7 @@
   background: white;
   cursor: pointer;
   transition: all var(--transition);
+  text-align: left;
 }
 
 .chip:hover { border-color: var(--primary-blue); color: var(--primary-blue); }
