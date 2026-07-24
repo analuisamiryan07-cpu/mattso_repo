@@ -11,7 +11,7 @@ import { JwtStrategy } from './jwt.strategy';
     JwtModule.register({
       // FIX [Authentication.Credentials.Unprotected]: Sin fallback hardcodeado
       secret: process.env.JWT_SECRET,
-      signOptions: { expiresIn: '8h' },
+      signOptions: { expiresIn: '2h' },
     }),
   ],
   controllers: [AuthController],

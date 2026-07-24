@@ -1,11 +1,19 @@
-import { Injectable, NotFoundException, Optional, Logger } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  Optional,
+  Logger,
+  BadRequestException,
+  ConflictException,
+} from '@nestjs/common';
 import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
 import { PrismaService } from '../prisma/prisma.service';
 import { EmailService } from '../email/email.service';
-import * as bcrypt from 'bcrypt';
-import { randomBytes } from 'crypto';
 import { EMAIL_QUEUE, EMAIL_JOBS } from '../queue/queue.constants';
+import { CreateOrderDto } from './dto/create-order.dto';
+
+const TASA_IVA = 0.15;
 
 @Injectable()
 export class OrdersService {
@@ -17,59 +25,46 @@ export class OrdersService {
     @Optional() @InjectQueue(EMAIL_QUEUE) private readonly emailQueue?: Queue,
   ) {}
 
-  async createOrder(dto: {
-    cliente: { nombre: string; cedula: string; email: string; celular: string };
-    items: Array<{ id: number; cantidad: number; precio: number }>;
-    comprobanteUrl?: string;
-  }) {
-    const { cliente, items, comprobanteUrl } = dto;
+  async createOrder(dto: CreateOrderDto, usuarioId: number, comprobanteUrl: string) {
+    const { items } = dto;
 
-    if (!items || items.length === 0) {
-      throw new Error('La orden debe contener al menos un item.');
+    // Obtener precios reales desde la base de datos — nunca del cliente
+    const productIds = items.map((i) => BigInt(i.id));
+    const productos = await this.prisma.producto.findMany({
+      where: { id: { in: productIds }, activo: true },
+      select: { id: true, precio: true, titulo: true },
+    });
+
+    if (productos.length !== productIds.length) {
+      const found = new Set(productos.map((p) => Number(p.id)));
+      const missing = items.filter((i) => !found.has(i.id)).map((i) => i.id);
+      throw new BadRequestException(`Productos no encontrados o inactivos: ${missing.join(', ')}`);
     }
 
-    const total = items.reduce((acc, item) => acc + item.precio * item.cantidad, 0);
-    const totalConIva = total * 1.15;
+    const precioMap = new Map(productos.map((p) => [Number(p.id), Number(p.precio)]));
+
+    const subtotal = items.reduce(
+      (acc, item) => acc + (precioMap.get(item.id) ?? 0) * item.cantidad,
+      0,
+    );
+    const iva = subtotal * TASA_IVA;
+    const total = subtotal + iva;
+
+    // Verificar que el usuario existe
+    const userWeb = await this.prisma.usuarioWeb.findUnique({
+      where: { id: BigInt(usuarioId) },
+      include: { cliente: true },
+    });
+    if (!userWeb) throw new NotFoundException('Usuario no encontrado.');
 
     const order = await this.prisma.$transaction(async (tx) => {
-      let dbCliente = await tx.cliente.findUnique({ where: { cedula: cliente.cedula } });
-
-      if (!dbCliente) {
-        dbCliente = await tx.cliente.create({
-          data: {
-            nombre: cliente.nombre,
-            cedula: cliente.cedula,
-            correo: cliente.email,
-            telefono: cliente.celular,
-            fecha: new Date(),
-            created_at: new Date(),
-            updated_at: new Date(),
-          },
-        });
-      }
-
-      let userWeb = await tx.usuarioWeb.findUnique({ where: { correo: cliente.email } });
-
-      if (!userWeb) {
-        const tempPassword = randomBytes(16).toString('hex');
-        const passwordHash = await bcrypt.hash(tempPassword, 10);
-        userWeb = await tx.usuarioWeb.create({
-          data: {
-            correo: cliente.email,
-            password_hash: passwordHash,
-            cliente_id: dbCliente.id,
-            rol: 'ESTUDIANTE',
-          },
-        });
-      }
-
       const dbOrder = await tx.orden.create({
         data: {
-          usuario_id: userWeb.id,
-          total: totalConIva,
+          usuario_id: BigInt(usuarioId),
+          total,
           estado: 'PENDIENTE',
           metodo_pago: 'TRANSFERENCIA',
-          comprobante_url: comprobanteUrl || null,
+          comprobante_url: comprobanteUrl,
         },
       });
 
@@ -78,22 +73,24 @@ export class OrdersService {
           data: {
             orden_id: dbOrder.id,
             producto_id: BigInt(item.id),
-            precio_unitario: item.precio,
+            precio_unitario: precioMap.get(item.id)!, // precio de la DB, nunca del cliente
             cantidad: item.cantidad,
           },
         });
       }
 
-      return { dbOrder, dbCliente };
+      return dbOrder;
     });
 
-    // Encolar email de confirmación de forma asíncrona
+    // Notificación por correo
+    const correo = userWeb.cliente?.correo ?? userWeb.correo;
+    const nombre = userWeb.cliente?.nombre ?? userWeb.correo;
     const emailPayload = {
-      to: cliente.email,
-      nombre: cliente.nombre,
-      orderId: Number(order.dbOrder.id),
-      total: totalConIva,
-      items: items.map((i) => ({ producto: `Certificación #${i.id}`, precio: i.precio })),
+      to: correo,
+      nombre,
+      orderId: Number(order.id),
+      total,
+      items: productos.map((p) => ({ producto: p.titulo, precio: Number(p.precio) })),
     };
 
     if (this.emailQueue) {
@@ -101,20 +98,20 @@ export class OrdersService {
         .add(EMAIL_JOBS.ORDER_CREATED, emailPayload)
         .catch((err) => this.logger.error('Error encolando email de confirmación:', err));
     } else {
-      // Sin Redis: enviar email directamente (síncrono, no bloquea al usuario porque está en try/catch)
-      this.emailService.sendOrderConfirmation(emailPayload).catch((err) =>
-        this.logger.error('Error enviando email de confirmación:', err),
-      );
+      this.emailService
+        .sendOrderConfirmation(emailPayload)
+        .catch((err) => this.logger.error('Error enviando email de confirmación:', err));
     }
 
     return {
-      id: Number(order.dbOrder.id),
-      usuario_id: Number(order.dbOrder.usuario_id),
-      total: Number(order.dbOrder.total),
-      estado: order.dbOrder.estado,
-      fecha_orden: order.dbOrder.fecha_orden,
-      metodo_pago: order.dbOrder.metodo_pago,
-      comprobante_url: order.dbOrder.comprobante_url,
+      id: Number(order.id),
+      usuario_id: Number(order.usuario_id),
+      subtotal: Number(subtotal.toFixed(2)),
+      iva: Number(iva.toFixed(2)),
+      total: Number(total.toFixed(2)),
+      estado: order.estado,
+      fecha_orden: order.fecha_orden,
+      metodo_pago: order.metodo_pago,
     };
   }
 
@@ -151,12 +148,19 @@ export class OrdersService {
     }));
   }
 
-  async updateOrderStatus(id: number, estado: 'PAGADA' | 'RECHAZADA') {
+  async updateOrderStatus(id: number, estado: 'PAGADA' | 'RECHAZADA', motivo?: string) {
     const order = await this.prisma.orden.findUnique({
       where: { id: BigInt(id) },
       include: { usuario: { include: { cliente: true } }, items: { include: { producto: true } } },
     });
-    if (!order) throw new NotFoundException(`Orden ${id} no encontrada`);
+    if (!order) throw new NotFoundException(`Orden ${id} no encontrada.`);
+
+    // Solo se puede transicionar desde PENDIENTE
+    if (order.estado !== 'PENDIENTE') {
+      throw new ConflictException(
+        `La orden ${id} ya fue procesada (estado actual: ${order.estado}). No se puede modificar.`,
+      );
+    }
 
     const updated = await this.prisma.orden.update({
       where: { id: BigInt(id) },
@@ -164,22 +168,15 @@ export class OrdersService {
       include: { usuario: { include: { cliente: true } } },
     });
 
-    const correo = updated.usuario.cliente?.correo || updated.usuario.correo;
-    const nombre = updated.usuario.cliente?.nombre || updated.usuario.correo;
+    const correo = updated.usuario.cliente?.correo ?? updated.usuario.correo;
+    const nombre = updated.usuario.cliente?.nombre ?? updated.usuario.correo;
 
     if (correo) {
-      const jobName =
-        estado === 'PAGADA' ? EMAIL_JOBS.PAYMENT_APPROVED : EMAIL_JOBS.PAYMENT_REJECTED;
-
+      const jobName = estado === 'PAGADA' ? EMAIL_JOBS.PAYMENT_APPROVED : EMAIL_JOBS.PAYMENT_REJECTED;
       const emailPayload =
         estado === 'PAGADA'
-          ? {
-              to: correo,
-              nombre,
-              orderId: id,
-              items: order.items.map((i) => ({ producto: i.producto.titulo })),
-            }
-          : { to: correo, nombre, orderId: id };
+          ? { to: correo, nombre, orderId: id, items: order.items.map((i) => ({ producto: i.producto.titulo })) }
+          : { to: correo, nombre, orderId: id, motivo: motivo ?? 'Sin especificar' };
 
       if (this.emailQueue) {
         await this.emailQueue
@@ -198,6 +195,7 @@ export class OrdersService {
       id: Number(updated.id),
       estado: updated.estado,
       mensaje: estado === 'PAGADA' ? 'Pago aprobado con éxito.' : 'Orden rechazada.',
+      motivo: estado === 'RECHAZADA' ? motivo : undefined,
       cliente: updated.usuario.cliente
         ? {
             nombre: updated.usuario.cliente.nombre,

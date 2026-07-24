@@ -1,4 +1,5 @@
 import { NestFactory } from '@nestjs/core';
+import { ValidationPipe } from '@nestjs/common';
 import { AppModule } from './app.module';
 import helmet from 'helmet';
 import * as express from 'express';
@@ -6,6 +7,16 @@ import { join } from 'path';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+
+  // Validación global: rechaza propiedades extra (whitelist) y transforma tipos
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,           // elimina propiedades no declaradas en el DTO
+      forbidNonWhitelisted: false, // no fallar si el cliente envía extras (ya los silenciamos)
+      transform: true,           // convierte strings a number/boolean cuando el DTO lo indica
+      transformOptions: { enableImplicitConversion: true },
+    }),
+  );
 
   // CORS: permite el frontend de Vercel + localhost en desarrollo
   const allowedOrigins = (process.env.FRONTEND_URL || 'http://localhost:5173')
@@ -22,7 +33,8 @@ async function bootstrap() {
       }
     },
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'x-admin-key'],
+    // x-admin-key NO se expone al navegador — solo Laravel → NestJS en servidor
+    allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true,
   });
 

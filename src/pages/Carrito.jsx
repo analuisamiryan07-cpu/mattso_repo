@@ -7,6 +7,24 @@ import { authService } from '@api/authService';
 import CloudinaryImage from '@components/ui/CloudinaryImage';
 import './Carrito.css';
 
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+const CEDULA_RE = /^\d{10}$/;
+const PHONE_RE  = /^\d{7,15}$/;
+
+function httpErrorMsg(err) {
+  const status = err?.response?.status;
+  const serverMsg = err?.response?.data?.message;
+  if (status === 401) return 'Tu sesión ha expirado. Por favor inicia sesión de nuevo.';
+  if (status === 403) return 'No tienes permiso para realizar esta acción.';
+  if (status === 409) return 'Esta orden ya fue registrada anteriormente.';
+  if (status === 413) return 'El comprobante es demasiado grande. Máximo 5 MB.';
+  if (status === 422) return serverMsg || 'Datos inválidos. Revisa el formulario.';
+  if (status === 429) return 'Demasiadas solicitudes. Espera un momento e intenta de nuevo.';
+  if (status === 400) return serverMsg || 'Datos inválidos. Revisa el formulario.';
+  if (err?.code === 'ECONNABORTED') return 'El servidor está iniciando. Intenta de nuevo en unos segundos.';
+  return 'Ocurrió un error al procesar tu pedido. Inténtalo de nuevo.';
+}
+
 const Carrito = () => {
   const { cartItems, removeFromCart, updateQty, clearCart, getCartTotal } = useCart();
   const { addToast } = useToast();
@@ -16,9 +34,9 @@ const Carrito = () => {
   const currentUser = authService.getCurrentUser();
 
   const [form, setForm] = useState({
-    nombre:  currentUser?.nombre  || '',
-    cedula:  currentUser?.cedula  || '',
-    email:   currentUser?.correo  || '',
+    nombre:  currentUser?.nombre   || '',
+    cedula:  currentUser?.cedula   || '',
+    email:   currentUser?.correo   || '',
     celular: currentUser?.telefono || '',
   });
   const [comprobanteFile, setComprobanteFile] = useState(null);
@@ -38,15 +56,22 @@ const Carrito = () => {
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
-    if (file) {
-      if (file.size > 5 * 1024 * 1024) {
-        setFormErrors(prev => ({ ...prev, comprobante: 'El archivo excede el tamaño máximo de 5MB.' }));
-        setComprobanteFile(null);
-        return;
-      }
-      setComprobanteFile(file);
-      setFormErrors(prev => ({ ...prev, comprobante: '' }));
+    if (!file) return;
+    const allowed = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'];
+    if (!allowed.includes(file.type)) {
+      setFormErrors(prev => ({ ...prev, comprobante: 'Solo se permiten imágenes JPG, PNG, WebP o PDF.' }));
+      setComprobanteFile(null);
+      e.target.value = '';
+      return;
     }
+    if (file.size > 5 * 1024 * 1024) {
+      setFormErrors(prev => ({ ...prev, comprobante: 'El archivo excede el tamaño máximo de 5 MB.' }));
+      setComprobanteFile(null);
+      e.target.value = '';
+      return;
+    }
+    setComprobanteFile(file);
+    setFormErrors(prev => ({ ...prev, comprobante: '' }));
   };
 
   const handleRemoveFile = (e) => {
@@ -57,11 +82,26 @@ const Carrito = () => {
 
   const validate = () => {
     const errs = {};
-    if (!form.nombre.trim())  errs.nombre  = 'Campo requerido';
-    if (!form.cedula.trim())  errs.cedula  = 'Campo requerido';
-    if (!form.email.trim())   errs.email   = 'Campo requerido';
-    if (!form.celular.trim()) errs.celular = 'Campo requerido';
-    if (!comprobanteFile)     errs.comprobante = 'Debes subir tu comprobante de pago para procesar la orden.';
+    const nombre = form.nombre.trim();
+    const cedula = form.cedula.trim().replace(/\s/g, '');
+    const email  = form.email.trim().toLowerCase();
+    const celular = form.celular.trim().replace(/[\s\-+]/g, '');
+
+    if (!nombre)                               errs.nombre  = 'El nombre es requerido.';
+    else if (nombre.length < 3)               errs.nombre  = 'El nombre debe tener al menos 3 caracteres.';
+    else if (nombre.length > 255)             errs.nombre  = 'El nombre no puede superar 255 caracteres.';
+
+    if (!cedula)                               errs.cedula  = 'La cédula es requerida.';
+    else if (!CEDULA_RE.test(cedula))         errs.cedula  = 'La cédula debe tener exactamente 10 dígitos.';
+
+    if (!email)                                errs.email   = 'El correo es requerido.';
+    else if (!EMAIL_RE.test(email))           errs.email   = 'Ingresa un correo electrónico válido.';
+
+    if (!celular)                              errs.celular = 'El celular es requerido.';
+    else if (!PHONE_RE.test(celular))         errs.celular = 'El celular debe tener entre 7 y 15 dígitos.';
+
+    if (!comprobanteFile)                      errs.comprobante = 'Debes subir tu comprobante de pago para procesar la orden.';
+
     return errs;
   };
 
@@ -76,31 +116,27 @@ const Carrito = () => {
       setFormErrors(errs);
       return;
     }
+    if (loading) return; // prevenir doble envío
+
     setLoading(true);
     try {
+      // Solo enviamos id y cantidad — el precio lo calcula el servidor desde la BD
       const orderData = {
-        cliente: {
-          nombre: form.nombre,
-          cedula: form.cedula,
-          email: form.email,
-          celular: form.celular,
-        },
         items: cartItems.map(item => ({
           id: Number(item.id),
           cantidad: item.cantidad,
-          precio: Number(item.precio),
         })),
       };
       await cursosService.crearOrden(orderData, comprobanteFile);
-      addToast(`¡Gracias ${form.nombre}! Tu pedido ha sido registrado y está en verificación.`, 'success');
+      addToast(
+        `¡Gracias ${form.nombre.trim()}! Tu pedido ha sido registrado y está en verificación.`,
+        'success',
+      );
       clearCart();
       navigate('/');
     } catch (err) {
       console.error('Error procesando orden:', err);
-      const msg = err.code === 'ECONNABORTED'
-        ? 'El servidor está iniciando, por favor intenta de nuevo en unos segundos.'
-        : 'Ocurrió un error al procesar tu pedido. Inténtalo de nuevo.';
-      addToast(msg, 'error');
+      addToast(httpErrorMsg(err), 'error');
     } finally {
       setLoading(false);
     }
@@ -180,18 +216,10 @@ const Carrito = () => {
                 <h3>Inicia sesión para continuar</h3>
                 <p>Necesitas una cuenta para completar tu compra. Es rápido y gratuito.</p>
                 <div className="login-required-actions">
-                  <Link
-                    to="/login"
-                    state={{ from: '/carrito' }}
-                    className="btn-primary"
-                  >
+                  <Link to="/login" state={{ from: '/carrito' }} className="btn-primary">
                     <i className="fa-regular fa-user" /> Iniciar Sesión
                   </Link>
-                  <Link
-                    to="/login"
-                    state={{ from: '/carrito', tab: 'register' }}
-                    className="btn-secondary"
-                  >
+                  <Link to="/login" state={{ from: '/carrito', tab: 'register' }} className="btn-secondary">
                     Crear Cuenta
                   </Link>
                 </div>
@@ -213,6 +241,7 @@ const Carrito = () => {
                       <input
                         type="text" name="nombre" value={form.nombre}
                         onChange={handleChange} placeholder="Ej: Juan Pérez"
+                        maxLength={255}
                       />
                       {formErrors.nombre && <span className="form-error">{formErrors.nombre}</span>}
                     </div>
@@ -221,6 +250,7 @@ const Carrito = () => {
                       <input
                         type="text" name="cedula" value={form.cedula}
                         onChange={handleChange} placeholder="Ej: 1712345678"
+                        maxLength={13}
                       />
                       {formErrors.cedula && <span className="form-error">{formErrors.cedula}</span>}
                     </div>
@@ -231,6 +261,7 @@ const Carrito = () => {
                       <input
                         type="email" name="email" value={form.email}
                         onChange={handleChange} placeholder="Ej: juan@email.com"
+                        maxLength={255}
                       />
                       {formErrors.email && <span className="form-error">{formErrors.email}</span>}
                     </div>
@@ -239,6 +270,7 @@ const Carrito = () => {
                       <input
                         type="tel" name="celular" value={form.celular}
                         onChange={handleChange} placeholder="Ej: 0991234567"
+                        maxLength={15}
                       />
                       {formErrors.celular && <span className="form-error">{formErrors.celular}</span>}
                     </div>
@@ -287,7 +319,7 @@ const Carrito = () => {
                       <input
                         type="file"
                         id="comprobante-input"
-                        accept="image/*,.pdf"
+                        accept=".jpg,.jpeg,.png,.webp,.pdf,image/jpeg,image/png,image/webp,application/pdf"
                         onChange={handleFileChange}
                         style={{ display: 'none' }}
                       />
@@ -306,7 +338,7 @@ const Carrito = () => {
                         ) : (
                           <div className="file-upload-trigger-content">
                             <i className="fa-solid fa-cloud-arrow-up" />
-                            <span>Seleccionar comprobante (PNG, JPG, PDF - Máx. 5MB)</span>
+                            <span>Seleccionar comprobante (PNG, JPG, WebP, PDF — Máx. 5 MB)</span>
                           </div>
                         )}
                       </label>
@@ -338,7 +370,9 @@ const Carrito = () => {
                 disabled={cartItems.length === 0 || loading}
                 onClick={() => document.getElementById('submit-carrito').click()}
               >
-                {loading ? 'Procesando...' : (<>Continuar <i className="fa-solid fa-arrow-right" /></>)}
+                {loading
+                  ? <><i className="fa-solid fa-spinner fa-spin" /> Procesando...</>
+                  : <>Continuar <i className="fa-solid fa-arrow-right" /></>}
               </button>
             ) : (
               <Link to="/login" state={{ from: '/carrito' }} className="btn-primary btn-checkout" style={{ textAlign: 'center' }}>

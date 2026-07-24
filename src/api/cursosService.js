@@ -39,15 +39,16 @@ export const cursosService = {
 
   async crearOrden(orderData, comprobanteFile) {
     const formData = new FormData();
-    if (comprobanteFile) {
-      formData.append('comprobante', comprobanteFile);
-    }
-    formData.append('data', JSON.stringify(orderData));
+    formData.append('comprobante', comprobanteFile);
+
+    // Solo enviamos items (id + cantidad) — el servidor calcula el precio desde la BD
+    const safeData = {
+      items: (orderData.items || []).map(({ id, cantidad }) => ({ id, cantidad })),
+    };
+    formData.append('data', JSON.stringify(safeData));
 
     const { data } = await apiClient.post('/ordenes', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
+      headers: { 'Content-Type': 'multipart/form-data' },
     });
     return data;
   },
