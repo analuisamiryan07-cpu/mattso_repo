@@ -100,7 +100,7 @@ const Home = () => {
             </Link>
             <Link to="/certificaciones" className="programa-banner-card">
               <img
-                src={cloudinaryUrl('009_portada', { width: 800, height: 500, crop: 'fill' })}
+                src={cloudinaryUrl('022_portada', { width: 800, height: 500, crop: 'fill' })}
                 alt="Certificaciones"
               />
               <div className="programa-banner-overlay" />
