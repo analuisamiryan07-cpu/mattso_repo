@@ -1,12 +1,21 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useToast } from '@context/ToastContext';
 import { cursosService } from '@api/cursosService';
+import { authService } from '@api/authService';
 import './Contacto.css';
 
 const Contacto = () => {
   const { addToast } = useToast();
+  const isLoggedIn  = authService.isAuthenticated();
+  const currentUser = authService.getCurrentUser();
+
   const [form, setForm] = useState({
-    nombre: '', email: '', telefono: '', asunto: 'Información general', mensaje: '',
+    nombre:  currentUser?.nombre  || '',
+    email:   currentUser?.correo  || '',
+    telefono: currentUser?.telefono || '',
+    asunto: 'Información general',
+    mensaje: '',
   });
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
@@ -30,7 +39,7 @@ const Contacto = () => {
     try {
       await cursosService.enviarContacto(form);
       addToast('¡Mensaje enviado! Te contactaremos pronto.', 'success');
-      setForm({ nombre: '', email: '', telefono: '', asunto: 'Información general', mensaje: '' });
+      setForm({ nombre: currentUser?.nombre || '', email: currentUser?.correo || '', telefono: currentUser?.telefono || '', asunto: 'Información general', mensaje: '' });
     } catch {
       addToast('Error al enviar el mensaje. Inténtalo de nuevo.', 'error');
     } finally {
@@ -78,7 +87,7 @@ const Contacto = () => {
             <div className="info-icon"><i className="fa-regular fa-envelope" /></div>
             <div>
               <h4>Correo</h4>
-              <a href="mailto:info@matssoecuador.com">info@matssoecuador.com</a>
+              <a href="mailto:matssoecuador@gmail.com">matssoecuador@gmail.com</a>
             </div>
           </div>
 
@@ -92,9 +101,9 @@ const Contacto = () => {
           </div>
 
           <div className="contacto-social">
-            <a href="#" className="social-btn"><i className="fa-brands fa-facebook-f" /></a>
-            <a href="#" className="social-btn"><i className="fa-brands fa-instagram" /></a>
-            <a href="#" className="social-btn"><i className="fa-brands fa-youtube" /></a>
+            <a href="https://www.facebook.com/matssoecu" target="_blank" rel="noopener noreferrer" className="social-btn"><i className="fa-brands fa-facebook-f" /></a>
+            <a href="https://www.instagram.com/matssoecu" target="_blank" rel="noopener noreferrer" className="social-btn"><i className="fa-brands fa-instagram" /></a>
+            <a href="https://www.youtube.com/channel/UCwJ_dXr4d5tKQ_A5_CjvWfw" target="_blank" rel="noopener noreferrer" className="social-btn"><i className="fa-brands fa-youtube" /></a>
             <a href="https://wa.me/593983555081" target="_blank" rel="noopener noreferrer" className="social-btn social-btn--whatsapp">
               <i className="fa-brands fa-whatsapp" />
             </a>
@@ -104,44 +113,62 @@ const Contacto = () => {
         {/* FORMULARIO */}
         <div className="contacto-form-wrap">
           <h2>Envíanos un Mensaje</h2>
-          <form className="contacto-form" onSubmit={handleSubmit} noValidate>
-            <div className="cf-row">
-              <div className="cf-group">
-                <label>Nombre completo *</label>
-                <input type="text" name="nombre" value={form.nombre} onChange={handleChange} placeholder="Juan Pérez" />
-                {errors.nombre && <span className="cf-error">{errors.nombre}</span>}
-              </div>
-              <div className="cf-group">
-                <label>Correo Electrónico *</label>
-                <input type="email" name="email" value={form.email} onChange={handleChange} placeholder="juan@ejemplo.com" />
-                {errors.email && <span className="cf-error">{errors.email}</span>}
-              </div>
-            </div>
-            <div className="cf-row">
-              <div className="cf-group">
-                <label>Teléfono / WhatsApp</label>
-                <input type="tel" name="telefono" value={form.telefono} onChange={handleChange} placeholder="0991234567" />
-              </div>
-              <div className="cf-group">
-                <label>Asunto</label>
-                <select name="asunto" value={form.asunto} onChange={handleChange}>
-                  <option>Información general</option>
-                  <option>Inscripción a curso</option>
-                  <option>Proceso de certificación</option>
-                  <option>Capacitación empresarial</option>
-                  <option>Otro</option>
-                </select>
+
+          {!isLoggedIn ? (
+            /* Bloqueo de login */
+            <div className="contacto-login-required">
+              <i className="fa-solid fa-lock" />
+              <h3>Inicia sesión para enviarnos un mensaje</h3>
+              <p>Necesitas una cuenta para contactarnos. Es rápido y gratuito.</p>
+              <div className="contacto-login-actions">
+                <Link to="/login" state={{ from: '/contacto' }} className="btn-primary">
+                  <i className="fa-regular fa-user" /> Iniciar Sesión
+                </Link>
+                <Link to="/login" state={{ from: '/contacto', tab: 'register' }} className="btn-secondary">
+                  Crear Cuenta
+                </Link>
               </div>
             </div>
-            <div className="cf-group">
-              <label>Mensaje *</label>
-              <textarea name="mensaje" value={form.mensaje} onChange={handleChange} rows={5} placeholder="Escribe tu mensaje aquí..." />
-              {errors.mensaje && <span className="cf-error">{errors.mensaje}</span>}
-            </div>
-            <button type="submit" className="cf-submit" disabled={loading}>
-              {loading ? 'Enviando...' : (<><i className="fa-solid fa-paper-plane" /> Enviar Mensaje</>)}
-            </button>
-          </form>
+          ) : (
+            <form className="contacto-form" onSubmit={handleSubmit} noValidate>
+              <div className="cf-row">
+                <div className="cf-group">
+                  <label>Nombre completo *</label>
+                  <input type="text" name="nombre" value={form.nombre} onChange={handleChange} placeholder="Juan Pérez" />
+                  {errors.nombre && <span className="cf-error">{errors.nombre}</span>}
+                </div>
+                <div className="cf-group">
+                  <label>Correo Electrónico *</label>
+                  <input type="email" name="email" value={form.email} onChange={handleChange} placeholder="juan@ejemplo.com" />
+                  {errors.email && <span className="cf-error">{errors.email}</span>}
+                </div>
+              </div>
+              <div className="cf-row">
+                <div className="cf-group">
+                  <label>Teléfono / WhatsApp</label>
+                  <input type="tel" name="telefono" value={form.telefono} onChange={handleChange} placeholder="0991234567" />
+                </div>
+                <div className="cf-group">
+                  <label>Asunto</label>
+                  <select name="asunto" value={form.asunto} onChange={handleChange}>
+                    <option>Información general</option>
+                    <option>Inscripción a curso</option>
+                    <option>Proceso de certificación</option>
+                    <option>Capacitación empresarial</option>
+                    <option>Otro</option>
+                  </select>
+                </div>
+              </div>
+              <div className="cf-group">
+                <label>Mensaje *</label>
+                <textarea name="mensaje" value={form.mensaje} onChange={handleChange} rows={5} placeholder="Escribe tu mensaje aquí..." />
+                {errors.mensaje && <span className="cf-error">{errors.mensaje}</span>}
+              </div>
+              <button type="submit" className="cf-submit" disabled={loading}>
+                {loading ? 'Enviando...' : (<><i className="fa-solid fa-paper-plane" /> Enviar Mensaje</>)}
+              </button>
+            </form>
+          )}
         </div>
 
       </div>

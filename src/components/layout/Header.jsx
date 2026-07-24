@@ -1,92 +1,222 @@
-import React, { useState, useEffect } from 'react';
-import { Link, NavLink, useLocation } from 'react-router-dom';
+import React, { useState, useEffect, useRef } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useCart } from '@context/CartContext';
+import { useToast } from '@context/ToastContext';
+import { authService } from '@api/authService';
 import './Header.css';
+
 const logoImg = '/logo_matsso_qhse_raw.png';
+
+const SOCIAL_LINKS = [
+  { icon: 'fa-brands fa-facebook-f',  href: 'https://www.facebook.com/matssoecu',                          label: 'Facebook'  },
+  { icon: 'fa-brands fa-instagram',   href: 'https://www.instagram.com/matssoecu',                         label: 'Instagram' },
+  { icon: 'fa-brands fa-linkedin-in', href: 'https://www.linkedin.com/company/matssoecuador/',             label: 'LinkedIn'  },
+  { icon: 'fa-brands fa-youtube',     href: 'https://www.youtube.com/channel/UCwJ_dXr4d5tKQ_A5_CjvWfw',   label: 'YouTube'   },
+  { icon: 'fa-brands fa-tiktok',      href: 'https://www.tiktok.com/@matssoecuador',                       label: 'TikTok'    },
+  { icon: 'fa-brands fa-x-twitter',   href: 'https://x.com/matssoecu',                                    label: 'X'         },
+  { icon: 'fa-brands fa-whatsapp',    href: 'https://wa.me/593983555081',                                  label: 'WhatsApp'  },
+  { icon: 'fa-regular fa-envelope',   href: 'mailto:matssoecuador@gmail.com',                              label: 'Email'     },
+];
 
 const Header = () => {
   const { getCartCount } = useCart();
-
-  // Estado para controlar si el menú de celulares está abierto o cerrado
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-
-  // Estado para saber si el usuario ha bajado la página (scroll) y cambiar a blanco
-  const [scrolled, setScrolled] = useState(typeof window !== 'undefined' ? window.scrollY > 50 : false);
-
-  // Hook para obtener la ruta actual
+  const { addToast } = useToast();
+  const navigate = useNavigate();
   const location = useLocation();
 
-  // Comprueba si estamos actualmente en la página principal
+  const [isMenuOpen, setIsMenuOpen]     = useState(false);
+  const [programasOpen, setProgramasOpen] = useState(false);
+  const [userMenuOpen, setUserMenuOpen]  = useState(false);
+  const [scrolled, setScrolled]          = useState(typeof window !== 'undefined' ? window.scrollY > 50 : false);
+  const [isLoggedIn, setIsLoggedIn]      = useState(authService.isAuthenticated());
+  const [currentUser, setCurrentUser]    = useState(authService.getCurrentUser());
+
+  const programasRef = useRef(null);
+  const userMenuRef  = useRef(null);
+
   const isHomePage = location.pathname === '/';
 
-  // Efecto que detecta el scroll SÓLO para cambiar el color de fondo (de transparente a blanco)
-  // El TAMAÑO de la cabecera ya es 100% estático gracias al CSS.
   useEffect(() => {
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 50);
-    };
-
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    const onScroll = () => setScrolled(window.scrollY > 50);
+    window.addEventListener('scroll', onScroll);
+    return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
-  // Función para abrir o cerrar el menú en versión móvil
-  const toggleMenu = () => {
-    setIsMenuOpen(!isMenuOpen);
+  useEffect(() => {
+    setIsLoggedIn(authService.isAuthenticated());
+    setCurrentUser(authService.getCurrentUser());
+    setIsMenuOpen(false);
+    setProgramasOpen(false);
+    setUserMenuOpen(false);
+  }, [location.pathname]);
+
+  useEffect(() => {
+    const handleOutside = (e) => {
+      if (programasRef.current && !programasRef.current.contains(e.target)) setProgramasOpen(false);
+      if (userMenuRef.current  && !userMenuRef.current.contains(e.target))  setUserMenuOpen(false);
+    };
+    document.addEventListener('mousedown', handleOutside);
+    return () => document.removeEventListener('mousedown', handleOutside);
+  }, []);
+
+  const handleLogout = () => {
+    authService.logout();
+    setIsLoggedIn(false);
+    setCurrentUser(null);
+    setUserMenuOpen(false);
+    setIsMenuOpen(false);
+    addToast('Sesión cerrada correctamente', 'success');
+    navigate('/');
   };
 
-  // La cabecera es de tamaño estático. Solo cambia su color de fondo a blanco (clase 'scrolled')
-  // si el usuario baja o si NO estamos en la página de inicio.
+  const closeAll = () => {
+    setIsMenuOpen(false);
+    setProgramasOpen(false);
+    setUserMenuOpen(false);
+  };
+
   const headerClass = `site-header ${isHomePage ? (scrolled ? 'scrolled' : '') : 'scrolled solid-always'}`;
+  const firstName = currentUser?.nombre?.split(' ')[0] || 'Usuario';
 
   return (
     <header className={headerClass}>
       <div className="header-container">
 
-        {/* LOGO DE LA EMPRESA */}
         <div className="logo-container">
-          <Link to="/">
-            <img
-              src={logoImg}
-              alt="Matsso Logo"
-              className="logo-img"
-            />
+          <Link to="/" onClick={closeAll}>
+            <img src={logoImg} alt="Matsso Logo" className="logo-img" />
           </Link>
         </div>
 
-        {/* MENÚ DE NAVEGACIÓN PRINCIPAL */}
         <nav className={`main-nav ${isMenuOpen ? 'open' : ''}`}>
           <ul className="nav-list">
-            {/* Rutas (Links) hacia las diferentes páginas. onClick cierra el menú en móviles. */}
-            <li><Link to="/" onClick={() => setIsMenuOpen(false)}>Inicio</Link></li>
-            <li><Link to="/certificaciones" onClick={() => setIsMenuOpen(false)}>Certificaciones</Link></li>
-            <li><Link to="/contacto" onClick={() => setIsMenuOpen(false)}>Contacto</Link></li>
+
+            {/* Mobile-only: user greeting or login */}
+            {isLoggedIn && currentUser ? (
+              <li className="nav-auth-mobile">
+                <div className="nav-user-mobile">
+                  <i className="fa-regular fa-user" />
+                  <span>{currentUser.nombre}</span>
+                </div>
+                <button className="nav-logout-mobile" onClick={handleLogout}>
+                  <i className="fa-solid fa-right-from-bracket" /> Cerrar sesión
+                </button>
+              </li>
+            ) : (
+              <li className="nav-login-mobile">
+                <Link to="/login" onClick={closeAll}>
+                  <i className="fa-regular fa-user" /> Iniciar Sesión
+                </Link>
+              </li>
+            )}
+
+            <li><Link to="/" onClick={closeAll}>Inicio</Link></li>
+            <li><Link to="/nosotros" onClick={closeAll}>Nosotros</Link></li>
+
+            {/* Programas dropdown */}
+            <li className="nav-item-dropdown" ref={programasRef}>
+              <button
+                className="nav-dropdown-toggle"
+                onClick={() => setProgramasOpen(o => !o)}
+                aria-expanded={programasOpen}
+              >
+                Programas&nbsp;<i className={`fa-solid fa-chevron-down nav-chevron ${programasOpen ? 'rotated' : ''}`} />
+              </button>
+              <ul className={`nav-dropdown-menu ${programasOpen ? 'open' : ''}`}>
+                <li>
+                  <Link to="/capacitaciones" onClick={closeAll}>
+                    <i className="fa-solid fa-chalkboard-user" /> Capacitaciones
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/certificaciones" onClick={closeAll}>
+                    <i className="fa-solid fa-certificate" /> Certificaciones
+                  </Link>
+                </li>
+              </ul>
+            </li>
+
+            <li><Link to="/contacto" onClick={closeAll}>Contáctanos</Link></li>
+
+            {/* Social icons – only visible inside mobile menu */}
+            <li className="nav-social-mobile">
+              <div className="nav-social-row">
+                {SOCIAL_LINKS.map((s) => (
+                  <a
+                    key={s.label}
+                    href={s.href}
+                    target={s.href.startsWith('mailto') ? undefined : '_blank'}
+                    rel="noopener noreferrer"
+                    aria-label={s.label}
+                    className="nav-social-link"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    <i className={s.icon} />
+                  </a>
+                ))}
+              </div>
+            </li>
+
           </ul>
         </nav>
 
-        {/* BOTONES DE LA DERECHA (Login, Carrito, Menú Hamburguesa) */}
         <div className="header-actions">
 
-          {/* Botón de Inicio de Sesión */}
-          <Link to="/login" className="login-btn">
-            <i className="fa-regular fa-user"></i> Iniciar Sesión
-          </Link>
+          {/* Social icons – desktop only */}
+          <div className="header-socials">
+            {SOCIAL_LINKS.map((s) => (
+              <a
+                key={s.label}
+                href={s.href}
+                target={s.href.startsWith('mailto') ? undefined : '_blank'}
+                rel="noopener noreferrer"
+                aria-label={s.label}
+                className="header-social-icon"
+              >
+                <i className={s.icon} />
+              </a>
+            ))}
+          </div>
 
-          {/* Botón del Carrito de Compras */}
+          {/* User dropdown (desktop) */}
+          {isLoggedIn && currentUser ? (
+            <div className="user-menu-wrap" ref={userMenuRef}>
+              <button className="user-menu-btn" onClick={() => setUserMenuOpen(o => !o)}>
+                <i className="fa-regular fa-user" />
+                <span className="user-first-name">{firstName}</span>
+                <i className={`fa-solid fa-chevron-down user-chevron ${userMenuOpen ? 'rotated' : ''}`} />
+              </button>
+              {userMenuOpen && (
+                <div className="user-dropdown">
+                  <div className="user-dropdown-info">
+                    <strong>{currentUser.nombre}</strong>
+                    <small>{currentUser.correo}</small>
+                  </div>
+                  <div className="user-dropdown-divider" />
+                  <button className="user-dropdown-logout" onClick={handleLogout}>
+                    <i className="fa-solid fa-right-from-bracket" /> Cerrar sesión
+                  </button>
+                </div>
+              )}
+            </div>
+          ) : (
+            <Link to="/login" className="login-btn">
+              <i className="fa-regular fa-user" /> Iniciar Sesión
+            </Link>
+          )}
+
           <Link to="/carrito" className="cart-btn">
             <div className="cart-icon-wrapper">
-              <i className="fa-solid fa-cart-shopping"></i>
-              {/* Círculo amarillo con el número de items en el carrito */}
+              <i className="fa-solid fa-cart-shopping" />
               <span className="cart-count">{getCartCount()}</span>
             </div>
           </Link>
 
-          {/* Botón de Menú para Celulares (Ícono de hamburguesa o X) */}
-          <button className="mobile-menu-btn" onClick={toggleMenu}>
-            <i className={`fa-solid ${isMenuOpen ? 'fa-xmark' : 'fa-bars'}`}></i>
+          <button className="mobile-menu-btn" onClick={() => setIsMenuOpen(o => !o)}>
+            <i className={`fa-solid ${isMenuOpen ? 'fa-xmark' : 'fa-bars'}`} />
           </button>
-        </div>
 
+        </div>
       </div>
     </header>
   );

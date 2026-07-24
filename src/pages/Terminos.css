@@ -1,0 +1,125 @@
+/* ── Términos y Condiciones ─────────────────────── */
+
+.terminos-page { background: #fff; }
+
+.terminos-hero {
+  position: relative;
+  min-height: 260px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--primary-blue);
+  padding-top: 80px;
+  text-align: center;
+}
+
+.terminos-hero-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(0,33,71,0.9) 0%, rgba(0,60,130,0.8) 100%);
+}
+
+.terminos-hero-content {
+  position: relative;
+  z-index: 1;
+  color: #fff;
+  padding: 0 20px;
+}
+
+.terminos-hero-content h1 {
+  font-size: clamp(1.8rem, 4vw, 2.5rem);
+  font-weight: 800;
+  margin-bottom: 10px;
+}
+
+.terminos-hero-content p {
+  font-size: 0.95rem;
+  color: rgba(255,255,255,0.75);
+}
+
+.terminos-body {
+  max-width: 800px;
+  padding: 60px 20px 80px;
+}
+
+.terminos-intro {
+  background: #f0f4ff;
+  border-left: 4px solid var(--primary-yellow);
+  border-radius: 0 8px 8px 0;
+  padding: 20px 24px;
+  margin-bottom: 48px;
+  font-size: 0.97rem;
+  line-height: 1.7;
+  color: #374151;
+}
+
+.terminos-intro strong { color: var(--primary-blue); }
+
+.terminos-section {
+  margin-bottom: 40px;
+  border-bottom: 1px solid #f0f0f0;
+  padding-bottom: 40px;
+}
+
+.terminos-section:last-of-type { border-bottom: none; }
+
+.terminos-section h2 {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--primary-blue);
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.terminos-section p {
+  font-size: 0.95rem;
+  line-height: 1.75;
+  color: #374151;
+  margin-bottom: 12px;
+}
+
+.terminos-section ul {
+  padding-left: 20px;
+  margin: 0 0 12px;
+}
+
+.terminos-section ul li {
+  font-size: 0.95rem;
+  line-height: 1.7;
+  color: #374151;
+  margin-bottom: 6px;
+}
+
+.terminos-section a {
+  color: var(--primary-blue);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.terminos-section a:hover { color: var(--primary-yellow); text-decoration: underline; }
+
+.terminos-footer-nav {
+  margin-top: 40px;
+  padding-top: 24px;
+  border-top: 1px solid #e5e7eb;
+}
+
+.terminos-back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--primary-blue);
+  font-weight: 600;
+  font-size: 14px;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.terminos-back-link:hover { color: var(--primary-yellow); }
+
+@media (max-width: 600px) {
+  .terminos-hero { min-height: 200px; }
+  .terminos-body { padding: 40px 16px 60px; }
+}

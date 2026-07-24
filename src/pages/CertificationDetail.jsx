@@ -4,6 +4,7 @@ import { useCart } from '@context/CartContext';
 import { useToast } from '@context/ToastContext';
 import { cursosService } from '@api/cursosService';
 import { useCatalog } from '@context/CatalogContext';
+import { authService } from '@api/authService';
 import CloudinaryImage from '@components/ui/CloudinaryImage';
 import { cloudinaryUrl } from '@utils/cloudinary';
 import './CertificationDetail.css';
@@ -15,11 +16,18 @@ const CertificationDetail = () => {
   const { addToast } = useToast();
   const { getCertBySlug, loading: catalogLoading } = useCatalog();
 
+  const isLoggedIn  = authService.isAuthenticated();
+  const currentUser = authService.getCurrentUser();
+
   const preloaded = location.state?.cert;
   const [cert, setCert] = useState(preloaded || null);
   const [loading, setLoading] = useState(!preloaded);
   const [error, setError] = useState(null);
-  const [contactoForm, setContactoForm] = useState({ nombre: '', email: '', telefono: '' });
+  const [contactoForm, setContactoForm] = useState({
+    nombre:   currentUser?.nombre   || '',
+    email:    currentUser?.correo   || '',
+    telefono: currentUser?.telefono || '',
+  });
   const [sendingContacto, setSendingContacto] = useState(false);
 
   useEffect(() => {
@@ -139,28 +147,46 @@ const CertificationDetail = () => {
           {/* Formulario de contacto */}
           <div className="cert-hero-form">
             <h3>Quiero ser contactado por un asesor</h3>
-            <p>Envíanos tus datos y nos pondremos en contacto contigo.</p>
-            <form onSubmit={handleContactoSubmit}>
-              <div className="form-group">
-                <label>Nombre</label>
-                <input type="text" name="nombre" value={contactoForm.nombre} onChange={handleContactoChange} required />
-              </div>
-              <div className="form-group">
-                <label>Email</label>
-                <input type="email" name="email" value={contactoForm.email} onChange={handleContactoChange} required />
-              </div>
-              <div className="form-group">
-                <label>Teléfono</label>
-                <input type="tel" name="telefono" value={contactoForm.telefono} onChange={handleContactoChange} placeholder="Ej: 0991234567" />
-              </div>
-              <div className="form-checkbox">
-                <input type="checkbox" id="terms" required />
-                <label htmlFor="terms">Acepto los <u>Términos y Condiciones</u></label>
-              </div>
-              <button type="submit" className="btn-enviar" disabled={sendingContacto}>
-                {sendingContacto ? 'Enviando...' : 'Enviar'}
-              </button>
-            </form>
+            {!isLoggedIn ? (
+              <>
+                <p>Inicia sesión para que un asesor te contacte.</p>
+                <Link
+                  to="/login"
+                  state={{ from: `/certificacion/${cert?.slug || slug}` }}
+                  className="btn-enviar"
+                  style={{ display: 'inline-block', textAlign: 'center', textDecoration: 'none' }}
+                >
+                  <i className="fa-regular fa-user" /> Iniciar Sesión
+                </Link>
+                <p style={{ marginTop: 10, fontSize: '0.85rem', opacity: 0.8 }}>
+                  ¿No tienes cuenta?{' '}
+                  <Link to="/login" state={{ tab: 'register' }} style={{ color: '#f7a600', fontWeight: 600 }}>
+                    Regístrate gratis
+                  </Link>
+                </p>
+              </>
+            ) : (
+              <>
+                <p>Envíanos tus datos y nos pondremos en contacto contigo.</p>
+                <form onSubmit={handleContactoSubmit}>
+                  <div className="form-group">
+                    <label>Nombre</label>
+                    <input type="text" name="nombre" value={contactoForm.nombre} onChange={handleContactoChange} required />
+                  </div>
+                  <div className="form-group">
+                    <label>Email</label>
+                    <input type="email" name="email" value={contactoForm.email} onChange={handleContactoChange} required />
+                  </div>
+                  <div className="form-group">
+                    <label>Teléfono</label>
+                    <input type="tel" name="telefono" value={contactoForm.telefono} onChange={handleContactoChange} placeholder="Ej: 0991234567" />
+                  </div>
+                  <button type="submit" className="btn-enviar" disabled={sendingContacto}>
+                    {sendingContacto ? 'Enviando...' : 'Enviar'}
+                  </button>
+                </form>
+              </>
+            )}
           </div>
         </div>
       </section>

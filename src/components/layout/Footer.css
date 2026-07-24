@@ -53,14 +53,24 @@
 .footer-v2-info-section p {
   display: flex;
   align-items: center;
+  gap: 8px;
   margin: 0;
 }
 
 .footer-v2-info-section i {
   color: var(--primary-yellow);
-  width: 25px;
+  width: 20px;
   font-size: 1.1rem;
+  flex-shrink: 0;
 }
+
+.footer-link {
+  color: #333;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.footer-link:hover { color: var(--primary-yellow); }
 
 .footer-v2-social-section {
   display: flex;

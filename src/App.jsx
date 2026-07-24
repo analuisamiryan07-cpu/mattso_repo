@@ -8,13 +8,14 @@ import CertificationDetail from '@pages/CertificationDetail';
 import Carrito from '@pages/Carrito';
 import Login from '@pages/Login';
 import Contacto from '@pages/Contacto';
+import Nosotros from '@pages/Nosotros';
+import Terminos from '@pages/Terminos';
 import Chatbot from './components/ui/Chatbot';
 import AdminLogin from '@pages/admin/AdminLogin';
 import AdminDashboard from '@pages/admin/AdminDashboard';
 import { AdminProvider } from './context/AdminContext';
 import { CatalogProvider } from './context/CatalogContext';
 
-// Layout del panel admin (sin Header/Footer/Chatbot del sitio público)
 function AdminLayout() {
   return (
     <Routes>
@@ -25,7 +26,6 @@ function AdminLayout() {
   );
 }
 
-// Layout público con navegación y chatbot
 function PublicLayout() {
   return (
     <div className="app-container">
@@ -33,12 +33,14 @@ function PublicLayout() {
       <main className="main-content">
         <Routes>
           <Route path="/"                     element={<Home />} />
-          <Route path="/capacitaciones"       element={<Navigate to="/certificaciones" replace />} />
+          <Route path="/nosotros"             element={<Nosotros />} />
+          <Route path="/capacitaciones"       element={<Capacitaciones />} />
           <Route path="/certificaciones"      element={<Certificaciones />} />
           <Route path="/certificacion/:slug"  element={<CertificationDetail />} />
           <Route path="/carrito"              element={<Carrito />} />
           <Route path="/login"                element={<Login />} />
           <Route path="/contacto"             element={<Contacto />} />
+          <Route path="/terminos"             element={<Terminos />} />
           <Route path="*" element={
             <div style={{ textAlign: 'center', padding: '120px 20px' }}>
               <h2 style={{ fontSize: '2rem', color: 'var(--primary-blue)' }}>Página no encontrada</h2>

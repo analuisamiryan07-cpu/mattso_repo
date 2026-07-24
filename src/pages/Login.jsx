@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { authService } from '@api/authService';
 import { useToast } from '@context/ToastContext';
 import './Login.css';
@@ -7,10 +7,13 @@ const logoImg = '/logo_matsso_qhse_raw.png';
 
 const Login = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { addToast } = useToast();
 
-  const [tab, setTab] = useState('login'); // 'login' | 'register'
+  const initialTab = location.state?.tab === 'register' ? 'register' : 'login';
+  const [tab, setTab] = useState(initialTab);
   const [loading, setLoading] = useState(false);
+  const [acceptTerms, setAcceptTerms] = useState(false);
 
   const [loginForm, setLoginForm] = useState({ email: '', password: '' });
   const [registerForm, setRegisterForm] = useState({
@@ -56,6 +59,8 @@ const Login = () => {
       errs.password = 'Mínimo 6 caracteres';
     if (registerForm.password !== registerForm.confirm)
       errs.confirm = 'Las contraseñas no coinciden';
+    if (!acceptTerms)
+      errs.terms = 'Debes aceptar los Términos y Condiciones para continuar';
     if (Object.keys(errs).length) { setErrors(errs); return; }
 
     setLoading(true);
@@ -206,6 +211,27 @@ const Login = () => {
                 />
                 {errors.confirm && <span className="lf-error">{errors.confirm}</span>}
               </div>
+            </div>
+
+            {/* T&C checkbox */}
+            <div className="lf-group lf-terms">
+              <label className="lf-checkbox-label">
+                <input
+                  type="checkbox"
+                  checked={acceptTerms}
+                  onChange={(e) => {
+                    setAcceptTerms(e.target.checked);
+                    setErrors((p) => ({ ...p, terms: '' }));
+                  }}
+                />
+                <span>
+                  He leído y acepto los{' '}
+                  <Link to="/terminos" target="_blank" rel="noopener noreferrer" className="lf-terms-link">
+                    Términos y Condiciones
+                  </Link>
+                </span>
+              </label>
+              {errors.terms && <span className="lf-error">{errors.terms}</span>}
             </div>
 
             <button type="submit" className="login-submit" disabled={loading}>

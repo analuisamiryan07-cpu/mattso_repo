@@ -1,0 +1,399 @@
+/* ── Nosotros page ───────────────────────────────── */
+
+/* HERO */
+.nosotros-hero {
+  position: relative;
+  min-height: 520px;
+  display: flex;
+  align-items: center;
+  background: url('/img/hero-nosotros.jpg') center/cover no-repeat, var(--primary-blue);
+  padding-top: 80px;
+}
+
+.nosotros-hero-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(0,33,71,0.88) 0%, rgba(0,33,71,0.65) 100%);
+}
+
+.nosotros-hero-content {
+  position: relative;
+  z-index: 1;
+  color: #fff;
+  max-width: 720px;
+}
+
+.nosotros-eyebrow {
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  color: var(--primary-yellow);
+  margin-bottom: 16px;
+}
+
+.nosotros-hero-content h1 {
+  font-size: clamp(1.8rem, 4vw, 2.8rem);
+  font-weight: 800;
+  line-height: 1.2;
+  margin-bottom: 18px;
+}
+
+.nosotros-hero-content p {
+  font-size: 1.05rem;
+  line-height: 1.7;
+  color: rgba(255,255,255,0.88);
+  margin-bottom: 28px;
+  max-width: 600px;
+}
+
+.nosotros-hero-actions {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.btn-primary-nos {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--primary-yellow);
+  color: #000;
+  font-weight: 700;
+  font-size: 15px;
+  padding: 13px 28px;
+  border-radius: 6px;
+  text-decoration: none;
+  transition: opacity 0.2s, transform 0.2s;
+}
+
+.btn-primary-nos:hover { opacity: 0.9; transform: translateY(-1px); }
+
+.btn-secondary-nos {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: transparent;
+  color: #fff;
+  font-weight: 700;
+  font-size: 15px;
+  padding: 13px 28px;
+  border-radius: 6px;
+  border: 2px solid rgba(255,255,255,0.6);
+  text-decoration: none;
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.btn-secondary-nos:hover {
+  border-color: #fff;
+  background: rgba(255,255,255,0.1);
+}
+
+/* ESTADÍSTICAS */
+.nosotros-stats {
+  background: var(--primary-blue);
+  padding: 48px 20px;
+}
+
+/* QUIÉNES SOMOS */
+.nosotros-quienes {
+  padding: 80px 20px;
+  background: #fff;
+}
+
+.nosotros-quienes-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 60px;
+  align-items: start;
+}
+
+.nosotros-quienes-text { color: #374151; }
+
+.nos-section-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2.5px;
+  color: var(--primary-yellow);
+  margin-bottom: 12px;
+  text-transform: uppercase;
+}
+
+.nos-section-label.center { text-align: center; }
+
+.nosotros-quienes-text h2 {
+  font-size: clamp(1.4rem, 2.5vw, 1.9rem);
+  font-weight: 800;
+  color: var(--primary-blue);
+  margin-bottom: 20px;
+  line-height: 1.25;
+}
+
+.nosotros-quienes-text p {
+  font-size: 0.97rem;
+  line-height: 1.75;
+  margin-bottom: 14px;
+}
+
+.nosotros-quienes-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.nos-card {
+  padding: 28px;
+  border-radius: 12px;
+  color: #fff;
+}
+
+.nos-card--mision { background: var(--primary-blue); }
+
+.nos-card--vision {
+  background: linear-gradient(135deg, #1e40af 0%, #1d4ed8 100%);
+}
+
+.nos-card i {
+  font-size: 1.8rem;
+  margin-bottom: 12px;
+  color: var(--primary-yellow);
+}
+
+.nos-card h3 {
+  font-size: 1.15rem;
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+
+.nos-card p {
+  font-size: 0.92rem;
+  line-height: 1.65;
+  color: rgba(255,255,255,0.88);
+}
+
+/* SERVICIOS */
+.nosotros-servicios {
+  padding: 80px 20px;
+  background: #f8faff;
+}
+
+.nos-section-title {
+  font-size: clamp(1.4rem, 2.5vw, 2rem);
+  font-weight: 800;
+  color: var(--primary-blue);
+  text-align: center;
+  margin-bottom: 48px;
+}
+
+.nosotros-servicios-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 28px;
+}
+
+.nos-servicio-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 32px 24px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.nos-servicio-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+}
+
+.nos-servicio-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 12px;
+  background: #ebf0ff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.nos-servicio-icon i {
+  font-size: 1.5rem;
+  color: var(--primary-blue);
+}
+
+.nos-servicio-card h3 {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--primary-blue);
+}
+
+.nos-servicio-card p {
+  font-size: 0.9rem;
+  line-height: 1.65;
+  color: #4b5563;
+  flex: 1;
+}
+
+.nos-servicio-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--primary-yellow);
+  font-weight: 600;
+  font-size: 14px;
+  text-decoration: none;
+  margin-top: 4px;
+  transition: gap 0.2s;
+}
+
+.nos-servicio-link:hover { gap: 10px; }
+
+/* VALORES */
+.nosotros-valores {
+  padding: 80px 20px;
+  background: #fff;
+}
+
+.nosotros-valores-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 28px;
+}
+
+.nos-valor-card {
+  padding: 28px 22px;
+  border-radius: 10px;
+  border: 1px solid #e5e7eb;
+  text-align: center;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.nos-valor-card:hover {
+  border-color: var(--primary-yellow);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.07);
+}
+
+.nos-valor-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--primary-blue);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.3rem;
+  margin: 0 auto 14px;
+}
+
+.nos-valor-card h3 {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--primary-blue);
+  margin-bottom: 8px;
+}
+
+.nos-valor-card p {
+  font-size: 0.88rem;
+  line-height: 1.6;
+  color: #6b7280;
+}
+
+/* RECONOCIMIENTOS */
+.nosotros-reconocimientos {
+  padding: 80px 20px;
+  background: #f8faff;
+}
+
+.nosotros-recono-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 28px;
+}
+
+.nos-recono-item {
+  display: flex;
+  gap: 18px;
+  align-items: flex-start;
+  background: #fff;
+  padding: 24px;
+  border-radius: 10px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+}
+
+.nos-recono-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 10px;
+  background: var(--primary-blue);
+  color: var(--primary-yellow);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.3rem;
+  flex-shrink: 0;
+}
+
+.nos-recono-item h4 {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--primary-blue);
+  margin-bottom: 6px;
+}
+
+.nos-recono-item p {
+  font-size: 0.88rem;
+  line-height: 1.6;
+  color: #4b5563;
+  margin: 0;
+}
+
+/* CTA FINAL */
+.nosotros-cta {
+  padding: 80px 20px;
+  background: var(--primary-blue);
+  text-align: center;
+}
+
+.nosotros-cta-inner {
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.nosotros-cta h2 {
+  font-size: clamp(1.5rem, 3vw, 2.2rem);
+  font-weight: 800;
+  color: #fff;
+  margin-bottom: 16px;
+}
+
+.nosotros-cta p {
+  font-size: 1rem;
+  line-height: 1.7;
+  color: rgba(255,255,255,0.85);
+  margin-bottom: 32px;
+}
+
+.nosotros-cta-actions {
+  display: flex;
+  gap: 14px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+/* ── Responsive ─────────────────────────────────── */
+@media (max-width: 960px) {
+  .nosotros-quienes-grid { grid-template-columns: 1fr; gap: 40px; }
+  .nosotros-servicios-grid,
+  .nosotros-valores-grid,
+  .nosotros-recono-grid { grid-template-columns: 1fr 1fr; }
+}
+
+@media (max-width: 600px) {
+  .nosotros-servicios-grid,
+  .nosotros-valores-grid,
+  .nosotros-recono-grid { grid-template-columns: 1fr; }
+  .nosotros-hero { min-height: 420px; }
+}

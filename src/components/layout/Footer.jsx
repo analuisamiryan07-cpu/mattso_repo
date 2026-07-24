@@ -1,55 +1,78 @@
 import React from 'react';
 import './Footer.css';
 
+const SOCIAL_LINKS = [
+  { icon: 'fa-brands fa-facebook-f',  href: 'https://www.facebook.com/matssoecu',                        label: 'Facebook'  },
+  { icon: 'fa-brands fa-instagram',   href: 'https://www.instagram.com/matssoecu',                       label: 'Instagram' },
+  { icon: 'fa-brands fa-linkedin-in', href: 'https://www.linkedin.com/company/matssoecuador/',           label: 'LinkedIn'  },
+  { icon: 'fa-brands fa-youtube',     href: 'https://www.youtube.com/channel/UCwJ_dXr4d5tKQ_A5_CjvWfw', label: 'YouTube'   },
+  { icon: 'fa-brands fa-tiktok',      href: 'https://www.tiktok.com/@matssoecuador',                     label: 'TikTok'    },
+  { icon: 'fa-brands fa-x-twitter',   href: 'https://x.com/matssoecu',                                  label: 'X'         },
+  { icon: 'fa-brands fa-whatsapp',    href: 'https://wa.me/593983555081',                                label: 'WhatsApp'  },
+  { icon: 'fa-regular fa-envelope',   href: 'mailto:matssoecuador@gmail.com',                            label: 'Email'     },
+];
+
 const Footer = () => {
   return (
-    // 'site-footer-v2' es la clase principal que controla todo el pie de página
     <footer className="site-footer-v2">
-      
+
       {/* SECCIÓN BLANCA (Parte Superior) */}
       <div className="footer-v2-top">
         <div className="footer-v2-container">
-          
+
           {/* COLUMNA 1: LOGO Y TEXTO */}
           <div className="footer-v2-logo-section">
-            {/* Aquí cambias la ruta de la imagen del logo del pie de página */}
-            <img 
-              src="https://campusmatsso.com/wp-content/uploads/2024/07/LOGO-MATSSO-02-1.png" 
-              alt="Matsso Logo" 
+            <img
+              src="https://campusmatsso.com/wp-content/uploads/2024/07/LOGO-MATSSO-02-1.png"
+              alt="Matsso Logo"
               className="footer-v2-logo"
             />
-            {/* Texto que va justo debajo del logo */}
             <p className="footer-v2-tagline">CERTIFICACIÓN Y CAPACITACIÓN PROFESIONAL</p>
           </div>
 
           {/* COLUMNA 2: INFORMACIÓN DE CONTACTO */}
-          {/* Aquí puedes modificar las palabras "Dirección", el número telefónico, o el correo */}
           <div className="footer-v2-info-section">
-            <p><i className="fa-solid fa-location-dot"></i> Dirección: Quito, Ecuador</p>
-            <p><i className="fa-regular fa-envelope"></i> Correo: info@matssoecuador.com</p>
-            <p><i className="fa-brands fa-whatsapp"></i> WhatsApp o Celular: +593 98 355 5081</p>
+            <p><i className="fa-solid fa-location-dot" /> Dirección: Quito, Ecuador</p>
+            <p>
+              <i className="fa-regular fa-envelope" />
+              <a href="mailto:matssoecuador@gmail.com" className="footer-link">
+                matssoecuador@gmail.com
+              </a>
+            </p>
+            <p>
+              <i className="fa-brands fa-whatsapp" />
+              <a href="https://wa.me/593983555081" target="_blank" rel="noopener noreferrer" className="footer-link">
+                +593 98 355 5081
+              </a>
+            </p>
           </div>
 
           {/* COLUMNA 3: REDES SOCIALES */}
           <div className="footer-v2-social-section">
-            <h3>Contáctanos</h3>
+            <h3>Síguenos</h3>
             <div className="social-icons-row">
-              {/* En 'href="#"' debes colocar el link real a tu red social (ej: href="https://facebook.com/matsso") */}
-              <a href="#" className="social-icon"><i className="fa-brands fa-facebook-f"></i></a>
-              <a href="#" className="social-icon"><i className="fa-brands fa-instagram"></i></a>
-              <a href="#" className="social-icon"><i className="fa-brands fa-youtube"></i></a>
-              <a href="#" className="social-icon"><i className="fa-brands fa-whatsapp"></i></a>
-              <a href="#" className="social-icon"><i className="fa-solid fa-globe"></i></a>
-              <a href="#" className="social-icon"><i className="fa-regular fa-envelope"></i></a>
+              {SOCIAL_LINKS.map((s) => (
+                <a
+                  key={s.label}
+                  href={s.href}
+                  target={s.href.startsWith('mailto') ? undefined : '_blank'}
+                  rel="noopener noreferrer"
+                  className="social-icon"
+                  aria-label={s.label}
+                  title={s.label}
+                >
+                  <i className={s.icon} />
+                </a>
+              ))}
             </div>
           </div>
 
         </div>
       </div>
-      
+
       {/* SECCIÓN AZUL (Parte Inferior - Derechos de Autor) */}
       <div className="footer-v2-bottom">
-        <p>Copyright @2024 Todos los Derechos reservados - MATSSO ECUADOR</p>
+        <p>© 2026 MATSSO Ecuador. Todos los derechos reservados.</p>
       </div>
     </footer>
   );
