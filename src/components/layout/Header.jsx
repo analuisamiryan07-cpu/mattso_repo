@@ -155,23 +155,23 @@ const Header = () => {
           </ul>
         </nav>
 
-        {/* Social circles — entre el nav y las acciones, solo desktop */}
-        <div className="header-social-circles">
-          {SOCIAL_LINKS.map((s) => (
-            <a
-              key={s.label}
-              href={s.href}
-              target={s.href.startsWith('mailto') ? undefined : '_blank'}
-              rel="noopener noreferrer"
-              aria-label={s.label}
-              className="header-social-circle"
-            >
-              <i className={s.icon} />
-            </a>
-          ))}
-        </div>
-
         <div className="header-actions">
+
+          {/* Social icons – desktop only */}
+          <div className="header-socials">
+            {SOCIAL_LINKS.map((s) => (
+              <a
+                key={s.label}
+                href={s.href}
+                target={s.href.startsWith('mailto') ? undefined : '_blank'}
+                rel="noopener noreferrer"
+                aria-label={s.label}
+                className="header-social-icon"
+              >
+                <i className={s.icon} />
+              </a>
+            ))}
+          </div>
 
           {/* User dropdown (desktop) */}
           {isLoggedIn && currentUser ? (

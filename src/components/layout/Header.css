@@ -151,41 +151,42 @@
   color: var(--primary-yellow) !important;
 }
 
-/* ─── Social circles (desktop header) ────────── */
-.header-social-circles {
+/* ─── Social icons (desktop header) ──────────── */
+.header-socials {
   display: flex;
   align-items: center;
-  gap: 8px;
-  flex-shrink: 0;
+  gap: 4px;
 }
 
-.header-social-circle {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background: var(--primary-blue);
-  color: #fff;
+.header-social-icon {
+  color: var(--color-white);
   font-size: 13px;
+  text-shadow: 1px 1px 3px rgba(0,0,0,0.6);
+  transition: color 0.25s;
+  text-decoration: none;
+  width: 26px;
+  height: 26px;
   display: flex;
   align-items: center;
   justify-content: center;
-  text-decoration: none;
-  transition: background 0.2s, transform 0.2s;
-  flex-shrink: 0;
+  border-radius: 50%;
 }
 
-.header-social-circle:hover {
-  background: var(--primary-yellow);
-  transform: scale(1.1);
+.header-social-icon:hover { color: var(--primary-yellow); }
+
+.site-header.scrolled .header-social-icon {
+  color: var(--primary-blue);
+  text-shadow: none;
 }
+
+.site-header.scrolled .header-social-icon:hover { color: var(--primary-yellow); }
 
 /* ─── Header actions ───────────────────────────── */
 .header-actions {
   display: flex;
   align-items: center;
   gap: 16px;
-  flex: 1;
-  justify-content: flex-end;
+  flex-shrink: 0;
 }
 
 /* ─── User dropdown ────────────────────────────── */
@@ -349,9 +350,9 @@
 
 /* ─── Responsive ────────────────────────────────── */
 
-/* Hide social circles below 1100px so nav still fits */
+/* Hide social icons below 1100px so nav still fits */
 @media (max-width: 1100px) {
-  .header-social-circles { display: none; }
+  .header-socials { display: none; }
   .nav-social-mobile { display: block; }
 }
 
@@ -462,21 +463,22 @@
   }
 
   .nav-social-link {
-    color: #fff;
-    font-size: 15px;
+    color: var(--primary-blue);
+    font-size: 16px;
     width: 36px;
     height: 36px;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: var(--primary-blue);
+    background: #f0f4ff;
     border-radius: 50%;
-    transition: background 0.2s;
+    transition: background 0.2s, color 0.2s;
     text-decoration: none;
   }
 
   .nav-social-link:hover {
     background: var(--primary-yellow);
+    color: #fff;
   }
 
   /* Hide desktop user menu on mobile */
