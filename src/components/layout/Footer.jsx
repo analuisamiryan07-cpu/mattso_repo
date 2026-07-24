@@ -30,7 +30,7 @@ const Footer = () => {
 
           {/* COLUMNA 2: INFORMACIÓN DE CONTACTO */}
           <div className="footer-v2-info-section">
-            <p><i className="fa-solid fa-location-dot" /> Dirección: Quito, Ecuador</p>
+            <p><i className="fa-solid fa-location-dot" /> Dirección: Av. 10 de Agosto N32-140 entre Mariana de Jesús y Las Guayanas. </p>
             <p>
               <i className="fa-regular fa-envelope" />
               <a href="mailto:matssoecuador@gmail.com" className="footer-link">
