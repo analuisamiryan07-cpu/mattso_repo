@@ -31,7 +31,7 @@
 
 /* ─── Logo ─────────────────────────────────────── */
 .logo-img {
-  height: 85px;
+  height: 58px;
   width: auto;
   transition: transform 0.3s ease;
   filter: drop-shadow(0 0 5px rgba(255,255,255,0.8));
@@ -151,38 +151,31 @@
   color: var(--primary-yellow) !important;
 }
 
-/* ─── Social icons (desktop header) ──────────── */
-.header-socials {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
+/* ─── Social icons in nav (desktop) ──────────── */
+.nav-social-desktop-item { list-style: none; }
 
-.header-social-icon {
+.nav-social-desktop-link {
   color: var(--color-white);
   font-size: 17px;
-  text-shadow: 1px 1px 3px rgba(0,0,0,0.6);
-  transition: color 0.25s;
+  text-shadow: 1px 1px 3px rgba(0,0,0,0.8);
   text-decoration: none;
+  transition: color 0.3s;
   display: flex;
   align-items: center;
-  justify-content: center;
 }
 
-.header-social-icon:hover { color: var(--primary-yellow); }
+.nav-social-desktop-link:hover { color: var(--primary-yellow) !important; }
 
-.site-header.scrolled .header-social-icon {
+.site-header.scrolled .nav-social-desktop-link {
   color: var(--primary-blue);
   text-shadow: none;
 }
-
-.site-header.scrolled .header-social-icon:hover { color: var(--primary-yellow); }
 
 /* ─── Header actions ───────────────────────────── */
 .header-actions {
   display: flex;
   align-items: center;
-  gap: 20px;
+  gap: 50px;
   flex-shrink: 0;
 }
 
@@ -349,7 +342,7 @@
 
 /* Hide social icons below 1100px so nav still fits */
 @media (max-width: 1100px) {
-  .header-socials { display: none; }
+  .nav-social-desktop-item { display: none; }
   .nav-social-mobile { display: block; }
 }
 

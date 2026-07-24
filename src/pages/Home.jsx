@@ -102,6 +102,7 @@ const Home = () => {
               <img
                 src="https://res.cloudinary.com/ehglt8h8/image/upload/v1784928496/certificaciones.png"
                 alt="Certificaciones"
+                style={{ objectPosition: 'center bottom' }}
               />
               <div className="programa-banner-overlay" />
               <div className="programa-banner-content">

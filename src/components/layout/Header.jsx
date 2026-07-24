@@ -133,6 +133,21 @@ const Header = () => {
 
             <li><Link to="/contacto" onClick={closeAll}>Contáctanos</Link></li>
 
+            {/* Social icons – desktop: right after Contáctanos */}
+            {SOCIAL_LINKS.map((s) => (
+              <li key={s.label} className="nav-social-desktop-item">
+                <a
+                  href={s.href}
+                  target={s.href.startsWith('mailto') ? undefined : '_blank'}
+                  rel="noopener noreferrer"
+                  aria-label={s.label}
+                  className="nav-social-desktop-link"
+                >
+                  <i className={s.icon} />
+                </a>
+              </li>
+            ))}
+
             {/* Social icons – only visible inside mobile menu */}
             <li className="nav-social-mobile">
               <div className="nav-social-row">
@@ -156,22 +171,6 @@ const Header = () => {
         </nav>
 
         <div className="header-actions">
-
-          {/* Social icons – desktop only */}
-          <div className="header-socials">
-            {SOCIAL_LINKS.map((s) => (
-              <a
-                key={s.label}
-                href={s.href}
-                target={s.href.startsWith('mailto') ? undefined : '_blank'}
-                rel="noopener noreferrer"
-                aria-label={s.label}
-                className="header-social-icon"
-              >
-                <i className={s.icon} />
-              </a>
-            ))}
-          </div>
 
           {/* User dropdown (desktop) */}
           {isLoggedIn && currentUser ? (
