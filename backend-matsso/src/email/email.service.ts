@@ -1,27 +1,23 @@
 import { Injectable, Logger } from '@nestjs/common';
-import * as nodemailer from 'nodemailer';
+import { Resend } from 'resend';
 
 @Injectable()
 export class EmailService {
   private readonly logger = new Logger(EmailService.name);
-  private readonly transporter: nodemailer.Transporter | null;
-  private readonly fromEmail: string;
+  private readonly resend: Resend | null;
+  private readonly from: string;
   private readonly company = 'MATSSO Ecuador';
 
   constructor() {
-    const user = process.env.GMAIL_USER;
-    const pass = process.env.GMAIL_APP_PASSWORD;
+    const apiKey = process.env.RESEND_API_KEY;
+    this.from = process.env.RESEND_FROM ?? `"MATSSO Ecuador" <onboarding@resend.dev>`;
 
-    this.fromEmail = user ? `"${this.company}" <${user}>` : '';
-
-    if (user && pass) {
-      this.transporter = nodemailer.createTransport({
-        service: 'gmail',
-        auth: { user, pass },
-      });
+    if (apiKey) {
+      this.resend = new Resend(apiKey);
+      this.logger.log(`Resend configurado — from: ${this.from}`);
     } else {
-      this.transporter = null;
-      this.logger.warn('GMAIL_USER / GMAIL_APP_PASSWORD no configurados — emails desactivados');
+      this.resend = null;
+      this.logger.warn('RESEND_API_KEY no configurada — emails desactivados');
     }
   }
 
@@ -32,8 +28,6 @@ export class EmailService {
     total: number;
     items: Array<{ producto: string; precio: number }>;
   }) {
-    if (!this.transporter) return;
-
     const rows = data.items
       .map(
         (i) => `<tr>
@@ -54,18 +48,22 @@ export class EmailService {
           </div>
           <div style="padding:28px;border:1px solid #e5e7eb;border-top:none;border-radius:0 0 8px 8px;background:#fff;">
             <h2 style="color:#0A2463;margin-top:0;">¡Hola, ${data.nombre}!</h2>
-            <p>Hemos recibido tu orden. Verificaremos tu comprobante de pago en las próximas <strong>24 horas hábiles</strong>.</p>
+            <p>Hemos recibido tu orden y tu comprobante de pago. Lo verificaremos en las próximas <strong>24 horas hábiles</strong>.</p>
             <div style="background:#f9fafb;border-radius:6px;padding:16px;margin:20px 0;">
               <p style="margin:0 0 10px;font-weight:700;color:#0A2463;font-size:14px;">Resumen — Orden #${data.orderId}</p>
               <table style="width:100%;border-collapse:collapse;font-size:13px;">
                 ${rows}
                 <tr>
-                  <td style="padding:10px 4px 0;font-weight:700;">Total con IVA</td>
+                  <td style="padding:10px 4px 0;font-weight:700;">Total con IVA (15%)</td>
                   <td style="padding:10px 4px 0;text-align:right;font-weight:700;color:#0A2463;">$${data.total.toFixed(2)}</td>
                 </tr>
               </table>
             </div>
-            <p style="font-size:13px;color:#6b7280;">Si tienes dudas escríbenos a <a href="mailto:info@matsso.ec" style="color:#0A2463;">info@matsso.ec</a></p>
+            <p style="font-size:13px;color:#6b7280;">
+              ¿Tienes dudas? Escríbenos a
+              <a href="mailto:matssoecuador@gmail.com" style="color:#0A2463;">matssoecuador@gmail.com</a>
+              o al WhatsApp <a href="https://wa.me/593983555081" style="color:#0A2463;">+593 98 355 5081</a>.
+            </p>
           </div>
         </div>`,
     });
@@ -77,8 +75,6 @@ export class EmailService {
     orderId: number;
     items: Array<{ producto: string }>;
   }) {
-    if (!this.transporter) return;
-
     const certs = data.items.map((i) => `<li style="margin:4px 0;">${i.producto}</li>`).join('');
 
     await this.send({
@@ -99,8 +95,12 @@ export class EmailService {
               <p style="margin:0 0 8px;font-weight:700;color:#166534;font-size:13px;">Certificaciones aprobadas:</p>
               <ul style="margin:0;padding-left:18px;color:#166534;font-size:13px;">${certs}</ul>
             </div>
-            <p>Nos pondremos en contacto contigo para coordinar el proceso de evaluación.</p>
-            <p style="font-size:13px;color:#6b7280;">Contacto: <a href="mailto:info@matsso.ec" style="color:#0A2463;">info@matsso.ec</a></p>
+            <p>Nos pondremos en contacto contigo pronto para coordinar el proceso de evaluación.</p>
+            <p style="font-size:13px;color:#6b7280;">
+              Contacto:
+              <a href="mailto:matssoecuador@gmail.com" style="color:#0A2463;">matssoecuador@gmail.com</a>
+              · WhatsApp <a href="https://wa.me/593983555081" style="color:#0A2463;">+593 98 355 5081</a>
+            </p>
           </div>
         </div>`,
     });
@@ -112,8 +112,6 @@ export class EmailService {
     orderId: number;
     motivo?: string;
   }) {
-    if (!this.transporter) return;
-
     const motivoHtml = data.motivo
       ? `<div style="background:#fef2f2;border:1px solid #fca5a5;border-radius:6px;padding:14px;margin:20px 0;font-size:13px;color:#991b1b;">
            <strong>Motivo:</strong> ${data.motivo}
@@ -134,7 +132,7 @@ export class EmailService {
             <h2 style="color:#0A2463;margin-top:0;">Hola, ${data.nombre}</h2>
             <p>No pudimos verificar el comprobante de tu orden <strong>#${data.orderId}</strong>.</p>
             ${motivoHtml}
-            <p>Contáctanos para resolver el inconveniente:</p>
+            <p>Contáctanos para resolver el inconveniente y volver a intentarlo:</p>
             <ul style="font-size:13px;">
               <li>Email: <a href="mailto:matssoecuador@gmail.com" style="color:#0A2463;">matssoecuador@gmail.com</a></li>
               <li>WhatsApp: <a href="https://wa.me/593983555081" style="color:#0A2463;">+593 98 355 5081</a></li>
@@ -146,15 +144,17 @@ export class EmailService {
   }
 
   private async send(payload: { to: string; subject: string; html: string }) {
-    try {
-      await this.transporter!.sendMail({
-        from: this.fromEmail,
-        to: payload.to,
-        subject: payload.subject,
-        html: payload.html,
-      });
-    } catch (err) {
-      this.logger.error(`Error enviando email a ${payload.to}: ${(err as Error).message}`);
+    if (!this.resend) return;
+
+    const { error } = await this.resend.emails.send({
+      from: this.from,
+      to: [payload.to],
+      subject: payload.subject,
+      html: payload.html,
+    });
+
+    if (error) {
+      this.logger.error(`Error enviando email a ${payload.to}: ${error.message}`);
     }
   }
 }
