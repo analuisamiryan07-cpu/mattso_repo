@@ -1,23 +1,21 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { Resend } from 'resend';
+import axios from 'axios';
 
 @Injectable()
 export class EmailService {
   private readonly logger = new Logger(EmailService.name);
-  private readonly resend: Resend | null;
-  private readonly from: string;
-  private readonly company = 'MATSSO Ecuador';
+  private readonly apiKey: string | null;
+  private readonly senderEmail: string;
+  private readonly senderName = 'MATSSO Ecuador';
 
   constructor() {
-    const apiKey = process.env.RESEND_API_KEY;
-    this.from = process.env.RESEND_FROM ?? `"MATSSO Ecuador" <onboarding@resend.dev>`;
+    this.apiKey    = process.env.BREVO_API_KEY ?? null;
+    this.senderEmail = process.env.BREVO_SENDER_EMAIL ?? 'matssoecuador@gmail.com';
 
-    if (apiKey) {
-      this.resend = new Resend(apiKey);
-      this.logger.log(`Resend configurado — from: ${this.from}`);
+    if (this.apiKey) {
+      this.logger.log(`Brevo configurado — sender: ${this.senderEmail}`);
     } else {
-      this.resend = null;
-      this.logger.warn('RESEND_API_KEY no configurada — emails desactivados');
+      this.logger.warn('BREVO_API_KEY no configurada — emails desactivados');
     }
   }
 
@@ -39,11 +37,11 @@ export class EmailService {
 
     await this.send({
       to: data.to,
-      subject: `Orden #${data.orderId} recibida — ${this.company}`,
+      subject: `Orden #${data.orderId} recibida — ${this.senderName}`,
       html: `
         <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;color:#1f2937;">
           <div style="background:#0A2463;padding:24px;border-radius:8px 8px 0 0;text-align:center;">
-            <h1 style="color:#FFD700;margin:0;font-size:20px;">${this.company}</h1>
+            <h1 style="color:#FFD700;margin:0;font-size:20px;">${this.senderName}</h1>
             <p style="color:#93c5fd;margin:4px 0 0;font-size:13px;">Certificaciones de Competencias Laborales</p>
           </div>
           <div style="padding:28px;border:1px solid #e5e7eb;border-top:none;border-radius:0 0 8px 8px;background:#fff;">
@@ -79,11 +77,11 @@ export class EmailService {
 
     await this.send({
       to: data.to,
-      subject: `¡Pago aprobado! Orden #${data.orderId} — ${this.company}`,
+      subject: `¡Pago aprobado! Orden #${data.orderId} — ${this.senderName}`,
       html: `
         <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;color:#1f2937;">
           <div style="background:#0A2463;padding:24px;border-radius:8px 8px 0 0;text-align:center;">
-            <h1 style="color:#FFD700;margin:0;font-size:20px;">${this.company}</h1>
+            <h1 style="color:#FFD700;margin:0;font-size:20px;">${this.senderName}</h1>
           </div>
           <div style="padding:28px;border:1px solid #e5e7eb;border-top:none;border-radius:0 0 8px 8px;background:#fff;">
             <div style="text-align:center;margin-bottom:20px;">
@@ -122,11 +120,11 @@ export class EmailService {
 
     await this.send({
       to: data.to,
-      subject: `Comprobante no verificado — Orden #${data.orderId} — ${this.company}`,
+      subject: `Comprobante no verificado — Orden #${data.orderId} — ${this.senderName}`,
       html: `
         <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;color:#1f2937;">
           <div style="background:#0A2463;padding:24px;border-radius:8px 8px 0 0;text-align:center;">
-            <h1 style="color:#FFD700;margin:0;font-size:20px;">${this.company}</h1>
+            <h1 style="color:#FFD700;margin:0;font-size:20px;">${this.senderName}</h1>
           </div>
           <div style="padding:28px;border:1px solid #e5e7eb;border-top:none;border-radius:0 0 8px 8px;background:#fff;">
             <h2 style="color:#0A2463;margin-top:0;">Hola, ${data.nombre}</h2>
@@ -144,17 +142,27 @@ export class EmailService {
   }
 
   private async send(payload: { to: string; subject: string; html: string }) {
-    if (!this.resend) return;
+    if (!this.apiKey) return;
 
-    const { error } = await this.resend.emails.send({
-      from: this.from,
-      to: [payload.to],
-      subject: payload.subject,
-      html: payload.html,
-    });
-
-    if (error) {
-      this.logger.error(`Error enviando email a ${payload.to}: ${error.message}`);
+    try {
+      await axios.post(
+        'https://api.brevo.com/v3/smtp/email',
+        {
+          sender: { name: this.senderName, email: this.senderEmail },
+          to: [{ email: payload.to }],
+          subject: payload.subject,
+          htmlContent: payload.html,
+        },
+        {
+          headers: {
+            'api-key': this.apiKey,
+            'Content-Type': 'application/json',
+          },
+        },
+      );
+    } catch (err: any) {
+      const msg = err?.response?.data?.message ?? err.message;
+      this.logger.error(`Error enviando email a ${payload.to}: ${msg}`);
     }
   }
 }
