@@ -110,8 +110,17 @@ export class EmailService {
     to: string;
     nombre: string;
     orderId: number;
+    motivo?: string;
   }) {
     if (!this.transporter) return;
+
+    const motivoHtml = data.motivo
+      ? `<div style="background:#fef2f2;border:1px solid #fca5a5;border-radius:6px;padding:14px;margin:20px 0;font-size:13px;color:#991b1b;">
+           <strong>Motivo:</strong> ${data.motivo}
+         </div>`
+      : `<div style="background:#fef2f2;border:1px solid #fca5a5;border-radius:6px;padding:14px;margin:20px 0;font-size:13px;color:#991b1b;">
+           Posibles causas: imagen ilegible, monto incorrecto o comprobante inválido.
+         </div>`;
 
     await this.send({
       to: data.to,
@@ -124,12 +133,11 @@ export class EmailService {
           <div style="padding:28px;border:1px solid #e5e7eb;border-top:none;border-radius:0 0 8px 8px;background:#fff;">
             <h2 style="color:#0A2463;margin-top:0;">Hola, ${data.nombre}</h2>
             <p>No pudimos verificar el comprobante de tu orden <strong>#${data.orderId}</strong>.</p>
-            <div style="background:#fef2f2;border:1px solid #fca5a5;border-radius:6px;padding:14px;margin:20px 0;font-size:13px;color:#991b1b;">
-              Posibles causas: imagen ilegible, monto incorrecto o comprobante inválido.
-            </div>
+            ${motivoHtml}
             <p>Contáctanos para resolver el inconveniente:</p>
             <ul style="font-size:13px;">
-              <li>Email: <a href="mailto:info@matsso.ec" style="color:#0A2463;">info@matsso.ec</a></li>
+              <li>Email: <a href="mailto:matssoecuador@gmail.com" style="color:#0A2463;">matssoecuador@gmail.com</a></li>
+              <li>WhatsApp: <a href="https://wa.me/593983555081" style="color:#0A2463;">+593 98 355 5081</a></li>
             </ul>
             <p style="font-size:12px;color:#9ca3af;">Referencia: Orden #${data.orderId}</p>
           </div>

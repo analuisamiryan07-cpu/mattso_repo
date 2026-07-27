@@ -47,8 +47,11 @@ export const cursosService = {
     };
     formData.append('data', JSON.stringify(safeData));
 
+    // No fijar Content-Type manualmente — axios + XHR del navegador lo pone
+    // automáticamente como "multipart/form-data; boundary=..." con el boundary correcto.
+    // Si se fija a mano sin boundary, multer no puede parsear el archivo.
     const { data } = await apiClient.post('/ordenes', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
+      headers: { 'Content-Type': null },
     });
     return data;
   },

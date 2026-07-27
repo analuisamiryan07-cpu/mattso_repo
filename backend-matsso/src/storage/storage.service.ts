@@ -1,58 +1,62 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { createClient, SupabaseClient } from '@supabase/supabase-js';
-import { extname, join } from 'path';
-import { existsSync, mkdirSync, writeFileSync } from 'fs';
-
-const BUCKET = 'comprobantes';
+import { Injectable, Logger, InternalServerErrorException } from '@nestjs/common';
+import { v2 as cloudinary, UploadApiResponse } from 'cloudinary';
+import { Readable } from 'stream';
+import { randomUUID } from 'crypto';
 
 @Injectable()
 export class StorageService {
   private readonly logger = new Logger(StorageService.name);
-  private readonly client: SupabaseClient | null;
+  private readonly ready: boolean;
 
   constructor() {
-    const url = process.env.SUPABASE_URL;
-    const key = process.env.SUPABASE_SERVICE_KEY;
+    const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
+    const apiKey    = process.env.CLOUDINARY_API_KEY;
+    const apiSecret = process.env.CLOUDINARY_API_SECRET;
 
-    if (url && key) {
-      this.client = createClient(url, key);
-      this.logger.log('Supabase Storage configurado correctamente');
+    if (cloudName && apiKey && apiSecret) {
+      cloudinary.config({ cloud_name: cloudName, api_key: apiKey, api_secret: apiSecret });
+      this.ready = true;
+      this.logger.log('Cloudinary configurado correctamente');
     } else {
-      this.client = null;
-      this.logger.warn('SUPABASE_URL o SUPABASE_SERVICE_KEY no configurados — usando almacenamiento local como fallback');
+      this.ready = false;
+      this.logger.warn(
+        'CLOUDINARY_CLOUD_NAME / CLOUDINARY_API_KEY / CLOUDINARY_API_SECRET no configurados — uploads desactivados',
+      );
     }
   }
 
   async uploadComprobante(file: Express.Multer.File): Promise<string> {
-    const ext = extname(file.originalname || '').toLowerCase() || '.bin';
-    const filename = `comprobante-${Date.now()}-${Math.round(Math.random() * 1e6)}${ext}`;
-
-    if (!this.client) {
-      return this.saveToLocalDisk(file.buffer, filename);
+    if (!this.ready) {
+      throw new InternalServerErrorException(
+        'El almacenamiento de comprobantes no está configurado. Contacte al administrador.',
+      );
     }
 
-    const { data, error } = await this.client.storage
-      .from(BUCKET)
-      .upload(filename, file.buffer, {
-        contentType: file.mimetype,
-        upsert: false,
-      });
+    const isPdf = file.mimetype === 'application/pdf';
+    const publicId = `comprobantes/${randomUUID()}`;
 
-    if (error) {
-      this.logger.error(`Error subiendo a Supabase Storage: ${error.message} — usando fallback local`);
-      return this.saveToLocalDisk(file.buffer, filename);
-    }
+    return new Promise<string>((resolve, reject) => {
+      const uploadStream = cloudinary.uploader.upload_stream(
+        {
+          public_id: publicId,
+          resource_type: isPdf ? 'raw' : 'image',
+          folder: undefined, // la carpeta ya va en public_id
+          overwrite: false,
+          tags: ['comprobante', 'matsso'],
+        },
+        (error, result: UploadApiResponse | undefined) => {
+          if (error || !result) {
+            this.logger.error('Error subiendo comprobante a Cloudinary:', error?.message);
+            reject(new InternalServerErrorException('No se pudo subir el comprobante. Intenta de nuevo.'));
+            return;
+          }
+          this.logger.log(`Comprobante subido: ${result.secure_url}`);
+          resolve(result.secure_url);
+        },
+      );
 
-    const { data: urlData } = this.client.storage.from(BUCKET).getPublicUrl(data.path);
-    return urlData.publicUrl;
-  }
-
-  private saveToLocalDisk(buffer: Buffer, filename: string): string {
-    const uploadDir = join(process.cwd(), 'uploads');
-    if (!existsSync(uploadDir)) {
-      mkdirSync(uploadDir, { recursive: true });
-    }
-    writeFileSync(join(uploadDir, filename), buffer);
-    return `/uploads/${filename}`;
+      const readable = Readable.from(file.buffer);
+      readable.pipe(uploadStream);
+    });
   }
 }
