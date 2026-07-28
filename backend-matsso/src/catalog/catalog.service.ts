@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 
 // Mapeo fijo número → carpeta Cloudinary (independiente del título en BD)
@@ -60,6 +60,10 @@ export class CatalogService {
 
   constructor(private readonly prisma: PrismaService) {}
 
+  private invalidateCache() {
+    this._cache = null;
+  }
+
   private async getAllFromCache(): Promise<any[]> {
     const now = Date.now();
     if (this._cache && now < this._cache.expiresAt) return this._cache.data;
@@ -81,6 +85,111 @@ export class CatalogService {
     const all = await this.getAllFromCache();
     return all.find(p => p.slug === slug) || null;
   }
+
+  // ── Admin CRUD ────────────────────────────────────────────────────────────
+
+  async getAllProducts() {
+    const rows = await this.prisma.producto.findMany({
+      orderBy: [{ tipo: 'asc' }, { titulo: 'asc' }],
+    });
+    return rows.map(p => ({
+      id:               Number(p.id),
+      tipo:             p.tipo,
+      titulo:           p.titulo,
+      descripcion:      p.descripcion,
+      precio:           Number(p.precio),
+      horas:            p.horas,
+      modalidad:        p.modalidad,
+      imagen_url:       p.imagen_url,
+      activo:           p.activo,
+      destacado:        p.destacado,
+      id_certificacion: p.id_certificacion,
+      created_at:       p.created_at,
+    }));
+  }
+
+  async createProduct(data: {
+    tipo: string;
+    titulo: string;
+    descripcion?: string;
+    precio: number | string;
+    horas?: number | string | null;
+    modalidad?: string;
+    imagen_url?: string | null;
+    activo?: boolean | string;
+    destacado?: boolean | string;
+  }) {
+    const created = await this.prisma.producto.create({
+      data: {
+        tipo:        data.tipo,
+        titulo:      data.titulo,
+        descripcion: data.descripcion || null,
+        precio:      Number(data.precio),
+        horas:       data.horas ? Number(data.horas) : null,
+        modalidad:   data.modalidad || null,
+        imagen_url:  data.imagen_url || null,
+        activo:      data.activo === true || data.activo === 'true' || data.activo === '1',
+        destacado:   data.destacado === true || data.destacado === 'true' || data.destacado === '1',
+      },
+    });
+    this.invalidateCache();
+    return { id: Number(created.id), titulo: created.titulo };
+  }
+
+  async updateProduct(
+    id: bigint,
+    data: {
+      tipo?: string;
+      titulo?: string;
+      descripcion?: string | null;
+      precio?: number | string;
+      horas?: number | string | null;
+      modalidad?: string | null;
+      imagen_url?: string | null;
+      activo?: boolean | string;
+      destacado?: boolean | string;
+    },
+  ) {
+    const updated = await this.prisma.producto.update({
+      where: { id },
+      data: {
+        ...(data.tipo        !== undefined && { tipo: data.tipo }),
+        ...(data.titulo      !== undefined && { titulo: data.titulo }),
+        ...(data.descripcion !== undefined && { descripcion: data.descripcion || null }),
+        ...(data.precio      !== undefined && { precio: Number(data.precio) }),
+        ...(data.horas       !== undefined && { horas: data.horas ? Number(data.horas) : null }),
+        ...(data.modalidad   !== undefined && { modalidad: data.modalidad || null }),
+        ...(data.imagen_url  !== undefined && { imagen_url: data.imagen_url || null }),
+        ...(data.activo      !== undefined && {
+          activo: data.activo === true || data.activo === 'true' || data.activo === '1',
+        }),
+        ...(data.destacado   !== undefined && {
+          destacado: data.destacado === true || data.destacado === 'true' || data.destacado === '1',
+        }),
+      },
+    });
+    this.invalidateCache();
+    return { id: Number(updated.id), titulo: updated.titulo };
+  }
+
+  async toggleProduct(id: bigint) {
+    const product = await this.prisma.producto.findUnique({ where: { id } });
+    if (!product) throw new NotFoundException('Producto no encontrado');
+    const updated = await this.prisma.producto.update({
+      where: { id },
+      data:  { activo: !product.activo },
+    });
+    this.invalidateCache();
+    return { id: Number(updated.id), activo: updated.activo };
+  }
+
+  async deleteProduct(id: bigint) {
+    await this.prisma.producto.delete({ where: { id } });
+    this.invalidateCache();
+    return { deleted: true };
+  }
+
+  // ── Mapeo interno (catálogo público) ─────────────────────────────────────
 
   private async _queryAndMap(): Promise<any[]> {
     const productos = await this.prisma.producto.findMany({
