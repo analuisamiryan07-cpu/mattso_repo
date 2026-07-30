@@ -26,13 +26,16 @@ const CourseCard = ({ course }) => {
     addToast(`"${course.titulo}" añadido al carrito`, 'success');
   };
 
+  // cloudinaryNum viene del backend cuando imagen_url es un número.
+  // Si el backend aún no lo devuelve, el campo imagen contiene el número directamente.
+  const cloudinaryId = course.cloudinaryNum
+    || (course.imagen?.match(/^\d{2,3}$/) ? course.imagen : null);
+
   return (
     <div className="course-card-modern">
       <div className="ccm__image">
         <CloudinaryImage
-          publicId={course.cloudinaryNum
-            ? `${course.cloudinaryNum}_portada`
-            : undefined}
+          publicId={cloudinaryId ? `${cloudinaryId}_portada` : undefined}
           alt={course.titulo}
           width={400}
           height={250}
