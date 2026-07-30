@@ -252,7 +252,7 @@ export class CatalogService {
         || cert?.sector?.nombre
         || (p.tipo === 'CERTIFICACION' ? 'Certificación Profesional' : 'Capacitación');
 
-      const cloudinaryNum = p.imagen_url?.match(/^\d{3}$/) ? p.imagen_url : null;
+      const cloudinaryNum = p.imagen_url?.match(/^\d{2,3}$/) ? p.imagen_url : null;
       const FALLBACK_IMG = 'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=600&q=80';
 
       return {
