@@ -1,0 +1,438 @@
+/* ===========================
+   MIS CERTIFICADOS
+   =========================== */
+
+.certs-page {
+  background: var(--bg-color);
+  min-height: 100vh;
+}
+
+/* HERO */
+.certs-hero {
+  position: relative;
+  height: 260px;
+  background: linear-gradient(135deg, #002147 0%, #003580 60%, #004eab 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  margin-top: -70px;
+  padding-top: 70px;
+  overflow: hidden;
+}
+
+.certs-hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80' viewBox='0 0 80 80'%3E%3Ccircle cx='40' cy='40' r='1.5' fill='rgba(247,166,0,0.08)'/%3E%3C/svg%3E");
+  background-size: 80px 80px;
+}
+
+.certs-hero-content {
+  position: relative;
+  z-index: 2;
+  color: white;
+  padding: 0 20px;
+}
+
+.certs-hero-content h1 {
+  font-size: 2.6rem;
+  font-weight: 800;
+  margin-bottom: 8px;
+  letter-spacing: -0.02em;
+}
+
+.certs-hero-content h1 span {
+  color: var(--primary-yellow);
+}
+
+.certs-hero-content p {
+  font-size: 1.05rem;
+  opacity: 0.85;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+/* BODY */
+.certs-body {
+  padding: 48px 0 80px;
+}
+
+/* SEARCH BOX */
+.certs-search-wrap {
+  max-width: 560px;
+  margin: 0 auto 48px;
+  padding: 0 20px;
+  text-align: center;
+}
+
+.certs-search-label {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 12px;
+}
+
+.certs-search-box {
+  display: flex;
+  gap: 10px;
+  background: white;
+  border: 2px solid var(--border-color);
+  border-radius: 50px;
+  padding: 6px 6px 6px 20px;
+  box-shadow: var(--shadow-md);
+  transition: border-color 0.2s;
+}
+
+.certs-search-box:focus-within {
+  border-color: var(--primary-blue);
+}
+
+.certs-search-box input {
+  flex: 1;
+  border: none;
+  outline: none;
+  font-size: 1rem;
+  font-family: inherit;
+  background: transparent;
+  color: var(--text-dark);
+  min-width: 0;
+}
+
+.certs-search-box input::placeholder {
+  color: #adb5bd;
+}
+
+.certs-search-btn {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--primary-blue);
+  color: white;
+  border: none;
+  border-radius: 40px;
+  padding: 10px 22px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.1s;
+}
+
+.certs-search-btn:hover:not(:disabled) {
+  background: var(--primary-blue-light);
+}
+
+.certs-search-btn:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+.certs-search-btn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.certs-search-hint {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin-top: 10px;
+}
+
+.certs-result-header em {
+  font-style: normal;
+  color: var(--primary-blue);
+}
+
+/* ESTADOS */
+.certs-state {
+  text-align: center;
+  padding: 48px 20px;
+}
+
+.certs-state-icon {
+  font-size: 3rem;
+  margin-bottom: 16px;
+  opacity: 0.35;
+  color: var(--primary-blue);
+}
+
+.certs-state h3 {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--text-dark);
+  margin-bottom: 6px;
+}
+
+.certs-state p {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  max-width: 380px;
+  margin: 0 auto;
+}
+
+.certs-state--error .certs-state-icon {
+  color: #dc2626;
+  opacity: 0.5;
+}
+
+.certs-state--error h3 {
+  color: #dc2626;
+}
+
+/* SPINNER */
+.certs-spinner {
+  width: 44px;
+  height: 44px;
+  border: 4px solid var(--border-color);
+  border-top-color: var(--primary-blue);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  margin: 0 auto 16px;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* RESULTADOS */
+.certs-result-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 24px;
+  padding: 0 20px;
+  max-width: 1200px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.certs-result-header h2 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--primary-blue);
+}
+
+.certs-count-badge {
+  display: inline-flex;
+  align-items: center;
+  background: rgba(0,33,71,0.08);
+  color: var(--primary-blue);
+  border-radius: 20px;
+  padding: 4px 12px;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.certs-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+/* TARJETA */
+.cert-card {
+  background: white;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow 0.2s, transform 0.15s;
+}
+
+.cert-card:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+
+.cert-card-top {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+}
+
+.cert-icon {
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+}
+
+.cert-icon--pdf   { background: #fef2f2; color: #dc2626; }
+.cert-icon--image { background: #eff6ff; color: #2563eb; }
+.cert-icon--word  { background: #eff6ff; color: #1d4ed8; }
+.cert-icon--other { background: #f0fdf4; color: #16a34a; }
+
+.cert-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.cert-name {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--text-dark);
+  line-height: 1.4;
+  word-break: break-word;
+  margin-bottom: 2px;
+}
+
+.cert-curso {
+  font-size: 0.78rem;
+  color: var(--primary-blue);
+  font-weight: 600;
+  margin-bottom: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cert-meta {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.cert-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.cert-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 9px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 0.82rem;
+  font-weight: 600;
+  font-family: inherit;
+  border: none;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 0.15s, transform 0.1s;
+}
+
+.cert-btn:active { transform: scale(0.97); }
+
+.cert-btn--view {
+  background: var(--primary-blue);
+  color: white;
+}
+
+.cert-btn--view:hover {
+  background: var(--primary-blue-light);
+}
+
+.cert-btn--download {
+  background: rgba(247,166,0,0.12);
+  color: #92610a;
+  border: 1.5px solid rgba(247,166,0,0.35);
+}
+
+.cert-btn--download:hover {
+  background: rgba(247,166,0,0.22);
+}
+
+/* MODAL PREVIEW */
+.cert-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.65);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  animation: fadeIn 0.15s ease;
+}
+
+@keyframes fadeIn { from { opacity: 0 } to { opacity: 1 } }
+
+.cert-modal {
+  background: white;
+  border-radius: var(--radius-md);
+  width: 100%;
+  max-width: 860px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 24px 60px rgba(0,0,0,0.3);
+}
+
+.cert-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border-color);
+  flex-shrink: 0;
+}
+
+.cert-modal-title {
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--text-dark);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cert-modal-close {
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 1.25rem;
+  cursor: pointer;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s;
+}
+
+.cert-modal-close:hover { background: var(--bg-color); }
+
+.cert-modal-body {
+  flex: 1;
+  overflow: auto;
+  min-height: 0;
+}
+
+.cert-modal-body iframe {
+  width: 100%;
+  height: 75vh;
+  border: none;
+  display: block;
+}
+
+/* RESPONSIVE */
+@media (max-width: 640px) {
+  .certs-hero-content h1 { font-size: 1.9rem; }
+  .certs-search-box { border-radius: var(--radius-md); padding: 6px; }
+  .certs-search-box input { padding-left: 12px; }
+  .certs-search-btn span { display: none; }
+  .certs-grid { grid-template-columns: 1fr; }
+}
