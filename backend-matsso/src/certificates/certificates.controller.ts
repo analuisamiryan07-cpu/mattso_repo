@@ -34,12 +34,27 @@ export class CertificatesController {
       throw new BadRequestException('Nombre demasiado largo.');
     }
 
-    const files = await this.svc.getCertificatesByName(clean);
+    try {
+      const files = await this.svc.getCertificatesByName(clean);
 
-    if (files.length === 0) {
-      throw new NotFoundException('No se encontraron certificados para ese nombre.');
+      if (files.length === 0) {
+        throw new NotFoundException('No se encontraron certificados para ese nombre.');
+      }
+
+      return { nombre: clean, total: files.length, certificados: files };
+    } catch (err) {
+      if (
+        err instanceof NotFoundException ||
+        err instanceof BadRequestException ||
+        err instanceof ServiceUnavailableException
+      ) {
+        throw err;
+      }
+      // Log para ver el error real en Render logs
+      console.error('[Certificates] Drive API error:', err?.message ?? err);
+      throw new ServiceUnavailableException(
+        'Error al consultar Google Drive: ' + (err?.message ?? 'error desconocido'),
+      );
     }
-
-    return { nombre: clean, total: files.length, certificados: files };
   }
 }
