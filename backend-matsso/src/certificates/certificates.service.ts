@@ -65,14 +65,18 @@ export class CertificatesService {
     }
 
     // Búsqueda recursiva en toda la carpeta raíz usando "in ancestors"
+    // orderBy no está soportado con 'in ancestors' en Drive API v3
     const res = await this.drive.files.list({
-      q: `'${this.folderId}' in ancestors and name contains '${nombre}' and mimeType!='application/vnd.google-apps.folder' and trashed=false`,
+      q: `'${this.folderId}' in ancestors and name contains '${nombre}' and mimeType != 'application/vnd.google-apps.folder' and trashed = false`,
       fields: 'files(id, name, mimeType, size, modifiedTime, parents)',
       pageSize: 100,
-      orderBy: 'name',
+      supportsAllDrives: true,
+      includeItemsFromAllDrives: true,
     });
 
-    const rawFiles = res.data.files ?? [];
+    const rawFiles = (res.data.files ?? []).sort((a, b) =>
+      (a.name ?? '').localeCompare(b.name ?? '', 'es'),
+    );
 
     // Obtener nombres de carpetas padre (curso/cohorte) en paralelo
     const parentIds = [...new Set(
