@@ -3,7 +3,7 @@ import CourseCard from '@components/CourseCard';
 import { cursosService } from '@api/cursosService';
 import './Catalogo.css';
 
-const MODALIDADES = ['Todas', 'Virtual', 'Presencial'];
+const MODALIDADES = ['Todas', 'Virtual', 'Presencial', 'Semipresencial'];
 
 const Capacitaciones = () => {
   const [cursos, setCursos] = useState([]);
@@ -38,7 +38,8 @@ const Capacitaciones = () => {
   }, []);
 
   const filtered = cursos.filter((c) => {
-    const matchMod = filtroModalidad === 'Todas' || c.modalidad === filtroModalidad;
+    const matchMod = filtroModalidad === 'Todas' ||
+      (c.modalidad?.trim().toLowerCase() === filtroModalidad.toLowerCase());
     const matchCat = filtroCategoria === 'Todas' || c.categoria === filtroCategoria;
     const matchSearch = c.titulo.toLowerCase().includes(busqueda.toLowerCase());
     return matchMod && matchCat && matchSearch;

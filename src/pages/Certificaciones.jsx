@@ -10,12 +10,13 @@ const Certificaciones = () => {
   const [filtroModalidad, setFiltroModalidad] = useState('Todas');
   const [busqueda, setBusqueda] = useState('');
 
-  const categorias = ['Todas', ...[...new Set(certificaciones.map((c) => c.categoria))].sort()];
-  const modalidades = ['Todas', ...[...new Set(certificaciones.map((c) => c.modalidad).filter(Boolean))].sort()];
+  const categorias = ['Todas', ...[...new Set(certificaciones.map((c) => c.categoria).filter(Boolean))].sort()];
+  const MODALIDADES = ['Todas', 'Virtual', 'Presencial', 'Semipresencial'];
 
   const filtered = certificaciones
     .filter((c) => {
-      const matchMod = filtroModalidad === 'Todas' || c.modalidad === filtroModalidad;
+      const certMod = c.modalidad?.trim().toLowerCase() ?? '';
+      const matchMod = filtroModalidad === 'Todas' || certMod === filtroModalidad.toLowerCase();
       const matchCat = filtroCategoria === 'Todas' || c.categoria === filtroCategoria;
       const matchSearch = c.titulo.toLowerCase().includes(busqueda.toLowerCase());
       return matchMod && matchCat && matchSearch;
@@ -54,7 +55,7 @@ const Certificaciones = () => {
           <div className="filtro-group">
             <label>Modalidad</label>
             <div className="filtro-chips">
-              {modalidades.map((m) => (
+              {MODALIDADES.map((m) => (
                 <button
                   key={m}
                   className={`chip ${filtroModalidad === m ? 'chip--active' : ''}`}
