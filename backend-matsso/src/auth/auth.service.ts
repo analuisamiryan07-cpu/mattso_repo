@@ -54,6 +54,47 @@ export class AuthService {
     };
   }
 
+  async listUsers(page: number, limit: number, search?: string) {
+    const skip = (page - 1) * limit;
+
+    const where = search
+      ? {
+          OR: [
+            { correo: { contains: search, mode: 'insensitive' as const } },
+            { cliente: { nombre: { contains: search, mode: 'insensitive' as const } } },
+            { cliente: { cedula: { contains: search } } },
+          ],
+        }
+      : {};
+
+    const [total, users] = await Promise.all([
+      this.prisma.usuarioWeb.count({ where }),
+      this.prisma.usuarioWeb.findMany({
+        where,
+        include: {
+          cliente: { select: { nombre: true, cedula: true, telefono: true, ciudad: true } },
+        },
+        orderBy: { id: 'desc' },
+        skip,
+        take: limit,
+      }),
+    ]);
+
+    return {
+      data: users.map((u) => ({
+        id: Number(u.id),
+        correo: u.correo,
+        rol: u.rol,
+        activo: u.activo,
+        nombre: u.cliente?.nombre || '—',
+        cedula: u.cliente?.cedula || '—',
+        telefono: u.cliente?.telefono || '—',
+        ciudad: u.cliente?.ciudad || '—',
+      })),
+      meta: { total, page, limit, pages: Math.ceil(total / limit) },
+    };
+  }
+
   async register(data: { nombre: string; correo: string; password: string; cedula?: string; telefono?: string; ciudad?: string; direccion?: string }) {
     const existing = await this.prisma.usuarioWeb.findUnique({
       where: { correo: data.correo },
