@@ -131,6 +131,11 @@ const Header = () => {
               </ul>
             </li>
 
+            <li>
+              <Link to="/mis-certificados" onClick={closeAll}>
+                Mis Certificados
+              </Link>
+            </li>
             <li><Link to="/contacto" onClick={closeAll}>Contáctanos</Link></li>
 
             {/* Social icons – desktop: right after Contáctanos */}
