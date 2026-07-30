@@ -1,4 +1,4 @@
-const CLOUD    = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
+const CLOUD    = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || 'ehglt8h8';
 const BASE_IMG = `https://res.cloudinary.com/${CLOUD}/image/upload`;
 const BASE_VID = `https://res.cloudinary.com/${CLOUD}/video/upload`;
 
