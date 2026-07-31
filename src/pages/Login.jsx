@@ -55,8 +55,10 @@ const Login = () => {
     if (!registerForm.cedula)   errs.cedula   = 'Campo requerido';
     if (!registerForm.email)    errs.email    = 'Campo requerido';
     if (!registerForm.telefono) errs.telefono = 'Campo requerido';
-    if (!registerForm.password || registerForm.password.length < 6)
-      errs.password = 'Mínimo 6 caracteres';
+    if (!registerForm.password || registerForm.password.length < 8)
+      errs.password = 'Mínimo 8 caracteres';
+    else if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(registerForm.password))
+      errs.password = 'Debe tener al menos una mayúscula, una minúscula y un número';
     if (registerForm.password !== registerForm.confirm)
       errs.confirm = 'Las contraseñas no coinciden';
     if (!acceptTerms)
@@ -199,7 +201,7 @@ const Login = () => {
                 <label>Contraseña <span className="lf-req">*</span></label>
                 <input
                   type="password" name="password" value={registerForm.password}
-                  onChange={handleRegisterChange} placeholder="Mínimo 6 caracteres"
+                  onChange={handleRegisterChange} placeholder="Mín. 8 caracteres, mayúscula y número"
                 />
                 {errors.password && <span className="lf-error">{errors.password}</span>}
               </div>

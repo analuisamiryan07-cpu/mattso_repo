@@ -32,7 +32,7 @@ export class RegisterDto {
 
   @IsOptional()
   @IsString()
-  @Matches(/^\d{10}$/, { message: 'La cédula debe tener exactamente 10 dígitos.' })
+  @Matches(/^\d{10}(\d{3})?$/, { message: 'Ingresa una cédula (10 dígitos) o RUC (13 dígitos) válido.' })
   cedula?: string;
 
   @IsOptional()
