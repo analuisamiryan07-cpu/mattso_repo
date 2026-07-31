@@ -134,12 +134,14 @@ export class OrdersService {
       comprobante_url: o.comprobante_url,
       cliente: o.usuario.cliente
         ? {
-            nombre: o.usuario.cliente.nombre,
-            cedula: o.usuario.cliente.cedula,
-            correo: o.usuario.cliente.correo,
+            nombre:   o.usuario.cliente.nombre,
+            cedula:   o.usuario.cliente.cedula,
+            correo:   o.usuario.cliente.correo,
             telefono: o.usuario.cliente.telefono,
+            direccion: o.usuario.cliente.direccion ?? null,
+            ciudad:   o.usuario.cliente.ciudad    ?? null,
           }
-        : { nombre: o.usuario.correo, cedula: '-', correo: o.usuario.correo, telefono: '-' },
+        : { nombre: o.usuario.correo, cedula: '-', correo: o.usuario.correo, telefono: '-', direccion: null, ciudad: null },
       items: o.items.map((i) => ({
         producto: i.producto.titulo,
         cantidad: i.cantidad,
