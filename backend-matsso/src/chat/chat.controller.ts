@@ -12,6 +12,6 @@ export class ChatController {
     }
     
     const botResponse = await this.chatService.processMessage(message);
-    return { response: botResponse };
+    return botResponse;
   }
 }

@@ -14,7 +14,7 @@ export class ChatService {
     }
 
     try {
-      const { data } = await axios.post<{ respuesta: string }>(
+      const { data } = await axios.post<{ respuesta: string; buttons?: { label: string; url: string }[] }>(
         `${this.certibotUrl}/chat`,
         { texto: userMessage },
         {
@@ -22,10 +22,10 @@ export class ChatService {
           timeout: 10_000,
         },
       );
-      return data.respuesta ?? 'No obtuve respuesta del asistente.';
+      return { response: data.respuesta ?? 'No obtuve respuesta.', buttons: data.buttons ?? [] };
     } catch (err) {
       this.logger.error('Error llamando a CertiBot: ' + (err as Error).message);
-      return 'El asistente no está disponible ahora mismo. Por favor intenta más tarde o contáctanos directamente.';
+      return { response: 'El asistente no está disponible ahora mismo. Por favor intenta más tarde.', buttons: [] };
     }
   }
 }
