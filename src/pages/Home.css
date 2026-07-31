@@ -120,9 +120,9 @@
 }
 
 .contribuyente-logo {
-  height: 200px;
+  height: 400px;
   width: auto;
-  max-width: 280px;
+  max-width: 360px;
   object-fit: contain;
   filter: grayscale(30%);
   opacity: 0.85;

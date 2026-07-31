@@ -7,25 +7,41 @@ export function useScrollReveal(options = {}) {
     const el = ref.current;
     if (!el) return;
 
-    // Si el elemento ya está por encima del viewport (scroll rápido), mostrar de inmediato
-    const rect = el.getBoundingClientRect();
-    if (rect.top < window.innerHeight) {
+    let done = false;
+
+    const show = () => {
+      if (done) return;
+      done = true;
       el.classList.add('sr-visible');
-      return;
-    }
+      observer.disconnect();
+      window.removeEventListener('scroll', onScroll, true);
+    };
+
+    const isVisible = () => {
+      const r = el.getBoundingClientRect();
+      // visible en viewport O ya pasado por encima
+      return r.top < window.innerHeight || r.bottom < 0;
+    };
 
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting || entry.boundingClientRect.top < 0) {
-          el.classList.add('sr-visible');
-          observer.unobserve(el);
-        }
+        if (entry.isIntersecting || entry.boundingClientRect.top < 0) show();
       },
-      { threshold: 0.08, ...options },
+      { threshold: 0, ...options },
     );
 
+    const onScroll = () => { if (isVisible()) show(); };
+
     observer.observe(el);
-    return () => observer.disconnect();
+    window.addEventListener('scroll', onScroll, { passive: true, capture: true });
+
+    // chequeo inmediato por si ya está en pantalla al montar
+    if (isVisible()) show();
+
+    return () => {
+      observer.disconnect();
+      window.removeEventListener('scroll', onScroll, true);
+    };
   }, []);
 
   return ref;
