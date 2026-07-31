@@ -20,7 +20,7 @@
   text-align: center;
   overflow: hidden;
   color: white;
-  margin-top: -65px; /* compensa el padding-top del main-content para que el hero sea full-bleed */
+  margin-top: -70px; /* compensa el padding-top del main-content para que el hero sea full-bleed */
 }
 
 .hero-video {
@@ -89,6 +89,48 @@
   background: var(--color-white);
   padding: 18px 0;
   box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+}
+
+/* ===========================
+   CONTRIBUYENTES
+   =========================== */
+.contribuyentes-section {
+  background: var(--bg-light);
+  padding: 40px 0;
+  border-top: 1px solid var(--border-color);
+}
+
+.contribuyentes-section .section-title {
+  font-size: 1.3rem;
+  color: var(--text-muted);
+  font-weight: 600;
+  margin-bottom: 28px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.contribuyentes-section .section-title::after { display: none; }
+
+.contribuyentes-grid {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 40px;
+}
+
+.contribuyente-logo {
+  height: 80px;
+  width: auto;
+  object-fit: contain;
+  filter: grayscale(30%);
+  opacity: 0.85;
+  transition: filter 0.3s ease, opacity 0.3s ease;
+}
+
+.contribuyente-logo:hover {
+  filter: grayscale(0%);
+  opacity: 1;
 }
 
 .stats-grid {

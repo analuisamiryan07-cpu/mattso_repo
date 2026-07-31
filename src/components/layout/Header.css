@@ -31,7 +31,7 @@
 
 /* ─── Logo ─────────────────────────────────────── */
 .logo-img {
-  height: 58px;
+  height: 72px;
   width: auto;
   transition: transform 0.3s ease;
   filter: drop-shadow(0 0 5px rgba(255,255,255,0.8));

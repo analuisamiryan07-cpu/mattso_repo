@@ -49,6 +49,20 @@ const Home = () => {
         </div>
       </section>
 
+      {/* CONTRIBUYENTES */}
+      <section className="contribuyentes-section">
+        <div className="container">
+          <h2 className="section-title">Nuestros Contribuyentes</h2>
+          <div className="contribuyentes-grid">
+            <img
+              src="https://res.cloudinary.com/ehglt8h8/image/upload/v1785533365/Logo-camicon-vertical_nfjctg.png"
+              alt="Camicon"
+              className="contribuyente-logo"
+            />
+          </div>
+        </div>
+      </section>
+
       {/* BENEFICIOS CON IMAGEN */}
       <section className="benefits-img-section">
         <div className="container">

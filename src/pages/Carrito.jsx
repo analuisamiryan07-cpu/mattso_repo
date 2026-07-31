@@ -7,8 +7,8 @@ import { authService } from '@api/authService';
 import CloudinaryImage from '@components/ui/CloudinaryImage';
 import './Carrito.css';
 
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
-const CEDULA_RE = /^\d{10}$/;
+const EMAIL_RE  = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+const CEDULA_RE = /^\d{10}(\d{3})?$/;  // cédula 10 dígitos o RUC 13 dígitos
 const PHONE_RE  = /^\d{7,15}$/;
 
 function httpErrorMsg(err) {
@@ -34,10 +34,11 @@ const Carrito = () => {
   const currentUser = authService.getCurrentUser();
 
   const [form, setForm] = useState({
-    nombre:  currentUser?.nombre   || '',
-    cedula:  currentUser?.cedula   || '',
-    email:   currentUser?.correo   || '',
-    celular: currentUser?.telefono || '',
+    nombre:   currentUser?.nombre    || '',
+    cedula:   currentUser?.cedula    || '',
+    email:    currentUser?.correo    || '',
+    celular:  currentUser?.telefono  || '',
+    direccion: currentUser?.direccion || '',
   });
   const [comprobanteFile, setComprobanteFile] = useState(null);
   const [formErrors, setFormErrors] = useState({});
@@ -91,8 +92,8 @@ const Carrito = () => {
     else if (nombre.length < 3)               errs.nombre  = 'El nombre debe tener al menos 3 caracteres.';
     else if (nombre.length > 255)             errs.nombre  = 'El nombre no puede superar 255 caracteres.';
 
-    if (!cedula)                               errs.cedula  = 'La cédula es requerida.';
-    else if (!CEDULA_RE.test(cedula))         errs.cedula  = 'La cédula debe tener exactamente 10 dígitos.';
+    if (!cedula)                               errs.cedula  = 'La cédula o RUC es requerido.';
+    else if (!CEDULA_RE.test(cedula))         errs.cedula  = 'Ingresa una cédula válida (10 dígitos) o RUC (13 dígitos).';
 
     if (!email)                                errs.email   = 'El correo es requerido.';
     else if (!EMAIL_RE.test(email))           errs.email   = 'Ingresa un correo electrónico válido.';
@@ -273,6 +274,16 @@ const Carrito = () => {
                         maxLength={15}
                       />
                       {formErrors.celular && <span className="form-error">{formErrors.celular}</span>}
+                    </div>
+                  </div>
+                  <div className="form-row">
+                    <div className="form-group" style={{ gridColumn: '1 / -1' }}>
+                      <label>Dirección</label>
+                      <input
+                        type="text" name="direccion" value={form.direccion}
+                        onChange={handleChange} placeholder="Ej: Av. Principal 123, Quito"
+                        maxLength={255}
+                      />
                     </div>
                   </div>
                 </div>

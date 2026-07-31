@@ -50,6 +50,7 @@ export class AuthService {
         cedula: user.cliente?.cedula || null,
         telefono: user.cliente?.telefono || null,
         ciudad: user.cliente?.ciudad || null,
+        direccion: user.cliente?.direccion || null,
       },
     };
   }
@@ -72,7 +73,7 @@ export class AuthService {
       this.prisma.usuarioWeb.findMany({
         where,
         include: {
-          cliente: { select: { nombre: true, cedula: true, telefono: true, ciudad: true } },
+          cliente: { select: { nombre: true, cedula: true, telefono: true, ciudad: true, direccion: true } },
         },
         orderBy: { id: 'desc' },
         skip,
@@ -175,6 +176,7 @@ export class AuthService {
         cedula: result.cliente.cedula || null,
         telefono: result.cliente.telefono || null,
         ciudad: result.cliente.ciudad || null,
+        direccion: result.cliente.direccion || null,
       },
     };
   }

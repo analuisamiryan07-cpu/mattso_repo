@@ -72,8 +72,22 @@ export class EmailService {
     nombre: string;
     orderId: number;
     items: Array<{ producto: string }>;
+    cedula?: string;
+    telefono?: string;
+    direccion?: string;
   }) {
     const certs = data.items.map((i) => `<li style="margin:4px 0;">${i.producto}</li>`).join('');
+
+    const datosPersonales = `
+      <div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:6px;padding:16px;margin:20px 0;">
+        <p style="margin:0 0 10px;font-weight:700;color:#0A2463;font-size:13px;">Datos del Participante</p>
+        <table style="width:100%;font-size:13px;border-collapse:collapse;">
+          <tr><td style="padding:4px 0;color:#6b7280;width:40%;">Nombre completo</td><td style="padding:4px 0;font-weight:600;">${data.nombre}</td></tr>
+          ${data.cedula ? `<tr><td style="padding:4px 0;color:#6b7280;">Cédula / RUC</td><td style="padding:4px 0;font-weight:600;">${data.cedula}</td></tr>` : ''}
+          ${data.telefono ? `<tr><td style="padding:4px 0;color:#6b7280;">Teléfono</td><td style="padding:4px 0;font-weight:600;">${data.telefono}</td></tr>` : ''}
+          ${data.direccion ? `<tr><td style="padding:4px 0;color:#6b7280;">Dirección</td><td style="padding:4px 0;font-weight:600;">${data.direccion}</td></tr>` : ''}
+        </table>
+      </div>`;
 
     await this.send({
       to: data.to,
@@ -89,6 +103,7 @@ export class EmailService {
             </div>
             <h2 style="color:#0A2463;text-align:center;margin-top:0;">¡Tu pago fue aprobado!</h2>
             <p>Hola <strong>${data.nombre}</strong>, tu pago para la orden <strong>#${data.orderId}</strong> ha sido verificado y aprobado.</p>
+            ${datosPersonales}
             <div style="background:#f0fdf4;border:1px solid #86efac;border-radius:6px;padding:16px;margin:20px 0;">
               <p style="margin:0 0 8px;font-weight:700;color:#166534;font-size:13px;">Certificaciones aprobadas:</p>
               <ul style="margin:0;padding-left:18px;color:#166534;font-size:13px;">${certs}</ul>

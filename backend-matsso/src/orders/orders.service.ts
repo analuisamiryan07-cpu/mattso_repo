@@ -175,7 +175,15 @@ export class OrdersService {
       const jobName = estado === 'PAGADA' ? EMAIL_JOBS.PAYMENT_APPROVED : EMAIL_JOBS.PAYMENT_REJECTED;
       const emailPayload =
         estado === 'PAGADA'
-          ? { to: correo, nombre, orderId: id, items: order.items.map((i) => ({ producto: i.producto.titulo })) }
+          ? {
+              to: correo,
+              nombre,
+              orderId: id,
+              items: order.items.map((i) => ({ producto: i.producto.titulo })),
+              cedula:   updated.usuario.cliente?.cedula    ?? undefined,
+              telefono: updated.usuario.cliente?.telefono  ?? undefined,
+              direccion: updated.usuario.cliente?.direccion ?? undefined,
+            }
           : { to: correo, nombre, orderId: id, motivo: motivo ?? 'Sin especificar' };
 
       if (this.emailQueue) {
