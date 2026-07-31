@@ -1,8 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
 import axios from 'axios';
 
-interface ChatButton { label: string; url: string; }
-interface ChatResponse { response: string; buttons: ChatButton[]; }
+export interface ChatButton { label: string; url: string; }
+export interface ChatResponse { response: string; buttons: ChatButton[]; }
 
 @Injectable()
 export class ChatService {
