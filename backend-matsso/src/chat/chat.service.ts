@@ -1,16 +1,19 @@
 import { Injectable, Logger } from '@nestjs/common';
 import axios from 'axios';
 
+interface ChatButton { label: string; url: string; }
+interface ChatResponse { response: string; buttons: ChatButton[]; }
+
 @Injectable()
 export class ChatService {
   private readonly logger = new Logger(ChatService.name);
   private readonly certibotUrl = process.env.CERTIBOT_URL?.replace(/\/$/, '');
   private readonly certibotKey = process.env.CERTIBOT_API_KEY ?? '';
 
-  async processMessage(userMessage: string): Promise<string> {
+  async processMessage(userMessage: string): Promise<ChatResponse> {
     if (!this.certibotUrl) {
       this.logger.error('CERTIBOT_URL no definida');
-      return 'El servicio de chat no está disponible en este momento. Contáctanos en la página de Contacto.';
+      return { response: 'El servicio de chat no está disponible en este momento.', buttons: [] };
     }
 
     try {
