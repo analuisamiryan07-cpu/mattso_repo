@@ -58,9 +58,9 @@ const Carrito = () => {
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (!file) return;
-    const allowed = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'];
+    const allowed = ['image/jpeg', 'image/png', 'image/webp'];
     if (!allowed.includes(file.type)) {
-      setFormErrors(prev => ({ ...prev, comprobante: 'Solo se permiten imágenes JPG, PNG, WebP o PDF.' }));
+      setFormErrors(prev => ({ ...prev, comprobante: 'Solo se permiten imágenes JPG, PNG o WebP.' }));
       setComprobanteFile(null);
       e.target.value = '';
       return;
@@ -330,7 +330,7 @@ const Carrito = () => {
                       <input
                         type="file"
                         id="comprobante-input"
-                        accept=".jpg,.jpeg,.png,.webp,.pdf,image/jpeg,image/png,image/webp,application/pdf"
+                        accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
                         onChange={handleFileChange}
                         style={{ display: 'none' }}
                       />
@@ -349,7 +349,7 @@ const Carrito = () => {
                         ) : (
                           <div className="file-upload-trigger-content">
                             <i className="fa-solid fa-cloud-arrow-up" />
-                            <span>Seleccionar comprobante (PNG, JPG, WebP, PDF — Máx. 5 MB)</span>
+                            <span>Seleccionar comprobante (PNG, JPG, WebP — Máx. 5 MB)</span>
                           </div>
                         )}
                       </label>

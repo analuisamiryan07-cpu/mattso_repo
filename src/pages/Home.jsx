@@ -7,6 +7,7 @@ import { useCatalog } from '@context/CatalogContext';
 import CourseCard from '@components/CourseCard';
 import CloudinaryImage from '@components/ui/CloudinaryImage';
 import { cloudinaryVideoUrl, cloudinaryUrl } from '@utils/cloudinary';
+import { useScrollReveal } from '@hooks/useScrollReveal';
 import './Home.css';
 
 const videoBg = cloudinaryVideoUrl('video');
@@ -15,6 +16,13 @@ const Home = () => {
   const { addToCart } = useCart();
   const { addToast } = useToast();
   const { destacados: featuredCourses } = useCatalog();
+
+  const refContrib    = useScrollReveal();
+  const refBenefits   = useScrollReveal();
+  const refProgramas  = useScrollReveal();
+  const refDestacados = useScrollReveal();
+  const refCeo        = useScrollReveal();
+  const refWhy        = useScrollReveal();
 
   const benefitsData = [
     { id: 1, icon: 'fa-regular fa-clock', text: 'Modalidades flexibles de aprendizaje, elige dónde y cuándo estudiar' },
@@ -50,7 +58,7 @@ const Home = () => {
       </section>
 
       {/* CONTRIBUYENTES */}
-      <section className="contribuyentes-section">
+      <section className="contribuyentes-section sr" ref={refContrib}>
         <div className="container">
           <h2 className="section-title">Nuestros Contribuyentes</h2>
           <div className="contribuyentes-grid">
@@ -64,7 +72,7 @@ const Home = () => {
       </section>
 
       {/* BENEFICIOS CON IMAGEN */}
-      <section className="benefits-img-section">
+      <section className="benefits-img-section sr" ref={refBenefits}>
         <div className="container">
           <h2 className="section-title left-align">
             Al estudiar en Campus Matsso cuentas con grandes beneficios
@@ -94,7 +102,7 @@ const Home = () => {
       </section>
 
       {/* PROGRAMAS BANNER */}
-      <section className="programas-banner-section">
+      <section className="programas-banner-section sr" ref={refProgramas}>
         <div className="container">
           <h2 className="section-title">Nuestros Programas</h2>
           <div className="programas-banner-grid">
@@ -134,7 +142,7 @@ const Home = () => {
 
       {/* DESTACADOS */}
       {featuredCourses.length > 0 && (
-        <section className="featured-section">
+        <section className="featured-section sr" ref={refDestacados}>
           <div className="container">
             <h2 className="section-title">Destacados</h2>
             <div className="home-featured-grid">
@@ -147,7 +155,7 @@ const Home = () => {
       )}
 
       {/* FRASE CEO */}
-      <section className="ceo-quote-section">
+      <section className="ceo-quote-section sr" ref={refCeo}>
         <div className="ceo-quote-overlay" />
         <div className="ceo-quote-content">
           <blockquote className="ceo-quote-text">
@@ -158,7 +166,7 @@ const Home = () => {
       </section>
 
       {/* POR QUÉ ELEGIRNOS */}
-      <section className="why-section">
+      <section className="why-section sr" ref={refWhy}>
         <div className="container">
           <div className="why-grid">
             <div className="why-item">

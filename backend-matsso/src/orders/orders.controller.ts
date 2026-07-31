@@ -20,7 +20,7 @@ import { StorageService } from '../storage/storage.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { CreateOrderDto } from './dto/create-order.dto';
 
-const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'];
+const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 
 // Primeros 8 bytes (magic bytes) esperados por tipo MIME
 const MAGIC_BYTES: Record<string, (buf: Buffer) => boolean> = {
