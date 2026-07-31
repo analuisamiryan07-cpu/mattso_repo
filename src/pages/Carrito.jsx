@@ -325,7 +325,7 @@ const Carrito = () => {
                   </div>
 
                   <div className="comprobante-upload-group form-group">
-                    <label>Comprobante de Pago (Captura o PDF)</label>
+                    <label>Comprobante de Pago (Captura de pantalla)</label>
                     <div className={`file-upload-wrapper ${comprobanteFile ? 'has-file' : ''}`}>
                       <input
                         type="file"
