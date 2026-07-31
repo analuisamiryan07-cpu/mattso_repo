@@ -96,15 +96,15 @@
    =========================== */
 .contribuyentes-section {
   background: var(--bg-light);
-  padding: 40px 0;
+  padding: 60px 0;
   border-top: 1px solid var(--border-color);
 }
 
 .contribuyentes-section .section-title {
-  font-size: 1.3rem;
+  font-size: 1.4rem;
   color: var(--text-muted);
   font-weight: 600;
-  margin-bottom: 28px;
+  margin-bottom: 40px;
   text-transform: uppercase;
   letter-spacing: 0.06em;
 }
@@ -116,12 +116,13 @@
   align-items: center;
   justify-content: center;
   flex-wrap: wrap;
-  gap: 40px;
+  gap: 60px;
 }
 
 .contribuyente-logo {
-  height: 130px;
+  height: 200px;
   width: auto;
+  max-width: 280px;
   object-fit: contain;
   filter: grayscale(30%);
   opacity: 0.85;
