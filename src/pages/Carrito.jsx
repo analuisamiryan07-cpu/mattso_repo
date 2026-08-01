@@ -45,10 +45,23 @@ const Carrito = () => {
   const [loading, setLoading] = useState(false);
 
   const TASA_IVA = 0.15;
-  const subtotal = getCartTotal();
-  const iva = subtotal * TASA_IVA;
+  const subtotal = getCartTotal(); // suma de todos los precios sin IVA
+  const subtotalCap = cartItems
+    .filter(i => (i.tipo || '').toUpperCase() === 'CAPACITACION')
+    .reduce((sum, i) => sum + i.precio * i.cantidad, 0);
+  const iva = subtotalCap * TASA_IVA; // IVA solo en capacitaciones
   const total = subtotal + iva;
   const fmt = (n) => `$${n.toFixed(2)}`;
+
+  const totalQty = cartItems.reduce((a, i) => a + i.cantidad, 0);
+  const tiposUnicos = [...new Set(cartItems.map(i => (i.tipo || '').toUpperCase()))];
+  const tipoLabel = (() => {
+    if (tiposUnicos.length === 1) {
+      if (tiposUnicos[0] === 'CERTIFICACION') return totalQty === 1 ? 'certificación' : 'certificaciones';
+      return totalQty === 1 ? 'capacitación' : 'capacitaciones';
+    }
+    return totalQty === 1 ? 'curso' : 'cursos';
+  })();
 
   const handleChange = (e) => {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
@@ -156,7 +169,7 @@ const Carrito = () => {
             <h1>Carrito de Compras</h1>
             {cartItems.length > 0 && (
               <span className="carrito-count">
-                {cartItems.reduce((a, i) => a + i.cantidad, 0)} curso{cartItems.reduce((a, i) => a + i.cantidad, 0) !== 1 ? 's' : ''}
+                {totalQty} {tipoLabel}
               </span>
             )}
           </div>
@@ -373,7 +386,10 @@ const Carrito = () => {
             </div>
             <div className="resumen-desglose">
               <span>Subtotal <b>{fmt(subtotal)}</b></span>
-              <span>IVA 15% <b>{fmt(iva)}</b></span>
+              {iva > 0
+                ? <span>IVA 15% (capacitaciones) <b>{fmt(iva)}</b></span>
+                : <span style={{ fontSize: '0.75rem', color: '#16a34a' }}>✓ Exento de IVA</span>
+              }
             </div>
             {isLoggedIn ? (
               <button

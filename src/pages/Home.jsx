@@ -52,7 +52,7 @@ const Home = () => {
       {/* CONTRIBUYENTES */}
       <section className="contribuyentes-section">
         <div className="container">
-          <h2 className="section-title">Nuestros Contribuyentes</h2>
+          <h2 className="section-title">Nuestros Aliados</h2>
           <div className="contribuyentes-grid">
             <img
               src="https://res.cloudinary.com/ehglt8h8/image/upload/v1785541518/logo-camicon_horizontal_zeocch.png"

@@ -101,12 +101,12 @@
 }
 
 .contribuyentes-section .section-title {
-  font-size: 1.4rem;
+  font-size: 0.75rem;
   color: var(--text-muted);
   font-weight: 600;
   margin-bottom: 4px;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.08em;
 }
 
 .contribuyentes-section .section-title::after { display: none; }
