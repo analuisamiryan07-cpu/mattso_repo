@@ -24,6 +24,7 @@ export class EmailService {
     nombre: string;
     orderId: number;
     total: number;
+    iva?: number;
     items: Array<{ producto: string; precio: number }>;
   }) {
     const rows = data.items
@@ -52,7 +53,7 @@ export class EmailService {
               <table style="width:100%;border-collapse:collapse;font-size:13px;">
                 ${rows}
                 <tr>
-                  <td style="padding:10px 4px 0;font-weight:700;">Total con IVA (15%)</td>
+                  <td style="padding:10px 4px 0;font-weight:700;">${(data.iva ?? 0) > 0 ? 'Total con IVA (15%)' : 'Total'}</td>
                   <td style="padding:10px 4px 0;text-align:right;font-weight:700;color:#0A2463;">$${data.total.toFixed(2)}</td>
                 </tr>
               </table>

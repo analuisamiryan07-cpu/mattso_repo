@@ -32,7 +32,7 @@ export class OrdersService {
     const productIds = items.map((i) => BigInt(i.id));
     const productos = await this.prisma.producto.findMany({
       where: { id: { in: productIds }, activo: true },
-      select: { id: true, precio: true, titulo: true },
+      select: { id: true, precio: true, titulo: true, tipo: true },
     });
 
     if (productos.length !== productIds.length) {
@@ -42,12 +42,20 @@ export class OrdersService {
     }
 
     const precioMap = new Map(productos.map((p) => [Number(p.id), Number(p.precio)]));
+    const tipoMap  = new Map(productos.map((p) => [Number(p.id), p.tipo as string]));
 
     const subtotal = items.reduce(
       (acc, item) => acc + (precioMap.get(item.id) ?? 0) * item.cantidad,
       0,
     );
-    const iva = subtotal * TASA_IVA;
+    // IVA solo en CAPACITACION — las certificaciones están exentas
+    const subtotalConIva = items.reduce((acc, item) => {
+      const tipo = tipoMap.get(item.id) ?? 'CAPACITACION';
+      return tipo === 'CAPACITACION'
+        ? acc + (precioMap.get(item.id) ?? 0) * item.cantidad
+        : acc;
+    }, 0);
+    const iva = subtotalConIva * TASA_IVA;
     const total = subtotal + iva;
 
     // Verificar que el usuario existe
@@ -90,6 +98,7 @@ export class OrdersService {
       nombre,
       orderId: Number(order.id),
       total,
+      iva,
       items: productos.map((p) => ({ producto: p.titulo, precio: Number(p.precio) })),
     };
 
@@ -188,16 +197,23 @@ export class OrdersService {
             }
           : { to: correo, nombre, orderId: id, motivo: motivo ?? 'Sin especificar' };
 
-      if (this.emailQueue) {
-        await this.emailQueue
-          .add(jobName, emailPayload)
-          .catch((err) => this.logger.error('Error encolando email de estado:', err));
-      } else {
+      const sendEmailDirect = () => {
         const sendFn =
           estado === 'PAGADA'
             ? this.emailService.sendPaymentApproved(emailPayload as any)
             : this.emailService.sendPaymentRejected(emailPayload as any);
         sendFn.catch((err) => this.logger.error('Error enviando email de estado:', err));
+      };
+
+      if (this.emailQueue) {
+        await this.emailQueue
+          .add(jobName, emailPayload)
+          .catch((err) => {
+            this.logger.error('Error encolando email, enviando directamente:', err);
+            sendEmailDirect();
+          });
+      } else {
+        sendEmailDirect();
       }
     }
 
