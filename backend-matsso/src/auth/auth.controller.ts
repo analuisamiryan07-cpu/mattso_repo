@@ -58,6 +58,26 @@ export class AuthController {
     return this.authService.register(dto);
   }
 
+  @Throttle({ global: { limit: 3, ttl: 60000 } })
+  @Post('forgot-password')
+  @HttpCode(HttpStatus.OK)
+  async forgotPassword(@Body('correo') correo: string) {
+    await this.authService.forgotPassword(correo ?? '');
+    // Siempre responder OK — no revelar si el correo existe
+    return { message: 'Si el correo está registrado, recibirás el enlace en breve.' };
+  }
+
+  @Throttle({ global: { limit: 5, ttl: 60000 } })
+  @Post('reset-password')
+  @HttpCode(HttpStatus.OK)
+  async resetPassword(
+    @Body('token') token: string,
+    @Body('password') password: string,
+  ) {
+    await this.authService.resetPassword(token, password);
+    return { message: 'Contraseña actualizada correctamente.' };
+  }
+
   @UseGuards(AuthGuard('jwt'))
   @Get('profile')
   async getProfile(@Req() req: any) {

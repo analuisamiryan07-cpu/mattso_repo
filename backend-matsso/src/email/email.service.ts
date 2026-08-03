@@ -157,6 +157,35 @@ export class EmailService {
     });
   }
 
+  async sendPasswordReset(data: { to: string; nombre: string; resetUrl: string }) {
+    await this.send({
+      to: data.to,
+      subject: `Recuperación de contraseña — ${this.senderName}`,
+      html: `
+        <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;color:#1f2937;">
+          <div style="background:#0A2463;padding:24px;border-radius:8px 8px 0 0;text-align:center;">
+            <h1 style="color:#FFD700;margin:0;font-size:20px;">${this.senderName}</h1>
+          </div>
+          <div style="padding:28px;border:1px solid #e5e7eb;border-top:none;border-radius:0 0 8px 8px;background:#fff;">
+            <h2 style="color:#0A2463;margin-top:0;">Hola, ${data.nombre}</h2>
+            <p>Recibimos una solicitud para restablecer la contraseña de tu cuenta. Haz clic en el siguiente botón para crear una nueva:</p>
+            <div style="text-align:center;margin:32px 0;">
+              <a href="${data.resetUrl}"
+                 style="background:#0A2463;color:#FFD700;padding:14px 32px;border-radius:50px;font-weight:700;font-size:15px;text-decoration:none;display:inline-block;">
+                Restablecer contraseña
+              </a>
+            </div>
+            <p style="font-size:13px;color:#6b7280;">
+              Este enlace es válido por <strong>1 hora</strong>. Si no solicitaste este cambio, ignora este correo — tu cuenta sigue segura.
+            </p>
+            <p style="font-size:12px;color:#9ca3af;word-break:break-all;">
+              Si el botón no funciona, copia este enlace en tu navegador:<br>${data.resetUrl}
+            </p>
+          </div>
+        </div>`,
+    });
+  }
+
   private async send(payload: { to: string; subject: string; html: string }) {
     if (!this.apiKey) return;
 

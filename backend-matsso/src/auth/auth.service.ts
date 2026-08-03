@@ -1,13 +1,16 @@
-import { Injectable, UnauthorizedException, ConflictException } from '@nestjs/common';
+import { Injectable, UnauthorizedException, ConflictException, BadRequestException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '../prisma/prisma.service';
+import { EmailService } from '../email/email.service';
 import * as bcrypt from 'bcrypt';
+import * as crypto from 'crypto';
 
 @Injectable()
 export class AuthService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
+    private readonly emailService: EmailService,
   ) {}
 
   async login(correo: string, password: string) {
@@ -94,6 +97,53 @@ export class AuthService {
       })),
       meta: { total, page, limit, pages: Math.ceil(total / limit) },
     };
+  }
+
+  async forgotPassword(correo: string): Promise<void> {
+    const user = await this.prisma.usuarioWeb.findUnique({
+      where: { correo },
+      include: { cliente: true },
+    });
+    // Responder igual exista o no el correo (evita enumeración de emails)
+    if (!user) return;
+
+    const token   = crypto.randomBytes(32).toString('hex');
+    const expires = new Date(Date.now() + 60 * 60 * 1000); // expira en 1 hora
+
+    await this.prisma.usuarioWeb.update({
+      where: { correo },
+      data: { reset_token: token, reset_token_expires_at: expires },
+    });
+
+    const frontendUrl = process.env.FRONTEND_URL || 'https://sapper-industries.com';
+    const resetUrl = `${frontendUrl}/reset-password?token=${token}`;
+    const nombre   = user.cliente?.nombre || correo;
+
+    await this.emailService.sendPasswordReset({ to: correo, nombre, resetUrl });
+  }
+
+  async resetPassword(token: string, newPassword: string): Promise<void> {
+    if (!token) throw new BadRequestException('Token requerido.');
+
+    const user = await this.prisma.usuarioWeb.findFirst({
+      where: {
+        reset_token: token,
+        reset_token_expires_at: { gt: new Date() },
+      },
+    });
+
+    if (!user) throw new BadRequestException('El enlace es inválido o ha expirado. Solicita uno nuevo.');
+
+    const passwordHash = await bcrypt.hash(newPassword, 10);
+
+    await this.prisma.usuarioWeb.update({
+      where: { id: user.id },
+      data: {
+        password_hash: passwordHash,
+        reset_token: null,
+        reset_token_expires_at: null,
+      },
+    });
   }
 
   async register(data: { nombre: string; correo: string; password: string; cedula?: string; telefono?: string; ciudad?: string; direccion?: string }) {

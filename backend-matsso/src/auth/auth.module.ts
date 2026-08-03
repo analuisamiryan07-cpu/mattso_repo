@@ -4,15 +4,16 @@ import { PassportModule } from '@nestjs/passport';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { JwtStrategy } from './jwt.strategy';
+import { EmailModule } from '../email/email.module';
 
 @Module({
   imports: [
     PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.register({
-      // FIX [Authentication.Credentials.Unprotected]: Sin fallback hardcodeado
       secret: process.env.JWT_SECRET,
       signOptions: { expiresIn: '2h' },
     }),
+    EmailModule,
   ],
   controllers: [AuthController],
   providers: [AuthService, JwtStrategy],
