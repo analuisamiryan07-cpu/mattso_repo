@@ -5,6 +5,7 @@ import Home from '@pages/Home';
 import Capacitaciones from '@pages/Capacitaciones';
 import Certificaciones from '@pages/Certificaciones';
 import CertificationDetail from '@pages/CertificationDetail';
+import CapacitacionDetail from '@pages/CapacitacionDetail';
 import Carrito from '@pages/Carrito';
 import Login from '@pages/Login';
 import ForgotPassword from '@pages/ForgotPassword';
@@ -29,6 +30,7 @@ function App() {
               <Route path="/capacitaciones"       element={<Capacitaciones />} />
               <Route path="/certificaciones"      element={<Certificaciones />} />
               <Route path="/certificacion/:slug"  element={<CertificationDetail />} />
+              <Route path="/capacitacion/:slug"   element={<CapacitacionDetail />} />
               <Route path="/carrito"              element={<Carrito />} />
               <Route path="/login"                element={<Login />} />
               <Route path="/forgot-password"     element={<ForgotPassword />} />
