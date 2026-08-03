@@ -56,9 +56,14 @@ export const authService = {
     return !!localStorage.getItem('matsso_token');
   },
 
-  /**
-   * Obtiene el perfil actualizado desde el servidor.
-   */
+  async forgotPassword(correo) {
+    await apiClient.post('/auth/forgot-password', { correo });
+  },
+
+  async resetPassword(token, password) {
+    await apiClient.post('/auth/reset-password', { token, password });
+  },
+
   async getProfile() {
     const { data } = await apiClient.get('/auth/profile');
     return data;

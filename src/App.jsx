@@ -7,6 +7,8 @@ import Certificaciones from '@pages/Certificaciones';
 import CertificationDetail from '@pages/CertificationDetail';
 import Carrito from '@pages/Carrito';
 import Login from '@pages/Login';
+import ForgotPassword from '@pages/ForgotPassword';
+import ResetPassword from '@pages/ResetPassword';
 import Contacto from '@pages/Contacto';
 import Nosotros from '@pages/Nosotros';
 import Terminos from '@pages/Terminos';
@@ -29,6 +31,8 @@ function App() {
               <Route path="/certificacion/:slug"  element={<CertificationDetail />} />
               <Route path="/carrito"              element={<Carrito />} />
               <Route path="/login"                element={<Login />} />
+              <Route path="/forgot-password"     element={<ForgotPassword />} />
+              <Route path="/reset-password"      element={<ResetPassword />} />
               <Route path="/contacto"             element={<Contacto />} />
               <Route path="/terminos"             element={<Terminos />} />
               <Route path="/mis-certificados"    element={<MisCertificados />} />

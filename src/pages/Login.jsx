@@ -135,6 +135,11 @@ const Login = () => {
             <button type="submit" className="login-submit" disabled={loading}>
               {loading ? 'Ingresando...' : 'Ingresar'}
             </button>
+            <p style={{ textAlign: 'center', marginTop: 14, fontSize: '0.83rem' }}>
+              <Link to="/forgot-password" style={{ color: 'var(--primary-blue)', fontWeight: 600 }}>
+                ¿Olvidaste tu contraseña?
+              </Link>
+            </p>
           </form>
         )}
 
