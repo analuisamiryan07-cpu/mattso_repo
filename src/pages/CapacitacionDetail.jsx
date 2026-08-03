@@ -121,7 +121,9 @@ const CapacitacionDetail = () => {
             <h1>{cap.titulo}</h1>
             <p>
               Desarrolla nuevas competencias y potencia tu carrera profesional
-              {cap.descripcion ? ` al ${cap.descripcion.replace(/\.$/, '').toLowerCase()}.` : '.'}
+              {cap.descripcion && cap.descripcion !== 'Sin descripción'
+                ? ` al ${cap.descripcion.replace(/\.$/, '').toLowerCase()}.`
+                : '.'}
             </p>
             <button className="btn-leer-mas" onClick={handleAddToCart}>
               <i className="fa-solid fa-cart-plus" /> Añadir al carrito de compras
