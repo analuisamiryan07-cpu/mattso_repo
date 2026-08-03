@@ -316,10 +316,9 @@ const Carrito = () => {
                   <div className="payment-instructions">
                     <div className="payment-instructions__grid">
                       <div className="payment-qr-container">
-                        <img src="/qr_deuna.png" alt="Deuna QR Code" className="payment-qr-image" />
+                        <img src="/Produbanco.jpg" alt="Produbanco" className="payment-qr-image" />
                       </div>
                       <div className="payment-details-container">
-                        <img src="/Produbanco.jpg" alt="Produbanco" style={{ height: 48, objectFit: 'contain', marginBottom: 10, display: 'block' }} />
                         <h4>Detalles de la cuenta:</h4>
                         <ul className="bank-details-list">
                           <li><strong>Banco:</strong> Produbanco</li>
