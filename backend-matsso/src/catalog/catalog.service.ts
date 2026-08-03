@@ -235,10 +235,17 @@ export class CatalogService {
         { icon: 'fa-solid fa-chart-line',     title: 'Evaluación Práctica',   desc: evalPractico?.descripcion || 'Casos prácticos (100%).' }
       ];
 
+      const tipoLabel: Record<string, string> = {
+        FORMACION:    'Formación',
+        EXPERIENCIA:  'Experiencia',
+        CAPACITACION: 'Capacitación Previa',
+        OTRO:         'Requisito General',
+      };
+
       const requirements = cert && cert.requisitos.length > 0
         ? cert.requisitos.map((r: any, index: number) => ({
             number: String(index + 1).padStart(2, '0'),
-            title: r.tipo,
+            title: tipoLabel[r.tipo] ?? r.tipo,
             desc: r.descripcion
           }))
         : [
