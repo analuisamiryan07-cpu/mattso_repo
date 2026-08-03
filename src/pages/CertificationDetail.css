@@ -114,6 +114,10 @@
   color: #fff;
 }
 
+.cert-hero-form .form-group label {
+  color: #fff !important;
+}
+
 .form-group input {
   width: 100%;
   background: transparent;

@@ -317,17 +317,17 @@ const Carrito = () => {
                     <div className="payment-instructions__grid">
                       <div className="payment-qr-container">
                         <img src="/qr_deuna.png" alt="Deuna QR Code" className="payment-qr-image" />
-                        <span className="payment-qr-caption">Escanea con Deuna o Pichincha Banca Móvil</span>
                       </div>
                       <div className="payment-details-container">
+                        <img src="/Produbanco.jpg" alt="Produbanco" style={{ height: 48, objectFit: 'contain', marginBottom: 10, display: 'block' }} />
                         <h4>Detalles de la cuenta:</h4>
                         <ul className="bank-details-list">
-                          <li><strong>Banco:</strong> Banco Pichincha</li>
+                          <li><strong>Banco:</strong> Produbanco</li>
                           <li><strong>Tipo de Cuenta:</strong> Ahorros</li>
-                          <li><strong>Número de Cuenta:</strong> 2201234567</li>
-                          <li><strong>Titular:</strong> MATSSO ECUADOR S.A.S.</li>
-                          <li><strong>RUC:</strong> 1793084729001</li>
-                          <li><strong>Correo:</strong> pagos@campusmatsso.com</li>
+                          <li><strong>Número de Cuenta:</strong> 12040223391</li>
+                          <li><strong>Titular:</strong> SAPPERPROTECTION CIA. LTDA.</li>
+                          <li><strong>RUC:</strong> 1792698030001</li>
+                          <li><strong>Correo:</strong> capaglob@gmail.com.com</li>
                         </ul>
                         <div className="payment-alert">
                           <i className="fa-solid fa-circle-info" />
