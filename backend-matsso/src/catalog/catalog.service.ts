@@ -265,7 +265,7 @@ export class CatalogService {
         horas: p.horas ? `${p.horas} horas` : '40 horas',
         vigencia: cert?.vigencia?.anos || 2,
         inicia: 'Inscripciones Abiertas',
-        slug: cert?.codigo
+        slug: p.tipo.toLowerCase() !== 'capacitacion' && cert?.codigo
           ? cert.codigo.toLowerCase()
           : p.titulo.toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, ''),
         cloudinaryFolder: cloudinaryNum
