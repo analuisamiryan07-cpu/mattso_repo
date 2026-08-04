@@ -104,34 +104,209 @@ const CapacitacionDetail = () => {
     { number: '04', title: 'Inscripción', desc: 'Completar el proceso de inscripción y pago previo al inicio.' },
   ];
 
+  const heroStyle = cap.cloudinaryNum
+    ? { backgroundImage: `url('${cloudinaryUrl(`${cap.cloudinaryNum}_hero`, { width: 1920, height: 700 })}')` }
+    : undefined;
+
+  const formBgStyle = cap.cloudinaryNum
+    ? { backgroundImage: `url('${cloudinaryUrl(`${cap.cloudinaryNum}_hero`, { width: 1920, height: 700 })}')` }
+    : undefined;
+
+  const hasMetodologias = habilidadesTeo.length > 0 || habilidadesPrac.length > 0;
+  const hasCompetencias = competencias.length > 0 || conocimientos.length > 0 || dirigidoA;
+
   return (
     <div className="certification-detail-page">
 
-      {/* ── 1. HERO ── */}
-      <section
-        className="cert-hero"
-        style={cap.cloudinaryNum
-          ? { backgroundImage: `url('${cloudinaryUrl(`${cap.cloudinaryNum}_hero`, { width: 1920, height: 700 })}')` }
-          : undefined}
-      >
+      {/* ── 1. HERO: imagen + CAPACITACIÓN / nombre ── */}
+      <section className="cert-hero cap-hero" style={heroStyle}>
         <div className="cert-hero-overlay" />
-        <div className="container cert-hero-container">
-          <div className="cert-hero-content">
-            <span className="cert-hero-eyebrow">CAPACITACIÓN</span>
-            <h1>{cap.titulo}</h1>
-            <p>
-              Desarrolla nuevas competencias y potencia tu carrera profesional
-              {cap.descripcion && cap.descripcion !== 'Sin descripción'
-                ? ` al ${cap.descripcion.replace(/\.$/, '').toLowerCase()}.`
-                : '.'}
-            </p>
-            <button className="btn-leer-mas" onClick={handleAddToCart}>
-              <i className="fa-solid fa-cart-plus" /> Añadir al carrito de compras
-            </button>
-          </div>
+        <div className="container cap-hero-text">
+          <span className="cert-hero-eyebrow">CAPACITACIÓN</span>
+          <h1>{cap.titulo}</h1>
+        </div>
+      </section>
 
-          {/* Formulario de contacto */}
-          <div className="cert-hero-form">
+      {/* ── 2. SOBRE LA CAPACITACIÓN ── */}
+      <section className="cert-about">
+        <div className="container">
+          <h2 className="cert-section-title">Sobre la capacitación</h2>
+          <div className="cert-about-text">
+            <p>
+              La capacitación profesional es el proceso formativo mediante el cual una persona
+              adquiere, actualiza o refuerza los conocimientos, habilidades y destrezas necesarias
+              para desempeñarse con eficiencia en su área de trabajo. Está orientada a elevar el
+              rendimiento laboral y a impulsar el desarrollo personal y profesional de los
+              participantes.
+            </p>
+            <p>
+              Matsso Certificación y Capacitación Profesional diseña sus programas de capacitación
+              con base en estándares nacionales e internacionales, con instructores calificados y
+              metodologías prácticas que garantizan una experiencia de aprendizaje efectiva y
+              aplicable desde el primer día.
+            </p>
+            <p>
+              Al completar la capacitación en <strong>{cap.titulo}</strong>, obtendrás un certificado
+              de participación que avala tu formación y respalda tu desarrollo profesional ante
+              empleadores e instituciones.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* ── 3. INFO (izq) + DESCRIPCIÓN (der) ── */}
+      <section className="cap-info-section">
+        <div className="container">
+          <div className="cap-info-grid">
+
+            {/* Columna izquierda: info + contacto */}
+            <div className="cap-left-cards">
+              <div className="cap-info-card">
+                <h3 className="cap-card-title">Información</h3>
+                {(cap.features || []).map((f, i) => (
+                  <div className="cap-info-item" key={i}>
+                    <i className={f.icon} />
+                    <span>{f.desc || f.title}</span>
+                  </div>
+                ))}
+              </div>
+
+              <div className="cap-contact-card">
+                <h3 className="cap-card-title">Inscribirse</h3>
+                <div className="cap-contact-item">
+                  <i className="fa-solid fa-envelope" />
+                  <span>matssoecuador@gmail.com</span>
+                </div>
+                <div className="cap-contact-item">
+                  <i className="fa-solid fa-phone" />
+                  <span>0999 720 877</span>
+                </div>
+                <div className="cap-contact-item">
+                  <i className="fa-brands fa-whatsapp" />
+                  <span>0986 802 988</span>
+                </div>
+                <button className="btn-leer-mas cap-cart-btn" onClick={handleAddToCart}>
+                  <i className="fa-solid fa-cart-shopping" /> Añadir al carrito de compras
+                </button>
+              </div>
+            </div>
+
+            {/* Columna derecha: descripción */}
+            <div className="cap-desc-col">
+              <h2 className="cap-section-heading">Descripción</h2>
+              <p className="cap-desc-text">{cap.descripcion}</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── 4. IMAGEN (izq) + METODOLOGÍAS Y OBJETIVOS (der) ── */}
+      {hasMetodologias && (
+        <section className="cap-split-section">
+          <div className="cap-split-grid">
+            <div className="cap-split-image-col">
+              <CloudinaryImage
+                publicId={cap.cloudinaryNum ? `${cap.cloudinaryNum}_izquierda` : undefined}
+                alt={cap.titulo}
+                width={700}
+                height={520}
+              />
+            </div>
+            <div className="cap-split-content-col cap-split-bg-white">
+              <h2 className="cap-section-heading">Metodologías y Objetivos</h2>
+              {habilidadesTeo.length > 0 && (
+                <>
+                  <h4 className="cap-sub-heading">Metodologías</h4>
+                  <ul className="cap-list">
+                    {habilidadesTeo.map((h, i) => <li key={i}>{h}</li>)}
+                  </ul>
+                </>
+              )}
+              {habilidadesPrac.length > 0 && (
+                <>
+                  <h4 className="cap-sub-heading">Objetivos</h4>
+                  <ul className="cap-list">
+                    {habilidadesPrac.map((h, i) => <li key={i}>{h}</li>)}
+                  </ul>
+                </>
+              )}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* ── 5. COMPETENCIAS (izq) + CONTENIDOS (der) ── */}
+      {hasCompetencias && (
+        <section className="cap-split-section">
+          <div className="cap-split-grid">
+            <div className="cap-split-content-col cap-split-bg-light">
+              {competencias.length > 0 && (
+                <>
+                  <h2 className="cap-section-heading">Competencias que desarrollarás</h2>
+                  <ul className="cap-list">
+                    {competencias.map((c, i) => <li key={i}>{c}</li>)}
+                  </ul>
+                </>
+              )}
+              {dirigidoA && (
+                <>
+                  <h4 className="cap-sub-heading" style={{ marginTop: competencias.length > 0 ? 28 : 0 }}>
+                    Dirigido a:
+                  </h4>
+                  <p className="cap-desc-text">{dirigidoA}</p>
+                </>
+              )}
+            </div>
+            <div className="cap-split-content-col cap-split-bg-white">
+              {conocimientos.length > 0 && (
+                <>
+                  <h2 className="cap-section-heading">Contenidos</h2>
+                  <ul className="cap-list">
+                    {conocimientos.map((c, i) => <li key={i}>{c}</li>)}
+                  </ul>
+                </>
+              )}
+              <button className="btn-leer-mas cap-cart-btn" onClick={handleAddToCart} style={{ marginTop: 32 }}>
+                <i className="fa-solid fa-cart-shopping" /> Añadir al carrito de compras
+              </button>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* ── 6. PRERREQUISITOS (izq) + IMAGEN (der) ── */}
+      <section className="cap-split-section">
+        <div className="cap-split-grid">
+          <div className="cap-split-content-col cap-split-bg-light">
+            <h2 className="cap-section-heading">Prerrequisitos</h2>
+            <div className="cap-req-list">
+              {requirements.map((req, i) => (
+                <div className="req-item" key={i}>
+                  <div className="req-number">{req.number}</div>
+                  <div className="req-text">
+                    <h4>{req.title}</h4>
+                    <p>{req.desc}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="cap-split-image-col">
+            <CloudinaryImage
+              publicId={cap.cloudinaryNum ? `${cap.cloudinaryNum}_derecha` : undefined}
+              alt={cap.titulo}
+              width={700}
+              height={520}
+            />
+          </div>
+        </div>
+      </section>
+
+      {/* ── 7. FORMULARIO con imagen de fondo ── */}
+      <section className="cap-form-section" style={formBgStyle}>
+        <div className="cap-form-overlay" />
+        <div className="cap-form-wrapper">
+          <div className="cert-hero-form cap-form-box">
             <h3>Quiero ser contactado por un asesor</h3>
             {!isLoggedIn ? (
               <>
@@ -173,150 +348,6 @@ const CapacitacionDetail = () => {
                 </form>
               </>
             )}
-          </div>
-        </div>
-      </section>
-
-      {/* ── 2. SOBRE LA CAPACITACIÓN ── */}
-      <section className="cert-about">
-        <div className="container">
-          <h2 className="cert-section-title">Sobre la capacitación</h2>
-          <div className="cert-about-text">
-            <p>
-              La capacitación profesional es el proceso formativo mediante el cual una persona
-              adquiere, actualiza o refuerza los conocimientos, habilidades y destrezas necesarias
-              para desempeñarse con eficiencia en su área de trabajo. Está orientada a elevar el
-              rendimiento laboral y a impulsar el desarrollo personal y profesional de los
-              participantes.
-            </p>
-            <p>
-              Matsso Certificación y Capacitación Profesional diseña sus programas de capacitación
-              con base en estándares nacionales e internacionales, con instructores calificados y
-              metodologías prácticas que garantizan una experiencia de aprendizaje efectiva y
-              aplicable desde el primer día.
-            </p>
-            <p>
-              Al completar la capacitación en <strong>{cap.titulo}</strong>, obtendrás un certificado
-              de participación que avala tu formación y respalda tu desarrollo profesional ante
-              empleadores e instituciones.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* ── 3. CARACTERÍSTICAS / DETALLES ── */}
-      {cap.features && cap.features.length > 0 && (
-        <section className="cert-features">
-          <div className="container">
-            <div className="features-grid">
-              {cap.features.map((f, i) => (
-                <div className="feature-item" key={i}>
-                  <i className={f.icon} />
-                  <h4>{f.title}</h4>
-                  <p>{f.desc}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* ── 4. FORMACIÓN PROFESIONAL ── */}
-      <section className="cert-target">
-        <div className="target-wrapper">
-          <div className="target-image">
-            <CloudinaryImage
-              publicId={cap.cloudinaryNum
-                ? `${cap.cloudinaryNum}_izquierda`
-                : undefined}
-              alt={cap.titulo}
-              width={700}
-              height={520}
-            />
-          </div>
-          <div className="target-content-box">
-            <h3>Formación profesional de calidad</h3>
-            {competencias.length > 0 && (
-              <>
-                <h4>Competencias que desarrollarás:</h4>
-                <ol>
-                  {competencias.map((c, i) => <li key={i}>{c}</li>)}
-                </ol>
-              </>
-            )}
-            {dirigidoA && (
-              <>
-                <h4>Dirigido a:</h4>
-                <p>{dirigidoA}.</p>
-              </>
-            )}
-            <button className="btn-contact-advisor" onClick={handleAddToCart}>
-              <i className="fa-solid fa-cart-plus" /> Añadir al carrito de compras
-            </button>
-          </div>
-        </div>
-      </section>
-
-      {/* ── 5. HABILIDADES Y CONOCIMIENTOS ── */}
-      {(habilidadesTeo.length > 0 || habilidadesPrac.length > 0 || conocimientos.length > 0) && (
-        <section className="cert-skills-knowledge">
-          <div className="container">
-            <h2 className="cert-section-title">Habilidades y Conocimientos</h2>
-            <div className="skills-grid">
-              {(habilidadesTeo.length > 0 || habilidadesPrac.length > 0) && (
-                <div className="skills-col">
-                  <h3>Habilidades</h3>
-                  {habilidadesTeo.length > 0 && (
-                    <>
-                      <h4 className="skills-subheading">Teóricas</h4>
-                      <ul>{habilidadesTeo.map((h, i) => <li key={i}>{h}</li>)}</ul>
-                    </>
-                  )}
-                  {habilidadesPrac.length > 0 && (
-                    <>
-                      <h4 className="skills-subheading">Prácticas</h4>
-                      <ul>{habilidadesPrac.map((h, i) => <li key={i}>{h}</li>)}</ul>
-                    </>
-                  )}
-                </div>
-              )}
-              {conocimientos.length > 0 && (
-                <div className="skills-col">
-                  <h3>Contenidos</h3>
-                  <ul>{conocimientos.map((c, i) => <li key={i}>{c}</li>)}</ul>
-                </div>
-              )}
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* ── 6. REQUISITOS ── */}
-      <section className="cert-requirements">
-        <div className="requirements-wrapper">
-          <div className="requirements-content">
-            <h2 className="cert-section-title left">Requisitos</h2>
-            <div className="req-list">
-              {requirements.map((req, i) => (
-                <div className="req-item" key={i}>
-                  <div className="req-number">{req.number}</div>
-                  <div className="req-text">
-                    <h4>{req.title}</h4>
-                    <p>{req.desc}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-          <div className="requirements-image">
-            <CloudinaryImage
-              publicId={cap.cloudinaryNum
-                ? `${cap.cloudinaryNum}_derecha`
-                : undefined}
-              alt={cap.titulo}
-              width={700}
-              height={520}
-            />
           </div>
         </div>
       </section>

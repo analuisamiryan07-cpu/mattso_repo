@@ -521,3 +521,251 @@
     gap: 14px;
   }
 }
+
+
+/* ==========================================
+   CAPACITACIÓN DETAIL — NUEVO LAYOUT
+   ========================================== */
+
+/* 1. Hero simple (solo imagen + texto, sin formulario) */
+.cap-hero {
+  padding: 140px 0 90px;
+  min-height: 380px;
+  align-items: flex-end;
+}
+
+.cap-hero-text {
+  position: relative;
+  z-index: 2;
+}
+
+.cap-hero-text h1 {
+  font-size: 3rem;
+  font-weight: 700;
+  color: #fff;
+  line-height: 1.2;
+  margin-top: 10px;
+  max-width: 700px;
+}
+
+/* 3. Info + Descripción */
+.cap-info-section {
+  padding: 60px 0;
+  background-color: #f8f9fa;
+}
+
+.cap-info-grid {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 40px;
+  align-items: start;
+}
+
+.cap-left-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.cap-info-card,
+.cap-contact-card {
+  background-color: #3a3a3a;
+  color: #fff;
+  padding: 28px 24px;
+}
+
+.cap-card-title {
+  font-size: 1rem;
+  font-weight: 700;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 20px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.cap-info-item,
+.cap-contact-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.cap-info-item i,
+.cap-contact-item i {
+  width: 18px;
+  text-align: center;
+  color: var(--primary-yellow, #f7a600);
+  flex-shrink: 0;
+}
+
+.cap-cart-btn {
+  width: 100%;
+  margin-top: 20px;
+  justify-content: center;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.88rem;
+  padding: 11px 16px;
+}
+
+.cap-desc-col {
+  padding-top: 4px;
+}
+
+.cap-section-heading {
+  color: var(--primary-blue, #002147);
+  font-size: 1.7rem;
+  font-weight: 700;
+  margin-bottom: 20px;
+}
+
+.cap-desc-text {
+  font-size: 1rem;
+  color: #555;
+  line-height: 1.75;
+  text-align: justify;
+  margin-bottom: 16px;
+}
+
+/* 4/5/6. Secciones 50/50 */
+.cap-split-section {
+  overflow: hidden;
+}
+
+.cap-split-grid {
+  display: flex;
+  min-height: 400px;
+}
+
+.cap-split-image-col {
+  flex: 0 0 50%;
+  overflow: hidden;
+}
+
+.cap-split-image-col img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.cap-split-content-col {
+  flex: 0 0 50%;
+  padding: 60px 5%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.cap-split-bg-white {
+  background-color: #fff;
+}
+
+.cap-split-bg-light {
+  background-color: #f1f3f5;
+}
+
+.cap-sub-heading {
+  color: var(--primary-blue, #002147);
+  font-size: 0.95rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin: 20px 0 10px;
+}
+
+.cap-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.cap-list li {
+  position: relative;
+  padding-left: 18px;
+  margin-bottom: 8px;
+  font-size: 0.95rem;
+  color: #555;
+  line-height: 1.55;
+}
+
+.cap-list li::before {
+  content: '•';
+  position: absolute;
+  left: 0;
+  color: var(--primary-yellow, #f7a600);
+  font-weight: 700;
+}
+
+.cap-req-list {
+  margin-top: 8px;
+}
+
+/* 7. Formulario con fondo */
+.cap-form-section {
+  position: relative;
+  background-color: var(--primary-blue, #002147);
+  background-size: cover;
+  background-position: center;
+  padding: 80px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 480px;
+}
+
+.cap-form-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 33, 71, 0.78);
+  z-index: 1;
+}
+
+.cap-form-wrapper {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+.cap-form-box {
+  max-width: 460px;
+  width: 100%;
+}
+
+/* Responsive */
+@media (max-width: 992px) {
+  .cap-info-grid {
+    grid-template-columns: 1fr;
+  }
+  .cap-split-grid {
+    flex-direction: column;
+  }
+  .cap-split-image-col {
+    flex: none;
+    min-height: 260px;
+  }
+  .cap-split-content-col {
+    flex: none;
+    padding: 40px 24px;
+  }
+  .cap-hero-text h1 {
+    font-size: 2rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .cap-hero-text h1 {
+    font-size: 1.7rem;
+  }
+  .cap-section-heading {
+    font-size: 1.4rem;
+  }
+}

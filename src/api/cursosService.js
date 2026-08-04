@@ -56,6 +56,20 @@ export const cursosService = {
     return data;
   },
 
+  async createPaypalOrder(items) {
+    // items: [{id, cantidad}] — el servidor calcula el precio
+    const { data } = await apiClient.post('/payments/paypal/orders', { items });
+    return data; // { paypalOrderId, internalOrderId }
+  },
+
+  async capturePaypalOrder(paypalOrderId, internalOrderId) {
+    const { data } = await apiClient.post(
+      `/payments/paypal/orders/${paypalOrderId}/capture`,
+      { internalOrderId },
+    );
+    return data; // { mensaje, orderId, captureId, total }
+  },
+
   async enviarContacto(contactData) {
     const { data } = await apiClient.post('/contacto', contactData);
     return data;

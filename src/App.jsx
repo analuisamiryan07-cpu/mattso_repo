@@ -14,6 +14,8 @@ import Contacto from '@pages/Contacto';
 import Nosotros from '@pages/Nosotros';
 import Terminos from '@pages/Terminos';
 import MisCertificados from '@pages/MisCertificados';
+import PaymentSuccess from '@pages/PaymentSuccess';
+import PaymentCancelled from '@pages/PaymentCancelled';
 import Chatbot from './components/ui/Chatbot';
 import { CatalogProvider } from './context/CatalogContext';
 
@@ -38,6 +40,8 @@ function App() {
               <Route path="/contacto"             element={<Contacto />} />
               <Route path="/terminos"             element={<Terminos />} />
               <Route path="/mis-certificados"    element={<MisCertificados />} />
+              <Route path="/pago-exitoso"        element={<PaymentSuccess />} />
+              <Route path="/pago-cancelado"      element={<PaymentCancelled />} />
               <Route path="*" element={
                 <div style={{ textAlign: 'center', padding: '120px 20px' }}>
                   <h2 style={{ fontSize: '2rem', color: 'var(--primary-blue)' }}>Página no encontrada</h2>

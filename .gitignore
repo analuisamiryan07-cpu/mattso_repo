@@ -93,3 +93,24 @@ proyecto_matt/
 # Credenciales Google Service Account (no al repo)
 fabled-tesla-503922-a8-52b88cef05d6.json
 
+# PayPal — documentos de integración y análisis internos
+propuesta_integracion_paypal_ecommerce.md
+paypal_*.md
+paypal_*.txt
+
+# PayPal — archivos SQL de tablas (ya cubierto por *.sql pero explícito)
+paypal_tablas.sql
+backend-matsso/src/payments/**/*.sql
+
+# Claves y tokens de PayPal si alguna vez se guardan localmente
+paypal_credentials*.json
+paypal_keys*.json
+paypal_webhook*.json
+*.pem
+*.key
+
+# Logs y respuestas de webhooks PayPal capturados en local
+webhook_*.json
+paypal_response*.json
+paypal_capture*.json
+

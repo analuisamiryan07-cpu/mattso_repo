@@ -12,6 +12,7 @@ import { EmailModule } from './email/email.module';
 import { QueueModule } from './queue/queue.module';
 import { StorageModule } from './storage/storage.module';
 import { CertificatesModule } from './certificates/certificates.module';
+import { PaymentsModule } from './payments/payments.module';
 
 @SkipThrottle()
 @Controller('api')
@@ -44,6 +45,7 @@ const bullImports = process.env.REDIS_URL
     OrdersModule,
     ContactModule,
     CertificatesModule,
+    PaymentsModule,
   ],
   controllers: [HealthController],
   providers: [
