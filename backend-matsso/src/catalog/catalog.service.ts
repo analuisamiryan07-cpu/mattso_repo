@@ -92,19 +92,22 @@ export class CatalogService {
     const rows = await this.prisma.producto.findMany({
       orderBy: [{ tipo: 'asc' }, { titulo: 'asc' }],
     });
-    return rows.map(p => ({
-      id:               Number(p.id),
-      tipo:             p.tipo,
-      titulo:           p.titulo,
-      descripcion:      p.descripcion,
-      precio:           Number(p.precio),
-      horas:            p.horas,
-      modalidad:        p.modalidad,
-      imagen_url:       p.imagen_url,
-      activo:           p.activo,
-      destacado:        p.destacado,
-      id_certificacion: p.id_certificacion,
-      created_at:       p.created_at,
+    return (rows as any[]).map(p => ({
+      id:                Number(p.id),
+      tipo:              p.tipo,
+      titulo:            p.titulo,
+      descripcion:       p.descripcion,
+      descripcion_larga: p.descripcion_larga ?? null,
+      precio:            Number(p.precio),
+      horas:             p.horas,
+      modalidad:         p.modalidad,
+      fecha:             p.fecha ?? null,
+      horario:           p.horario ?? null,
+      imagen_url:        p.imagen_url,
+      activo:            p.activo,
+      destacado:         p.destacado,
+      id_certificacion:  p.id_certificacion,
+      created_at:        p.created_at,
     }));
   }
 
@@ -112,22 +115,28 @@ export class CatalogService {
     tipo: string;
     titulo: string;
     descripcion?: string;
+    descripcion_larga?: string;
     precio: number | string;
     horas?: number | string | null;
     modalidad?: string;
+    fecha?: string | null;
+    horario?: string | null;
     imagen_url?: string | null;
     activo?: boolean | string;
     destacado?: boolean | string;
   }) {
     const created = await this.prisma.producto.create({
       data: {
-        tipo:        data.tipo,
-        titulo:      data.titulo,
-        descripcion: data.descripcion || null,
-        precio:      Number(data.precio),
-        horas:       data.horas ? Number(data.horas) : null,
-        modalidad:   data.modalidad || null,
-        imagen_url:  data.imagen_url || null,
+        tipo:              data.tipo,
+        titulo:            data.titulo,
+        descripcion:       data.descripcion || null,
+        descripcion_larga: data.descripcion_larga || null,
+        precio:            Number(data.precio),
+        horas:             data.horas ? Number(data.horas) : null,
+        modalidad:         data.modalidad || null,
+        fecha:             data.fecha || null,
+        horario:           data.horario || null,
+        imagen_url:        data.imagen_url || null,
         activo:      data.activo === true || data.activo === 'true' || data.activo === '1',
         destacado:   data.destacado === true || data.destacado === 'true' || data.destacado === '1',
       },
@@ -142,9 +151,12 @@ export class CatalogService {
       tipo?: string;
       titulo?: string;
       descripcion?: string | null;
+      descripcion_larga?: string | null;
       precio?: number | string;
       horas?: number | string | null;
       modalidad?: string | null;
+      fecha?: string | null;
+      horario?: string | null;
       imagen_url?: string | null;
       activo?: boolean | string;
       destacado?: boolean | string;
@@ -153,20 +165,23 @@ export class CatalogService {
     const updated = await this.prisma.producto.update({
       where: { id },
       data: {
-        ...(data.tipo        !== undefined && { tipo: data.tipo }),
-        ...(data.titulo      !== undefined && { titulo: data.titulo }),
-        ...(data.descripcion !== undefined && { descripcion: data.descripcion || null }),
-        ...(data.precio      !== undefined && { precio: Number(data.precio) }),
-        ...(data.horas       !== undefined && { horas: data.horas ? Number(data.horas) : null }),
-        ...(data.modalidad   !== undefined && { modalidad: data.modalidad || null }),
-        ...(data.imagen_url  !== undefined && { imagen_url: data.imagen_url || null }),
-        ...(data.activo      !== undefined && {
+        ...(data.tipo              !== undefined && { tipo: data.tipo }),
+        ...(data.titulo            !== undefined && { titulo: data.titulo }),
+        ...(data.descripcion       !== undefined && { descripcion: data.descripcion || null }),
+        ...(data.descripcion_larga !== undefined && { descripcion_larga: (data as any).descripcion_larga || null }),
+        ...(data.precio            !== undefined && { precio: Number(data.precio) }),
+        ...(data.horas             !== undefined && { horas: data.horas ? Number(data.horas) : null }),
+        ...(data.modalidad         !== undefined && { modalidad: data.modalidad || null }),
+        ...(data.fecha             !== undefined && { fecha: (data as any).fecha || null }),
+        ...(data.horario           !== undefined && { horario: (data as any).horario || null }),
+        ...(data.imagen_url        !== undefined && { imagen_url: data.imagen_url || null }),
+        ...(data.activo            !== undefined && {
           activo: data.activo === true || data.activo === 'true' || data.activo === '1',
         }),
-        ...(data.destacado   !== undefined && {
+        ...(data.destacado         !== undefined && {
           destacado: data.destacado === true || data.destacado === 'true' || data.destacado === '1',
         }),
-      },
+      } as any,
     });
     this.invalidateCache();
     return { id: Number(updated.id), titulo: updated.titulo };
@@ -228,12 +243,20 @@ export class CatalogService {
       const evalPractico = cert?.evaluaciones?.find((e: any) => /prac/i.test(e.modalidad || ''));
       const evalSede     = cert?.evaluaciones?.find((e: any) => /sede/i.test(e.modalidad || ''));
 
-      const features = [
-        { icon: 'fa-regular fa-clock',        title: 'Vigencia',              desc: cert?.vigencia?.etiqueta || '2 años' },
-        { icon: 'fa-solid fa-screwdriver-wrench', title: 'Modalidad',         desc: evalSede?.descripcion || p.modalidad || 'Virtual' },
-        { icon: 'fa-regular fa-file-lines',   title: 'Evaluación Teórica',    desc: evalTeorico?.descripcion  || 'Banco de preguntas (mínimo 70%).' },
-        { icon: 'fa-solid fa-chart-line',     title: 'Evaluación Práctica',   desc: evalPractico?.descripcion || 'Casos prácticos (100%).' }
-      ];
+      const isCapacitacion = p.tipo === 'CAPACITACION';
+      const features = isCapacitacion
+        ? [
+            ...(p.fecha    ? [{ icon: 'fa-regular fa-calendar', title: 'Fecha',    desc: p.fecha }]    : []),
+            ...(p.horario  ? [{ icon: 'fa-regular fa-clock',    title: 'Horario',  desc: p.horario }]  : []),
+            { icon: 'fa-solid fa-dollar-sign',        title: 'Precio',    desc: `$${Number(p.precio).toFixed(2)} (dólares)` },
+            { icon: 'fa-solid fa-screwdriver-wrench', title: 'Modalidad', desc: p.modalidad || 'Presencial' },
+          ]
+        : [
+            { icon: 'fa-regular fa-clock',            title: 'Vigencia',            desc: cert?.vigencia?.etiqueta || '2 años' },
+            { icon: 'fa-solid fa-screwdriver-wrench', title: 'Modalidad',           desc: evalSede?.descripcion || p.modalidad || 'Virtual' },
+            { icon: 'fa-regular fa-file-lines',       title: 'Evaluación Teórica',  desc: evalTeorico?.descripcion  || 'Banco de preguntas (mínimo 70%).' },
+            { icon: 'fa-solid fa-chart-line',         title: 'Evaluación Práctica', desc: evalPractico?.descripcion || 'Casos prácticos (100%).' },
+          ];
 
       const tipoLabel: Record<string, string> = {
         FORMACION:    'Formación',
@@ -280,7 +303,10 @@ export class CatalogService {
           : `Home/Certificaciones/${p.titulo}`,
         cloudinaryNum,
         tipo: p.tipo.toLowerCase(),
-        descripcion: p.descripcion || 'Sin descripción',
+        descripcion:       p.descripcion || 'Sin descripción',
+        descripcion_larga: p.descripcion_larga || null,
+        fecha:             p.fecha    || null,
+        horario:           p.horario  || null,
         destacado: p.destacado ?? false,
         shortDescription,
         about,

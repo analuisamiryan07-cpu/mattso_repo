@@ -194,7 +194,14 @@ const CapacitacionDetail = () => {
             {/* Columna derecha: descripción */}
             <div className="cap-desc-col">
               <h2 className="cap-section-heading">Descripción</h2>
-              <p className="cap-desc-text">{cap.descripcion}</p>
+              {(cap.descripcion_larga || cap.descripcion) && (
+                (cap.descripcion_larga || cap.descripcion)
+                  .split('\n')
+                  .filter(p => p.trim())
+                  .map((p, i) => (
+                    <p key={i} className="cap-desc-text">{p}</p>
+                  ))
+              )}
             </div>
           </div>
         </div>
@@ -235,72 +242,6 @@ const CapacitacionDetail = () => {
         </section>
       )}
 
-      {/* ── 5. COMPETENCIAS (izq) + CONTENIDOS (der) ── */}
-      {hasCompetencias && (
-        <section className="cap-split-section">
-          <div className="cap-split-grid">
-            <div className="cap-split-content-col cap-split-bg-light">
-              {competencias.length > 0 && (
-                <>
-                  <h2 className="cap-section-heading">Competencias que desarrollarás</h2>
-                  <ul className="cap-list">
-                    {competencias.map((c, i) => <li key={i}>{c}</li>)}
-                  </ul>
-                </>
-              )}
-              {dirigidoA && (
-                <>
-                  <h4 className="cap-sub-heading" style={{ marginTop: competencias.length > 0 ? 28 : 0 }}>
-                    Dirigido a:
-                  </h4>
-                  <p className="cap-desc-text">{dirigidoA}</p>
-                </>
-              )}
-            </div>
-            <div className="cap-split-content-col cap-split-bg-white">
-              {conocimientos.length > 0 && (
-                <>
-                  <h2 className="cap-section-heading">Contenidos</h2>
-                  <ul className="cap-list">
-                    {conocimientos.map((c, i) => <li key={i}>{c}</li>)}
-                  </ul>
-                </>
-              )}
-              <button className="btn-leer-mas cap-cart-btn" onClick={handleAddToCart} style={{ marginTop: 32 }}>
-                <i className="fa-solid fa-cart-shopping" /> Añadir al carrito de compras
-              </button>
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* ── 6. PRERREQUISITOS (izq) + IMAGEN (der) ── */}
-      <section className="cap-split-section">
-        <div className="cap-split-grid">
-          <div className="cap-split-content-col cap-split-bg-light">
-            <h2 className="cap-section-heading">Prerrequisitos</h2>
-            <div className="cap-req-list">
-              {requirements.map((req, i) => (
-                <div className="req-item" key={i}>
-                  <div className="req-number">{req.number}</div>
-                  <div className="req-text">
-                    <h4>{req.title}</h4>
-                    <p>{req.desc}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-          <div className="cap-split-image-col">
-            <CloudinaryImage
-              publicId={cap.cloudinaryNum ? `${cap.cloudinaryNum}_derecha` : undefined}
-              alt={cap.titulo}
-              width={700}
-              height={520}
-            />
-          </div>
-        </div>
-      </section>
 
       {/* ── 7. FORMULARIO con imagen de fondo ── */}
       <section className="cap-form-section" style={formBgStyle}>

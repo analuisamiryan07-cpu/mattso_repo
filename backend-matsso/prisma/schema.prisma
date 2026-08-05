@@ -242,18 +242,21 @@ model UsuarioWeb {
 }
 
 model Producto {
-  id               BigInt    @id @default(autoincrement())
-  tipo             String    @db.VarChar(50) // CAPACITACION o CERTIFICACION
-  titulo           String    @db.VarChar(255)
-  descripcion      String?
-  precio           Decimal   @db.Decimal(10, 2)
-  horas            Int?
-  modalidad        String?   @db.VarChar(100)
-  imagen_url       String?   @db.VarChar(255)
-  activo           Boolean?  @default(true)
-  destacado        Boolean   @default(false)
-  id_certificacion Int?
-  created_at       DateTime? @default(now()) @db.Timestamp(0)
+  id                 BigInt    @id @default(autoincrement())
+  tipo               String    @db.VarChar(50) // CAPACITACION o CERTIFICACION
+  titulo             String    @db.VarChar(255)
+  descripcion        String?
+  descripcion_larga  String?   @db.Text
+  precio             Decimal   @db.Decimal(10, 2)
+  horas              Int?
+  modalidad          String?   @db.VarChar(100)
+  fecha              String?   @db.VarChar(100)
+  horario            String?   @db.VarChar(100)
+  imagen_url         String?   @db.VarChar(255)
+  activo             Boolean?  @default(true)
+  destacado          Boolean   @default(false)
+  id_certificacion   Int?
+  created_at         DateTime? @default(now()) @db.Timestamp(0)
   
   certificacion    Certificacion? @relation(fields: [id_certificacion], references: [id_certificacion])
   esquemas         EsquemaCertificacion[]
