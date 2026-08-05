@@ -621,14 +621,15 @@
 /* Panel parallax (imagen de fondo fija, como CEO quote del home) */
 .cap-parallax-section {
   position: relative;
-  padding: 110px 20px;
+  min-height: 80vh;
   background-size: cover;
-  background-position: center;
+  background-position: center top;
   background-attachment: fixed;
   display: flex;
   align-items: center;
   justify-content: center;
   text-align: center;
+  padding: 60px 20px;
 }
 
 .cap-parallax-overlay {
@@ -796,7 +797,8 @@
   }
   .cap-parallax-section {
     background-attachment: scroll;
-    padding: 80px 20px;
+    min-height: 60vh;
+    padding: 60px 20px;
   }
   .cap-parallax-title {
     font-size: 1.9rem;
