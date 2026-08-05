@@ -618,54 +618,51 @@
   min-width: 0;
 }
 
-/* Panel parallax (imagen de fondo fija, como CEO quote del home) */
-.cap-parallax-section {
-  position: relative;
-  min-height: 80vh;
-  background-size: cover;
-  background-position: center top;
-  background-attachment: fixed;
+/* Layout exterior: contenido izquierdo + panel imagen vertical derecha */
+.cap-info-outer {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  padding: 60px 20px;
+  align-items: stretch;
 }
 
-.cap-parallax-overlay {
-  position: absolute;
-  inset: 0;
-  background: rgba(0, 21, 55, 0.72);
-  z-index: 1;
+.cap-info-left {
+  flex: 1;
+  min-width: 0;
+  padding: 70px 60px 70px max(40px, calc((100vw - 1260px) / 2 + 40px));
 }
 
-.cap-parallax-content {
-  position: relative;
-  z-index: 2;
-  max-width: 720px;
+/* Panel imagen vertical (sticky) */
+.cap-img-right-panel {
+  width: 340px;
+  flex-shrink: 0;
+  align-self: flex-start;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow: hidden;
+  background: #001535;
 }
 
-.cap-parallax-eyebrow {
+.cap-img-right-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
   display: block;
-  font-size: 0.78rem;
-  font-weight: 700;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--primary-yellow, #f7a600);
-  margin-bottom: 18px;
+  transition: transform 1s ease;
 }
 
-.cap-parallax-title {
-  font-size: 2.6rem;
-  font-weight: 800;
-  color: #fff;
-  line-height: 1.2;
-  margin: 0 0 32px;
-  text-wrap: balance;
+.cap-img-right-panel:hover .cap-img-right-img {
+  transform: scale(1.04);
 }
 
-.cap-parallax-btn {
-  margin: 0 auto;
+/* Barra de acento en el borde izquierdo */
+.cap-img-right-bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background: linear-gradient(180deg, var(--primary-yellow, #f7a600) 0%, var(--primary-blue, #002147) 100%);
 }
 
 .cap-section-heading {
@@ -791,17 +788,27 @@
 }
 
 /* Responsive */
+@media (max-width: 1100px) {
+  .cap-img-right-panel {
+    width: 260px;
+  }
+  .cap-info-left {
+    padding: 60px 40px;
+  }
+}
+
 @media (max-width: 992px) {
-  .cap-info-grid {
+  .cap-info-outer {
     flex-direction: column;
   }
-  .cap-parallax-section {
-    background-attachment: scroll;
-    min-height: 60vh;
-    padding: 60px 20px;
+  .cap-img-right-panel {
+    display: none;
   }
-  .cap-parallax-title {
-    font-size: 1.9rem;
+  .cap-info-left {
+    padding: 50px 24px;
+  }
+  .cap-info-grid {
+    flex-direction: column;
   }
   .cap-split-grid {
     flex-direction: column;

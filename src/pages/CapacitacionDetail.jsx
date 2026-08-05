@@ -154,78 +154,76 @@ const CapacitacionDetail = () => {
         </div>
       </section>
 
-      {/* ── 3. INFO (izq) + DESCRIPCIÓN (centro) + IMAGEN sticky (der) ── */}
+      {/* ── 3. INFO (izq) + DESCRIPCIÓN + PANEL IMAGEN VERTICAL (der) ── */}
       <section className="cap-info-section">
-        <div className="container">
-          <div className="cap-info-grid">
+        <div className="cap-info-outer">
 
-            {/* Columna izquierda: info + contacto */}
-            <div className="cap-left-cards">
-              <div className="cap-info-card">
-                <h3 className="cap-card-title">Información</h3>
-                {(cap.features || []).map((f, i) => (
-                  <div className="cap-info-item" key={i}>
-                    <i className={f.icon} />
-                    <span>{f.desc || f.title}</span>
+          {/* Lado izquierdo: tarjetas + descripción */}
+          <div className="cap-info-left">
+            <div className="cap-info-grid">
+
+              <div className="cap-left-cards">
+                <div className="cap-info-card">
+                  <h3 className="cap-card-title">Información</h3>
+                  {(cap.features || []).map((f, i) => (
+                    <div className="cap-info-item" key={i}>
+                      <i className={f.icon} />
+                      <span>{f.desc || f.title}</span>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="cap-contact-card">
+                  <h3 className="cap-card-title">Inscribirse</h3>
+                  <div className="cap-contact-item">
+                    <i className="fa-solid fa-envelope" />
+                    <span>matssoecuador@gmail.com</span>
                   </div>
-                ))}
+                  <div className="cap-contact-item">
+                    <i className="fa-solid fa-phone" />
+                    <span>0999 720 877</span>
+                  </div>
+                  <div className="cap-contact-item">
+                    <i className="fa-brands fa-whatsapp" />
+                    <span>0986 802 988</span>
+                  </div>
+                  <button className="btn-leer-mas cap-cart-btn" onClick={handleAddToCart}>
+                    <i className="fa-solid fa-cart-shopping" /> Añadir al carrito de compras
+                  </button>
+                </div>
               </div>
 
-              <div className="cap-contact-card">
-                <h3 className="cap-card-title">Inscribirse</h3>
-                <div className="cap-contact-item">
-                  <i className="fa-solid fa-envelope" />
-                  <span>matssoecuador@gmail.com</span>
-                </div>
-                <div className="cap-contact-item">
-                  <i className="fa-solid fa-phone" />
-                  <span>0999 720 877</span>
-                </div>
-                <div className="cap-contact-item">
-                  <i className="fa-brands fa-whatsapp" />
-                  <span>0986 802 988</span>
-                </div>
-                <button className="btn-leer-mas cap-cart-btn" onClick={handleAddToCart}>
-                  <i className="fa-solid fa-cart-shopping" /> Añadir al carrito de compras
-                </button>
+              <div className="cap-desc-col">
+                <h2 className="cap-section-heading">Descripción</h2>
+                {(cap.descripcion_larga || cap.descripcion) && (
+                  (cap.descripcion_larga || cap.descripcion)
+                    .split('\n')
+                    .filter(p => p.trim())
+                    .map((p, i) => (
+                      <p key={i} className="cap-desc-text">{p}</p>
+                    ))
+                )}
               </div>
-            </div>
 
-            {/* Columna centro: descripción */}
-            <div className="cap-desc-col">
-              <h2 className="cap-section-heading">Descripción</h2>
-              {(cap.descripcion_larga || cap.descripcion) && (
-                (cap.descripcion_larga || cap.descripcion)
-                  .split('\n')
-                  .filter(p => p.trim())
-                  .map((p, i) => (
-                    <p key={i} className="cap-desc-text">{p}</p>
-                  ))
-              )}
             </div>
-
           </div>
+
+          {/* Panel imagen vertical (derecha, sticky) */}
+          {cap.cloudinaryNum && (
+            <div className="cap-img-right-panel">
+              <img
+                src={`https://res.cloudinary.com/ehglt8h8/image/upload/f_auto,q_auto,w_700/${cap.cloudinaryNum}_derecha`}
+                alt={cap.titulo}
+                className="cap-img-right-img"
+              />
+              <div className="cap-img-right-bar" />
+            </div>
+          )}
+
         </div>
       </section>
 
-      {/* ── 4. PANEL PARALLAX: imagen de fondo fija ── */}
-      {cap.cloudinaryNum && (
-        <section
-          className="cap-parallax-section"
-          style={{ backgroundImage: `url('https://res.cloudinary.com/ehglt8h8/image/upload/f_auto,q_auto,w_1600/${cap.cloudinaryNum}_derecha')` }}
-        >
-          <div className="cap-parallax-overlay" />
-          <div className="cap-parallax-content">
-            <span className="cap-parallax-eyebrow">Matsso · Capacitación Profesional</span>
-            <h2 className="cap-parallax-title">{cap.titulo}</h2>
-            <button className="btn-leer-mas cap-parallax-btn" onClick={handleAddToCart}>
-              <i className="fa-solid fa-cart-shopping" /> Añadir al carrito
-            </button>
-          </div>
-        </section>
-      )}
-
-      {/* ── 6. IMAGEN (izq) + METODOLOGÍAS Y OBJETIVOS (der) ── */}
+      {/* ── 4. IMAGEN (izq) + METODOLOGÍAS Y OBJETIVOS (der) ── */}
       {hasMetodologias && (
         <section className="cap-split-section">
           <div className="cap-split-grid">
