@@ -57,6 +57,22 @@ button {
   cursor: pointer;
 }
 
+input::placeholder,
+textarea::placeholder,
+select::placeholder {
+  color: #9ca3af;
+  opacity: 1;
+}
+
+/* Formularios sobre fondo oscuro (asesor, contacto dark) */
+.cert-hero-form input::placeholder,
+.cert-hero-form textarea::placeholder,
+.cap-form-box input::placeholder,
+.cap-form-box textarea::placeholder {
+  color: rgba(255, 255, 255, 0.55);
+  opacity: 1;
+}
+
 /* ===========================
    LAYOUT HELPERS
    =========================== */

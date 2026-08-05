@@ -228,7 +228,7 @@ export class CatalogService {
 
     return productos.map((p: any) => {
       const cert = p.certificacion;
-      const shortDescription = p.descripcion || (cert ? cert.descripcion : 'Sin descripción');
+      const shortDescription = p.descripcion_larga || p.descripcion || (cert ? cert.descripcion : 'Sin descripción');
 
       const about = cert ? [
         cert.descripcion,
@@ -303,7 +303,7 @@ export class CatalogService {
           : `Home/Certificaciones/${p.titulo}`,
         cloudinaryNum,
         tipo: p.tipo.toLowerCase(),
-        descripcion:       p.descripcion || 'Sin descripción',
+        descripcion:       p.descripcion_larga || p.descripcion || 'Sin descripción',
         descripcion_larga: p.descripcion_larga || null,
         fecha:             p.fecha    || null,
         horario:           p.horario  || null,
