@@ -154,7 +154,7 @@ const CapacitacionDetail = () => {
         </div>
       </section>
 
-      {/* ── 3. INFO (izq) + DESCRIPCIÓN (der) ── */}
+      {/* ── 3. INFO (izq) + DESCRIPCIÓN (centro) + IMAGEN sticky (der) ── */}
       <section className="cap-info-section">
         <div className="container">
           <div className="cap-info-grid">
@@ -191,7 +191,7 @@ const CapacitacionDetail = () => {
               </div>
             </div>
 
-            {/* Columna derecha: descripción */}
+            {/* Columna centro: descripción */}
             <div className="cap-desc-col">
               <h2 className="cap-section-heading">Descripción</h2>
               {(cap.descripcion_larga || cap.descripcion) && (
@@ -203,6 +203,20 @@ const CapacitacionDetail = () => {
                   ))
               )}
             </div>
+
+            {/* Columna derecha: imagen sticky */}
+            {cap.cloudinaryNum && (
+              <div className="cap-sticky-img-col">
+                <div className="cap-sticky-img-frame">
+                  <img
+                    src={`https://res.cloudinary.com/ehglt8h8/image/upload/f_auto,q_auto,w_500/${cap.cloudinaryNum}_derecha`}
+                    alt={cap.titulo}
+                    className="cap-sticky-img"
+                  />
+                  <div className="cap-sticky-img-bar" />
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </section>
