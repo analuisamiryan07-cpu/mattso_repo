@@ -74,4 +74,9 @@ export const cursosService = {
     const { data } = await apiClient.post('/contacto', contactData);
     return data;
   },
+
+  async verificarCertificado(codigo) {
+    const { data } = await apiClient.get(`/verificar/${codigo}`);
+    return data;
+  },
 };

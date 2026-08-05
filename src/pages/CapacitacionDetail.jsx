@@ -204,24 +204,28 @@ const CapacitacionDetail = () => {
               )}
             </div>
 
-            {/* Columna derecha: imagen sticky */}
-            {cap.cloudinaryNum && (
-              <div className="cap-sticky-img-col">
-                <div className="cap-sticky-img-frame">
-                  <img
-                    src={`https://res.cloudinary.com/ehglt8h8/image/upload/f_auto,q_auto,w_500/${cap.cloudinaryNum}_derecha`}
-                    alt={cap.titulo}
-                    className="cap-sticky-img"
-                  />
-                  <div className="cap-sticky-img-bar" />
-                </div>
-              </div>
-            )}
           </div>
         </div>
       </section>
 
-      {/* ── 4. IMAGEN (izq) + METODOLOGÍAS Y OBJETIVOS (der) ── */}
+      {/* ── 4. PANEL PARALLAX: imagen de fondo fija ── */}
+      {cap.cloudinaryNum && (
+        <section
+          className="cap-parallax-section"
+          style={{ backgroundImage: `url('https://res.cloudinary.com/ehglt8h8/image/upload/f_auto,q_auto,w_1600/${cap.cloudinaryNum}_derecha')` }}
+        >
+          <div className="cap-parallax-overlay" />
+          <div className="cap-parallax-content">
+            <span className="cap-parallax-eyebrow">Matsso · Capacitación Profesional</span>
+            <h2 className="cap-parallax-title">{cap.titulo}</h2>
+            <button className="btn-leer-mas cap-parallax-btn" onClick={handleAddToCart}>
+              <i className="fa-solid fa-cart-shopping" /> Añadir al carrito
+            </button>
+          </div>
+        </section>
+      )}
+
+      {/* ── 6. IMAGEN (izq) + METODOLOGÍAS Y OBJETIVOS (der) ── */}
       {hasMetodologias && (
         <section className="cap-split-section">
           <div className="cap-split-grid">
