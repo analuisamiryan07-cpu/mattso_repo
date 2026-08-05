@@ -208,14 +208,13 @@ const CapacitacionDetail = () => {
             </div>
           </div>
 
-          {/* Panel imagen vertical (derecha, sticky) */}
+          {/* Panel imagen vertical (derecha, fixed background) */}
           {cap.cloudinaryNum && (
-            <div className="cap-img-right-panel">
-              <img
-                src={`https://res.cloudinary.com/ehglt8h8/image/upload/f_auto,q_auto,w_700/${cap.cloudinaryNum}_derecha`}
-                alt={cap.titulo}
-                className="cap-img-right-img"
-              />
+            <div
+              className="cap-img-right-panel"
+              style={{ backgroundImage: `url('https://res.cloudinary.com/ehglt8h8/image/upload/f_auto,q_auto,w_700/${cap.cloudinaryNum}_derecha')` }}
+              aria-label={cap.titulo}
+            >
               <div className="cap-img-right-bar" />
             </div>
           )}
