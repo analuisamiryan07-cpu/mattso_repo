@@ -67,13 +67,13 @@ const Home = () => {
       <section className="benefits-img-section">
         <div className="container">
           <h2 className="section-title left-align">
-            Al estudiar en Campus Matsso cuentas con grandes beneficios
+            Al estudiar en Sapper Industries cuentas con grandes beneficios
           </h2>
           <div className="benefits-wrapper">
             <div className="benefits-image-col">
               <CloudinaryImage
                 publicId="banner"
-                alt="Beneficios Campus Matsso"
+                alt="Beneficios Sapper Industries"
                 width={800}
                 height={600}
                 eager

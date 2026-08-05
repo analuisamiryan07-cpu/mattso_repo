@@ -8,7 +8,7 @@ const SOCIAL_LINKS = [
   { icon: 'fa-brands fa-youtube',     href: 'https://www.youtube.com/channel/UCwJ_dXr4d5tKQ_A5_CjvWfw', label: 'YouTube'   },
   { icon: 'fa-brands fa-tiktok',      href: 'https://www.tiktok.com/@matssoecuador',                     label: 'TikTok'    },
   { icon: 'fa-brands fa-whatsapp',    href: 'https://wa.me/593983555081',                                label: 'WhatsApp'  },
-  { icon: 'fa-regular fa-envelope',   href: 'mailto:matssoecuador@gmail.com',                            label: 'Email'     },
+  { icon: 'fa-regular fa-envelope',   href: 'mailto:info@sapper-industries.com',                         label: 'Email'     },
 ];
 
 const Footer = () => {
@@ -23,7 +23,7 @@ const Footer = () => {
           <div className="footer-v2-logo-section">
             <img
               src="https://res.cloudinary.com/ehglt8h8/image/upload/v1784925646/Logo_1.png"
-              alt="Matsso Logo"
+              alt="Sapper Industries Logo"
               className="footer-v2-logo"
             />
           </div>
@@ -33,8 +33,8 @@ const Footer = () => {
             <p><i className="fa-solid fa-location-dot" /> Dirección: Av. 10 de Agosto N32-140 entre Mariana de Jesús y Las Guayanas. </p>
             <p>
               <i className="fa-regular fa-envelope" />
-              <a href="mailto:matssoecuador@gmail.com" className="footer-link">
-                matssoecuador@gmail.com
+              <a href="mailto:info@sapper-industries.com" className="footer-link">
+                info@sapper-industries.com
               </a>
             </p>
             <p>
@@ -70,7 +70,7 @@ const Footer = () => {
 
       {/* SECCIÓN AZUL (Parte Inferior - Derechos de Autor) */}
       <div className="footer-v2-bottom">
-        <p>© 2026 MATSSO Ecuador. Todos los derechos reservados.</p>
+        <p>© 2026 Sapper Industries. Todos los derechos reservados.</p>
       </div>
     </footer>
   );

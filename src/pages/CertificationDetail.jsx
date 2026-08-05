@@ -24,9 +24,11 @@ const CertificationDetail = () => {
   const [loading, setLoading] = useState(!preloaded);
   const [error, setError] = useState(null);
   const [contactoForm, setContactoForm] = useState({
-    nombre:   currentUser?.nombre   || '',
-    email:    currentUser?.correo   || '',
-    telefono: currentUser?.telefono || '',
+    nombre:      currentUser?.nombre   || '',
+    email:       currentUser?.correo   || '',
+    telefono:    currentUser?.telefono || '',
+    ciudad:      '',
+    num_personas: '',
   });
   const [sendingContacto, setSendingContacto] = useState(false);
 
@@ -181,6 +183,14 @@ const CertificationDetail = () => {
                     <label>Teléfono</label>
                     <input type="tel" name="telefono" value={contactoForm.telefono} onChange={handleContactoChange} placeholder="Ej: 0991234567" />
                   </div>
+                  <div className="form-group">
+                    <label>Ciudad</label>
+                    <input type="text" name="ciudad" value={contactoForm.ciudad} onChange={handleContactoChange} placeholder="Ej: Quito" />
+                  </div>
+                  <div className="form-group">
+                    <label>Número de personas interesadas</label>
+                    <input type="number" name="num_personas" value={contactoForm.num_personas} onChange={handleContactoChange} placeholder="Ej: 5" min="1" />
+                  </div>
                   <button type="submit" className="btn-enviar" disabled={sendingContacto}>
                     {sendingContacto ? 'Enviando...' : 'Enviar'}
                   </button>
@@ -207,7 +217,7 @@ const CertificationDetail = () => {
             <p>
               La Subsecretaría de Cualificaciones Profesionales y Gestión Artesanal del
               Ministerio del Trabajo, luego de un proceso riguroso de evaluación, reconoce a
-              Matsso Certificación y Capacitación Profesional, para que actúe como Organismo
+              Sapper Industries, para que actúe como Organismo
               Evaluador de Conformidad (OEC), a fin de que otorgue la certificación de personas
               en una o varias unidades de competencia.
             </p>

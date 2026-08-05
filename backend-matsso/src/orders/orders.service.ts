@@ -102,14 +102,20 @@ export class OrdersService {
       items: productos.map((p) => ({ producto: p.titulo, precio: Number(p.precio) })),
     };
 
-    if (this.emailQueue) {
-      await this.emailQueue
-        .add(EMAIL_JOBS.ORDER_CREATED, emailPayload)
-        .catch((err) => this.logger.error('Error encolando email de confirmación:', err));
-    } else {
+    const sendConfirmacionDirecta = () =>
       this.emailService
         .sendOrderConfirmation(emailPayload)
         .catch((err) => this.logger.error('Error enviando email de confirmación:', err));
+
+    if (this.emailQueue) {
+      await this.emailQueue
+        .add(EMAIL_JOBS.ORDER_CREATED, emailPayload)
+        .catch((err) => {
+          this.logger.error('Error encolando email, enviando directamente:', err);
+          sendConfirmacionDirecta();
+        });
+    } else {
+      sendConfirmacionDirecta();
     }
 
     return {
