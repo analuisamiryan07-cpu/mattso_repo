@@ -73,9 +73,9 @@ const Nosotros = () => {
         <div className="container nosotros-quienes-grid">
           <div className="nosotros-quienes-text">
             <span className="nos-section-label">¿QUIÉNES SOMOS?</span>
-            <h2>MATSSO Ecuador: Organismo Evaluador de Conformidad</h2>
+            <h2>Sapper Industries: Organismo Evaluador de Conformidad</h2>
             <p>
-              MATSSO Certificación y Capacitación Profesional es una empresa ecuatoriana con más de
+              Sapper Industries Certificación y Capacitación Profesional es una empresa ecuatoriana con más de
               10 años de experiencia en el desarrollo del capital humano. Somos reconocidos por la
               Subsecretaría de Cualificaciones Profesionales y Gestión Artesanal del Ministerio del
               Trabajo como Organismo Evaluador de Conformidad (OEC).
@@ -198,7 +198,7 @@ const Nosotros = () => {
         <div className="container nosotros-cta-inner">
           <h2>¿Listo para certificar tus competencias?</h2>
           <p>
-            Únete a los miles de profesionales que han confiado en MATSSO para impulsar su carrera.
+            Únete a los miles de profesionales que han confiado en Sapper Industries para impulsar su carrera.
             Revisa nuestro catálogo de certificaciones o contáctanos para más información.
           </p>
           <div className="nosotros-cta-actions">

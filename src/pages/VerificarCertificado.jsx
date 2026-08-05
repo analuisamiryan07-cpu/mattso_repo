@@ -35,7 +35,7 @@ const VerificarCertificado = () => {
         <div style={{ fontSize: '3rem' }}>❌</div>
         <h2 style={{ margin: 0, color: '#111827' }}>Certificado no encontrado</h2>
         <p style={{ color: '#6b7280', margin: 0, textAlign: 'center' }}>
-          El código <strong>{codigo}</strong> no corresponde a ningún certificado emitido por Matsso.
+          El código <strong>{codigo}</strong> no corresponde a ningún certificado emitido por Sapper Industries.
         </p>
       </div>
     );
@@ -59,7 +59,7 @@ const VerificarCertificado = () => {
         <div style={{ fontSize: '2.5rem', lineHeight: 1 }}>✅</div>
         <div>
           <p style={{ margin: 0, fontSize: '.8rem', letterSpacing: '.1em', opacity: .7, textTransform: 'uppercase' }}>
-            Matsso · Verificación de Certificado
+            Sapper Industries · Verificación de Certificado
           </p>
           <h1 style={{ margin: '4px 0 0', fontSize: '1.35rem', fontWeight: 800 }}>
             Certificado verificado
@@ -119,7 +119,7 @@ const VerificarCertificado = () => {
         <div style={{ padding: '16px 24px', background: '#f8faff', borderTop: '1px solid #e5e7eb' }}>
           <p style={{ margin: 0, fontSize: '.78rem', color: '#9ca3af', textAlign: 'center' }}>
             Código de verificación: <strong style={{ color: '#6b7280', fontFamily: 'monospace' }}>{cert.codigo}</strong>
-            {' · '}Matsso Certificación y Capacitación Profesional
+            {' · '}Sapper Industries
           </p>
         </div>
       </div>

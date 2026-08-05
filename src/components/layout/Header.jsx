@@ -79,7 +79,7 @@ const Header = () => {
 
         <div className="logo-container">
           <Link to="/" onClick={closeAll}>
-            <img src={logoImg} alt="Matsso Logo" className="logo-img" />
+            <img src={logoImg} alt="Sapper Industries Logo" className="logo-img" />
           </Link>
         </div>
 

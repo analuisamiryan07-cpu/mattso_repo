@@ -778,21 +778,35 @@
 }
 
 .cap-form-box input,
-.cap-form-box textarea {
-  color: #fff;
-  background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.25);
+.cap-form-box textarea,
+.cert-hero-form input,
+.cert-hero-form textarea,
+.cert-hero-form select {
+  color: #fff !important;
+  background: rgba(255, 255, 255, 0.1) !important;
+  border-color: rgba(255, 255, 255, 0.25) !important;
+  -webkit-text-fill-color: #fff;
 }
 
 .cap-form-box input:focus,
-.cap-form-box textarea:focus {
-  background: rgba(255, 255, 255, 0.15);
-  border-color: rgba(255, 255, 255, 0.55);
-  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.08);
+.cap-form-box textarea:focus,
+.cert-hero-form input:focus,
+.cert-hero-form textarea:focus {
+  background: rgba(255, 255, 255, 0.15) !important;
+  border-color: rgba(255, 255, 255, 0.55) !important;
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.08) !important;
 }
 
-.cap-form-box label {
-  color: rgba(255, 255, 255, 0.85);
+.cap-form-box label,
+.cert-hero-form label {
+  color: rgba(255, 255, 255, 0.85) !important;
+}
+
+/* autofill del navegador también en blanco */
+.cap-form-box input:-webkit-autofill,
+.cert-hero-form input:-webkit-autofill {
+  -webkit-box-shadow: 0 0 0 1000px rgba(0, 33, 71, 0.8) inset !important;
+  -webkit-text-fill-color: #fff !important;
 }
 
 /* Responsive */

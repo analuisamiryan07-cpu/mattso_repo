@@ -28,7 +28,7 @@ const ForgotPassword = () => {
     <div className="login-page">
       <div className="login-card">
         <div className="login-card__header">
-          <img src={logoImg} alt="Matsso" className="login-logo" />
+          <img src={logoImg} alt="Sapper Industries" className="login-logo" />
           <h2 style={{ fontSize: '1.4rem', color: 'var(--primary-blue)', margin: '0 0 4px' }}>
             Recuperar contraseña
           </h2>

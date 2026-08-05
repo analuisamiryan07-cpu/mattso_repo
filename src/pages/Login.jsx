@@ -76,7 +76,7 @@ const Login = () => {
         registerForm.ciudad,
         registerForm.direccion,
       );
-      addToast('¡Cuenta creada! Bienvenido a Campus Matsso.', 'success');
+      addToast('¡Cuenta creada! Bienvenido a Sapper Industries.', 'success');
       navigate('/');
     } catch (err) {
       const msg = err.response?.data?.message || 'Error al crear la cuenta. Inténtalo de nuevo.';
@@ -91,7 +91,7 @@ const Login = () => {
       <div className="login-card">
 
         <div className="login-card__header">
-          <img src={logoImg} alt="Matsso Logo" className="login-logo" />
+          <img src={logoImg} alt="Sapper Industries Logo" className="login-logo" />
           <p className="login-subtitle">Plataforma de Capacitación Profesional</p>
         </div>
 

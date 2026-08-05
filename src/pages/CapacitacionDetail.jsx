@@ -22,9 +22,11 @@ const CapacitacionDetail = () => {
   const [loading, setLoading] = useState(!preloaded);
   const [error, setError]     = useState(null);
   const [contactoForm, setContactoForm] = useState({
-    nombre:   currentUser?.nombre   || '',
-    email:    currentUser?.correo   || '',
-    telefono: currentUser?.telefono || '',
+    nombre:      currentUser?.nombre   || '',
+    email:       currentUser?.correo   || '',
+    telefono:    currentUser?.telefono || '',
+    ciudad:      '',
+    num_personas: '',
   });
   const [sendingContacto, setSendingContacto] = useState(false);
 
@@ -140,7 +142,7 @@ const CapacitacionDetail = () => {
               participantes.
             </p>
             <p>
-              Matsso Certificación y Capacitación Profesional diseña sus programas de capacitación
+              Sapper Industries diseña sus programas de capacitación
               con base en estándares nacionales e internacionales, con instructores calificados y
               metodologías prácticas que garantizan una experiencia de aprendizaje efectiva y
               aplicable desde el primer día.
@@ -177,7 +179,7 @@ const CapacitacionDetail = () => {
                   <h3 className="cap-card-title">Inscribirse</h3>
                   <div className="cap-contact-item">
                     <i className="fa-solid fa-envelope" />
-                    <span>matssoecuador@gmail.com</span>
+                    <span>info@sapper-industries.com</span>
                   </div>
                   <div className="cap-contact-item">
                     <i className="fa-solid fa-phone" />
@@ -297,6 +299,14 @@ const CapacitacionDetail = () => {
                   <div className="form-group">
                     <label>Teléfono</label>
                     <input type="tel" name="telefono" value={contactoForm.telefono} onChange={handleContactoChange} placeholder="Ej: 0991234567" />
+                  </div>
+                  <div className="form-group">
+                    <label>Ciudad</label>
+                    <input type="text" name="ciudad" value={contactoForm.ciudad} onChange={handleContactoChange} placeholder="Ej: Quito" />
+                  </div>
+                  <div className="form-group">
+                    <label>Número de personas interesadas</label>
+                    <input type="number" name="num_personas" value={contactoForm.num_personas} onChange={handleContactoChange} placeholder="Ej: 5" min="1" />
                   </div>
                   <button type="submit" className="btn-enviar" disabled={sendingContacto}>
                     {sendingContacto ? 'Enviando...' : 'Enviar'}

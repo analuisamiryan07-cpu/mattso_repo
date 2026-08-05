@@ -18,7 +18,7 @@ const Terminos = () => {
 
         <div className="terminos-intro">
           <p>
-            Bienvenido a <strong>MATSSO Ecuador</strong>. Al acceder y utilizar nuestra plataforma
+            Bienvenido a <strong>Sapper Industries</strong>. Al acceder y utilizar nuestra plataforma
             de capacitación y certificación profesional, usted acepta estos Términos y Condiciones.
             Le recomendamos leerlos detenidamente antes de utilizar nuestros servicios.
           </p>
@@ -27,12 +27,12 @@ const Terminos = () => {
         <section className="terminos-section">
           <h2>1. Uso de la plataforma</h2>
           <p>
-            Al registrarse en Campus MATSSO, usted declara que la información proporcionada es
+            Al registrarse en Sapper Industries, usted declara que la información proporcionada es
             verdadera, completa y actualizada. Queda prohibido el uso de la plataforma con fines
             ilícitos, fraudulentos o contrarios a la ley ecuatoriana.
           </p>
           <p>
-            MATSSO Ecuador se reserva el derecho de suspender o cancelar cuentas que incumplan
+            Sapper Industries se reserva el derecho de suspender o cancelar cuentas que incumplan
             estos términos, sin previo aviso y sin responsabilidad alguna.
           </p>
         </section>
@@ -62,14 +62,14 @@ const Terminos = () => {
               indicado en el carrito de compras.
             </li>
             <li>
-              La inscripción se confirma una vez que MATSSO Ecuador verifique el comprobante
+              La inscripción se confirma una vez que Sapper Industries verifique el comprobante
               de pago adjuntado por el usuario.
             </li>
             <li>
               Los precios están expresados en dólares estadounidenses (USD) e incluyen IVA del 15%.
             </li>
             <li>
-              MATSSO Ecuador se reserva el derecho de modificar los precios de sus programas
+              Sapper Industries se reserva el derecho de modificar los precios de sus programas
               sin previo aviso, aplicándose siempre el precio vigente al momento de la compra.
             </li>
           </ul>
@@ -79,11 +79,11 @@ const Terminos = () => {
           <h2>4. Política de cancelación y reembolsos</h2>
           <p>
             Las solicitudes de cancelación deben realizarse con un mínimo de 48 horas de
-            anticipación al inicio del programa. Pasado este plazo, MATSSO Ecuador no garantiza
+            anticipación al inicio del programa. Pasado este plazo, Sapper Industries no garantiza
             el reembolso del valor pagado. Cada caso será analizado individualmente.
           </p>
           <p>
-            En caso de cancelación del programa por parte de MATSSO Ecuador, se ofrecerá al
+            En caso de cancelación del programa por parte de Sapper Industries, se ofrecerá al
             usuario la opción de reprogramación o devolución total del valor pagado.
           </p>
         </section>
@@ -101,7 +101,7 @@ const Terminos = () => {
             <li>Cumplir con los requisitos de experiencia y formación establecidos por el Ministerio del Trabajo.</li>
           </ul>
           <p>
-            La certificación emitida por MATSSO Ecuador tiene una vigencia de 2 años y es reconocida
+            La certificación emitida por Sapper Industries tiene una vigencia de 2 años y es reconocida
             por la Subsecretaría de Cualificaciones Profesionales del Ministerio del Trabajo del Ecuador.
           </p>
         </section>
@@ -109,17 +109,17 @@ const Terminos = () => {
         <section className="terminos-section">
           <h2>6. Propiedad intelectual</h2>
           <p>
-            Todo el contenido de la plataforma Campus MATSSO —incluyendo textos, imágenes, logos,
-            materiales de estudio y vídeos— es propiedad de MATSSO Ecuador y está protegido por las
+            Todo el contenido de la plataforma Sapper Industries —incluyendo textos, imágenes, logos,
+            materiales de estudio y vídeos— es propiedad de Sapper Industries y está protegido por las
             leyes de propiedad intelectual vigentes en Ecuador. Queda prohibida su reproducción total
-            o parcial sin autorización expresa y por escrito de MATSSO Ecuador.
+            o parcial sin autorización expresa y por escrito de Sapper Industries.
           </p>
         </section>
 
         <section className="terminos-section">
           <h2>7. Protección de datos personales</h2>
           <p>
-            MATSSO Ecuador recoge y trata los datos personales de los usuarios de conformidad con
+            Sapper Industries recoge y trata los datos personales de los usuarios de conformidad con
             la Ley Orgánica de Protección de Datos Personales del Ecuador. Sus datos serán utilizados
             exclusivamente para la prestación de nuestros servicios, emisión de certificados,
             comunicaciones sobre sus programas y mejora de la plataforma.
@@ -127,14 +127,14 @@ const Terminos = () => {
           <p>
             Sus datos no serán vendidos ni cedidos a terceros sin su consentimiento expreso, salvo
             obligación legal. Puede ejercer sus derechos de acceso, rectificación y eliminación
-            escribiendo a <a href="mailto:matssoecuador@gmail.com">matssoecuador@gmail.com</a>.
+            escribiendo a <a href="mailto:info@sapper-industries.com">info@sapper-industries.com</a>.
           </p>
         </section>
 
         <section className="terminos-section">
           <h2>8. Limitación de responsabilidad</h2>
           <p>
-            MATSSO Ecuador no será responsable de daños directos o indirectos derivados del uso
+            Sapper Industries no será responsable de daños directos o indirectos derivados del uso
             o imposibilidad de uso de la plataforma, interrupciones del servicio por causas de
             fuerza mayor, ni por decisiones tomadas por el usuario con base en la información
             publicada en el sitio.
@@ -144,7 +144,7 @@ const Terminos = () => {
         <section className="terminos-section">
           <h2>9. Modificaciones</h2>
           <p>
-            MATSSO Ecuador se reserva el derecho de modificar estos Términos y Condiciones en
+            Sapper Industries se reserva el derecho de modificar estos Términos y Condiciones en
             cualquier momento. Las modificaciones entrarán en vigor desde su publicación en la
             plataforma. El uso continuado de la plataforma implica la aceptación de los términos
             vigentes.
@@ -166,7 +166,7 @@ const Terminos = () => {
             Para consultas relacionadas con estos Términos y Condiciones, contáctenos:
           </p>
           <ul>
-            <li><strong>Correo:</strong> <a href="mailto:matssoecuador@gmail.com">matssoecuador@gmail.com</a></li>
+            <li><strong>Correo:</strong> <a href="mailto:info@sapper-industries.com">info@sapper-industries.com</a></li>
             <li><strong>WhatsApp:</strong> <a href="https://wa.me/593983555081" target="_blank" rel="noopener noreferrer">+593 98 355 5081</a></li>
             <li><strong>Dirección:</strong> Quito, Ecuador</li>
           </ul>

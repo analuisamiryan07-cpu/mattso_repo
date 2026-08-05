@@ -87,7 +87,7 @@ const Contacto = () => {
             <div className="info-icon"><i className="fa-regular fa-envelope" /></div>
             <div>
               <h4>Correo</h4>
-              <a href="mailto:matssoecuador@gmail.com">matssoecuador@gmail.com</a>
+              <a href="mailto:info@sapper-industries.com">info@sapper-industries.com</a>
             </div>
           </div>
 
