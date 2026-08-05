@@ -777,6 +777,24 @@
   width: 100%;
 }
 
+.cap-form-box input,
+.cap-form-box textarea {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.25);
+}
+
+.cap-form-box input:focus,
+.cap-form-box textarea:focus {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.55);
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.08);
+}
+
+.cap-form-box label {
+  color: rgba(255, 255, 255, 0.85);
+}
+
 /* Responsive */
 @media (max-width: 1200px) {
   .cap-img-right-panel {
