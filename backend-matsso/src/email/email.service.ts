@@ -1,5 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import axios from 'axios';
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const PDFDocument = require('pdfkit') as typeof import('pdfkit');
 
 @Injectable()
 export class EmailService {
@@ -183,6 +185,232 @@ export class EmailService {
             </p>
           </div>
         </div>`,
+    });
+  }
+
+  async sendPaymentApprovedWithPdf(data: {
+    to: string;
+    nombre: string;
+    orderId: number;
+    total: number;
+    items: Array<{ producto: string; cantidad: number; precio: number }>;
+    cedula?: string;
+    telefono?: string;
+    correo?: string;
+    direccion?: string;
+    ciudad?: string;
+  }) {
+    const pdfBuffer = await this.generateReceiptPdf(data);
+    const rows = data.items
+      .map(
+        (i) => `<tr>
+          <td style="padding:6px 0;font-size:14px;border-bottom:1px solid #e5e7eb;">
+            ${i.producto} × ${i.cantidad}
+          </td>
+          <td style="padding:6px 0;font-size:14px;border-bottom:1px solid #e5e7eb;text-align:right;">
+            $${(i.precio * i.cantidad).toFixed(2)}
+          </td>
+        </tr>`,
+      )
+      .join('');
+
+    const html = `
+      <div style="font-family:Arial,sans-serif;color:#1f2937;font-size:15px;margin:0;padding:0;background:#f9fafb;">
+        <div style="max-width:600px;margin:32px auto;background:#fff;border-radius:10px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.08);">
+          <div style="background:#0f2a5c;padding:32px 40px;text-align:center;">
+            <h1 style="color:#fff;margin:0;font-size:22px;letter-spacing:.02em;">IN SAPPER Industries</h1>
+            <p style="color:rgba(255,255,255,.7);margin:6px 0 0;font-size:13px;">Conocimiento · Calidad · Confianza</p>
+          </div>
+          <div style="padding:32px 40px;">
+            <p style="font-size:17px;font-weight:700;color:#0f2a5c;margin-bottom:12px;">Hola, ${data.nombre} 👋</p>
+            <span style="display:inline-block;background:#dcfce7;color:#166534;border-radius:20px;padding:5px 14px;font-size:13px;font-weight:700;margin-bottom:20px;">✅ Inscripción confirmada</span>
+            <p style="line-height:1.7;color:#374151;margin:0 0 14px;">
+              Nos complace informarte que tu pago ha sido <strong>aprobado exitosamente</strong>.
+              Tu inscripción está confirmada y ya formas parte de IN SAPPER Industries.
+            </p>
+            <div style="background:#f0f4ff;border-left:4px solid #2458b3;border-radius:6px;padding:16px 20px;margin:20px 0;">
+              <strong style="display:block;color:#0f2a5c;margin-bottom:6px;font-size:13px;text-transform:uppercase;letter-spacing:.05em;">
+                Detalle de tu orden #${data.orderId}
+              </strong>
+              <table style="width:100%;border-collapse:collapse;">
+                <thead>
+                  <tr>
+                    <th style="text-align:left;font-size:12px;color:#6b7280;padding:4px 0;border-bottom:1px solid #d1d5db;">Producto / Servicio</th>
+                    <th style="text-align:right;font-size:12px;color:#6b7280;padding:4px 0;border-bottom:1px solid #d1d5db;">Precio</th>
+                  </tr>
+                </thead>
+                <tbody>${rows}</tbody>
+                <tfoot>
+                  <tr>
+                    <td style="font-weight:700;color:#0f2a5c;padding-top:10px;">TOTAL</td>
+                    <td style="font-weight:700;color:#0f2a5c;padding-top:10px;text-align:right;">$${data.total.toFixed(2)}</td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+            <p style="line-height:1.7;color:#374151;margin:0 0 14px;">
+              Adjunto a este correo encontrarás tu <strong>comprobante de pago en PDF</strong>
+              con el detalle completo de tu inscripción. Guárdalo como respaldo.
+            </p>
+            <p style="color:#6b7280;font-size:13px;margin-top:24px;">
+              Atentamente,<br>
+              <strong style="color:#0f2a5c">Equipo IN SAPPER Industries</strong>
+            </p>
+          </div>
+          <div style="background:#f3f4f6;padding:18px 40px;text-align:center;font-size:12px;color:#9ca3af;">
+            Este correo fue generado automáticamente.<br>
+            &copy; ${new Date().getFullYear()} IN SAPPER Industries — Soluciones que generan futuro.
+          </div>
+        </div>
+      </div>`;
+
+    if (!this.apiKey) return;
+    try {
+      await axios.post(
+        'https://api.brevo.com/v3/smtp/email',
+        {
+          sender:      { name: 'IN SAPPER Industries', email: this.senderEmail },
+          to:          [{ email: data.to }],
+          subject:     `Comprobante de pago — Orden #${data.orderId} — IN SAPPER Industries`,
+          htmlContent: html,
+          attachment:  [{ content: pdfBuffer.toString('base64'), name: 'Comprobante_Inscripcion.pdf' }],
+        },
+        { headers: { 'api-key': this.apiKey, 'Content-Type': 'application/json' } },
+      );
+    } catch (err: any) {
+      this.logger.error(`Error enviando email con PDF a ${data.to}: ${err?.response?.data?.message ?? err.message}`);
+    }
+  }
+
+  private generateReceiptPdf(data: {
+    orderId: number;
+    nombre: string;
+    total: number;
+    items: Array<{ producto: string; cantidad: number; precio: number }>;
+    cedula?: string;
+    telefono?: string;
+    correo?: string;
+    direccion?: string;
+    ciudad?: string;
+  }): Promise<Buffer> {
+    return new Promise((resolve, reject) => {
+      const doc = new PDFDocument({ size: 'A4', margin: 40, info: { Title: `Comprobante #${data.orderId}` } });
+      const chunks: Buffer[] = [];
+      doc.on('data', (c: Buffer) => chunks.push(c));
+      doc.on('end', () => resolve(Buffer.concat(chunks)));
+      doc.on('error', reject);
+
+      const NAVY  = '#0f2a5c';
+      const BLUE  = '#2458b3';
+      const GRAY  = '#6b7280';
+      const L     = 40;
+      const R     = 555;
+      const W     = R - L;
+      const folio = String(data.orderId).padStart(6, '0');
+      const now   = new Date().toLocaleString('es-EC', { timeZone: 'America/Guayaquil', hour12: false });
+
+      // ── HEADER ──────────────────────────────────────────────
+      doc.fontSize(17).fillColor(NAVY).font('Helvetica-Bold').text('IN SAPPER INDUSTRIES', L, 45);
+      doc.fontSize(16).fillColor(NAVY).text('COMPROBANTE DE PAGO', L, 45, { align: 'right' });
+      doc.fontSize(11).fillColor(BLUE).font('Helvetica').text(`N° REC-${folio}`, L, 67, { align: 'right' });
+      doc.fontSize(9).fillColor(GRAY).text(`Emisión: ${now}`, L, 81, { align: 'right' });
+
+      const lineY = 100;
+      doc.moveTo(L, lineY).lineTo(R, lineY).strokeColor(NAVY).lineWidth(2).stroke();
+
+      // ── SECCIÓN CLIENTE ──────────────────────────────────────
+      let y = 115;
+      doc.rect(L, y, W, 18).fill(NAVY);
+      doc.fontSize(9).fillColor('#ffffff').font('Helvetica-Bold')
+         .text('DATOS DEL CLIENTE', L + 10, y + 5);
+      y += 18;
+
+      doc.rect(L, y, W, 90).strokeColor('#d1d5db').lineWidth(1).stroke();
+      y += 10;
+
+      const col1 = L + 10;
+      const col2 = L + W / 2 + 10;
+
+      const field = (label: string, value: string, x: number, cy: number) => {
+        doc.fontSize(8).fillColor(GRAY).font('Helvetica').text(label.toUpperCase(), x, cy);
+        doc.fontSize(10).fillColor('#111827').font('Helvetica-Bold').text(value || '—', x, cy + 10);
+      };
+
+      field('Nombres completos', data.nombre, col1, y);
+      field('Correo electrónico', data.correo ?? '—', col2, y);
+      y += 28;
+      field('Cédula / RUC', data.cedula ?? '—', col1, y);
+      field('Dirección', [data.direccion, data.ciudad].filter(Boolean).join(', ') || '—', col2, y);
+      y += 28;
+      field('Teléfono', data.telefono ?? '—', col1, y);
+      field('N° Orden', `#${data.orderId}`, col2, y);
+
+      y = 230;
+
+      // ── SECCIÓN ITEMS ────────────────────────────────────────
+      doc.rect(L, y, W, 18).fill(NAVY);
+      doc.fontSize(9).fillColor('#ffffff').font('Helvetica-Bold')
+         .text('DETALLE DE LA INSCRIPCIÓN', L + 10, y + 5);
+      y += 18;
+
+      // Cabecera tabla
+      doc.rect(L, y, W, 18).fill('#f3f4f6');
+      doc.fontSize(9).fillColor('#374151').font('Helvetica-Bold');
+      doc.text('PRODUCTO / SERVICIO', L + 10, y + 5);
+      doc.text('CANT.', L + W * 0.58, y + 5);
+      doc.text('P. UNIT.', L + W * 0.72, y + 5);
+      doc.text('SUBTOTAL', L + W * 0.86, y + 5);
+      y += 18;
+
+      doc.font('Helvetica').fontSize(10).fillColor('#111827');
+      for (const item of data.items) {
+        const sub = (item.precio * item.cantidad).toFixed(2);
+        doc.text(item.producto, L + 10, y + 3, { width: W * 0.55 });
+        doc.text(String(item.cantidad), L + W * 0.58, y + 3);
+        doc.text(`$${item.precio.toFixed(2)}`, L + W * 0.72, y + 3);
+        doc.text(`$${sub}`, L + W * 0.86, y + 3);
+        y += 22;
+        doc.moveTo(L, y).lineTo(R, y).strokeColor('#e5e7eb').lineWidth(0.5).stroke();
+      }
+
+      y += 14;
+
+      // ── TOTALES + SELLO ──────────────────────────────────────
+      const subtotal = parseFloat((data.total / 1.15).toFixed(2));
+      const iva      = parseFloat((data.total - subtotal).toFixed(2));
+      const totX     = L + W * 0.55;
+      const totW     = W * 0.45;
+
+      doc.rect(L, y, W * 0.5, 50).strokeColor('#16a34a').lineWidth(1.5).stroke();
+      doc.fontSize(12).fillColor('#16a34a').font('Helvetica-Bold')
+         .text('✔  PAGO CONFIRMADO', L + 12, y + 8);
+      doc.fontSize(8).fillColor(GRAY).font('Helvetica')
+         .text('Forma de pago: PayPal', L + 12, y + 25)
+         .text('Este documento es válido como comprobante.', L + 12, y + 36);
+
+      doc.fontSize(10).fillColor(GRAY).font('Helvetica');
+      doc.text('Subtotal (sin IVA)', totX, y, { width: totW * 0.6 });
+      doc.text(`$${subtotal.toFixed(2)}`, totX + totW * 0.6, y, { width: totW * 0.4, align: 'right' });
+      doc.text('IVA 15%', totX, y + 15, { width: totW * 0.6 });
+      doc.text(`$${iva.toFixed(2)}`, totX + totW * 0.6, y + 15, { width: totW * 0.4, align: 'right' });
+
+      doc.moveTo(totX, y + 32).lineTo(R, y + 32).strokeColor(NAVY).lineWidth(1.5).stroke();
+      doc.fontSize(13).fillColor(NAVY).font('Helvetica-Bold');
+      doc.text('TOTAL', totX, y + 36, { width: totW * 0.6 });
+      doc.text(`$${data.total.toFixed(2)}`, totX + totW * 0.6, y + 36, { width: totW * 0.4, align: 'right' });
+
+      y += 75;
+
+      // ── FOOTER ───────────────────────────────────────────────
+      doc.moveTo(L, y).lineTo(R, y).strokeColor('#e5e7eb').lineWidth(1).stroke();
+      y += 10;
+      doc.fontSize(9).fillColor(NAVY).font('Helvetica-Bold')
+         .text('IN SAPPER Industries', L, y, { align: 'center' });
+      doc.fontSize(8).fillColor(GRAY).font('Helvetica')
+         .text('Conocimiento · Calidad · Confianza', L, y + 12, { align: 'center' })
+         .text('Este comprobante fue generado electrónicamente y no requiere firma física.', L, y + 24, { align: 'center' });
+
+      doc.end();
     });
   }
 

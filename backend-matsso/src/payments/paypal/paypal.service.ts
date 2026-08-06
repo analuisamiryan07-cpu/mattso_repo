@@ -199,15 +199,22 @@ export class PaypalService {
       const nombreUsuario = userWeb?.cliente?.nombre ?? (userWeb as any)?.correo ?? 'Cliente';
 
       if (emailTo) {
-        await this.emailService.sendPaymentApproved({
+        await this.emailService.sendPaymentApprovedWithPdf({
           to:        emailTo,
           nombre:    nombreUsuario,
           orderId:   internalOrderId,
-          items:     orden.items.map((item) => ({ producto: item.producto.titulo })),
+          total:     capturedAmount,
+          items:     orden.items.map((item) => ({
+            producto: item.producto.titulo,
+            cantidad: item.cantidad,
+            precio:   Number(item.precio_unitario),
+          })),
           cedula:    userWeb?.cliente?.cedula    ?? undefined,
           telefono:  userWeb?.cliente?.telefono  ?? undefined,
+          correo:    emailTo,
           direccion: userWeb?.cliente?.direccion ?? undefined,
-        }).catch((err) => this.logger.error('Error enviando email de aprobación PayPal:', err));
+          ciudad:    userWeb?.cliente?.ciudad    ?? undefined,
+        }).catch((err) => this.logger.error('Error enviando email con PDF PayPal:', err));
       }
     } catch (err) {
       this.logger.error('Error preparando email de aprobación PayPal:', err);
