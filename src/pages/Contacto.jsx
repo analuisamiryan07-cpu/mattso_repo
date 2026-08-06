@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useToast } from '@context/ToastContext';
 import { cursosService } from '@api/cursosService';
@@ -87,7 +87,7 @@ const Contacto = () => {
             <div className="info-icon"><i className="fa-regular fa-envelope" /></div>
             <div>
               <h4>Correo</h4>
-              <a href="mailto:info@sapper-industries.com">info@sapper-industries.com</a>
+              <a href="mailto:matssoecuador@gmail.com">matssoecuador@gmail.com</a>
             </div>
           </div>
 

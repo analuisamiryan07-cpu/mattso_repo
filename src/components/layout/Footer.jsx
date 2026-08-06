@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import './Footer.css';
 
 const SOCIAL_LINKS = [
@@ -8,7 +8,7 @@ const SOCIAL_LINKS = [
   { icon: 'fa-brands fa-youtube',     href: 'https://www.youtube.com/channel/UCwJ_dXr4d5tKQ_A5_CjvWfw', label: 'YouTube'   },
   { icon: 'fa-brands fa-tiktok',      href: 'https://www.tiktok.com/@matssoecuador',                     label: 'TikTok'    },
   { icon: 'fa-brands fa-whatsapp',    href: 'https://wa.me/593983555081',                                label: 'WhatsApp'  },
-  { icon: 'fa-regular fa-envelope',   href: 'mailto:info@sapper-industries.com',                         label: 'Email'     },
+  { icon: 'fa-regular fa-envelope',   href: 'mailto:matssoecuador@gmail.com',                         label: 'Email'     },
 ];
 
 const Footer = () => {
@@ -33,8 +33,8 @@ const Footer = () => {
             <p><i className="fa-solid fa-location-dot" /> Dirección: Av. 10 de Agosto N32-140 entre Mariana de Jesús y Las Guayanas. </p>
             <p>
               <i className="fa-regular fa-envelope" />
-              <a href="mailto:info@sapper-industries.com" className="footer-link">
-                info@sapper-industries.com
+              <a href="mailto:matssoecuador@gmail.com" className="footer-link">
+                matssoecuador@gmail.com
               </a>
             </p>
             <p>

@@ -297,7 +297,7 @@ export class EmailService {
     }
   }
 
-  private generateReceiptPdf(data: {
+  private async generateReceiptPdf(data: {
     orderId: number;
     nombre: string;
     total: number;
@@ -310,6 +310,15 @@ export class EmailService {
     direccion?: string;
     ciudad?: string;
   }): Promise<Buffer> {
+    let logoBuffer: Buffer | null = null;
+    try {
+      const res = await axios.get(
+        'https://res.cloudinary.com/ehglt8h8/image/upload/v1784925646/Logo_1.png',
+        { responseType: 'arraybuffer' },
+      );
+      logoBuffer = Buffer.from(res.data as ArrayBuffer);
+    } catch { /* logo opcional, el PDF continúa sin él */ }
+
     return new Promise((resolve, reject) => {
       const doc = new PDFDocument({ size: 'A4', margin: 40, info: { Title: `Comprobante #${data.orderId}` } });
       const chunks: Buffer[] = [];
@@ -327,10 +336,14 @@ export class EmailService {
       const now   = new Date().toLocaleString('es-EC', { timeZone: 'America/Guayaquil', hour12: false });
 
       // ── HEADER ──────────────────────────────────────────────
-      doc.fontSize(17).fillColor(NAVY).font('Helvetica-Bold').text('IN SAPPER INDUSTRIES', L, 45);
-      doc.fontSize(16).fillColor(NAVY).text('COMPROBANTE DE PAGO', L, 45, { align: 'right' });
-      doc.fontSize(11).fillColor(BLUE).font('Helvetica').text(`N° REC-${folio}`, L, 67, { align: 'right' });
-      doc.fontSize(9).fillColor(GRAY).text(`Emisión: ${now}`, L, 81, { align: 'right' });
+      if (logoBuffer) {
+        doc.image(logoBuffer, L, 35, { fit: [120, 55] });
+      } else {
+        doc.fontSize(17).fillColor(NAVY).font('Helvetica-Bold').text('IN SAPPER INDUSTRIES', L, 45);
+      }
+      doc.fontSize(14).fillColor(NAVY).font('Helvetica-Bold').text('COMPROBANTE DE PAGO', L, 42, { align: 'right' });
+      doc.fontSize(11).fillColor(BLUE).font('Helvetica').text(`N° REC-${folio}`, L, 60, { align: 'right' });
+      doc.fontSize(9).fillColor(GRAY).text(`Emisión: ${now}`, L, 76, { align: 'right' });
 
       const lineY = 100;
       doc.moveTo(L, lineY).lineTo(R, lineY).strokeColor(NAVY).lineWidth(2).stroke();
