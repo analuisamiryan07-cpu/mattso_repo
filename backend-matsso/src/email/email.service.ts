@@ -193,6 +193,8 @@ export class EmailService {
     nombre: string;
     orderId: number;
     total: number;
+    subtotal: number;
+    iva: number;
     items: Array<{ producto: string; cantidad: number; precio: number }>;
     cedula?: string;
     telefono?: string;
@@ -213,6 +215,17 @@ export class EmailService {
         </tr>`,
       )
       .join('');
+
+    const ivaRow = data.iva > 0
+      ? `<tr>
+          <td style="color:#6b7280;font-size:13px;padding:4px 0;">Subtotal</td>
+          <td style="color:#6b7280;font-size:13px;padding:4px 0;text-align:right;">$${data.subtotal.toFixed(2)}</td>
+        </tr>
+        <tr>
+          <td style="color:#6b7280;font-size:13px;padding:4px 0;">IVA 15% (capacitaciones)</td>
+          <td style="color:#6b7280;font-size:13px;padding:4px 0;text-align:right;">$${data.iva.toFixed(2)}</td>
+        </tr>`
+      : '';
 
     const html = `
       <div style="font-family:Arial,sans-serif;color:#1f2937;font-size:15px;margin:0;padding:0;background:#f9fafb;">
@@ -241,9 +254,11 @@ export class EmailService {
                 </thead>
                 <tbody>${rows}</tbody>
                 <tfoot>
+                  <tr><td colspan="2" style="border-top:1px solid #d1d5db;padding-top:6px;"></td></tr>
+                  ${ivaRow}
                   <tr>
-                    <td style="font-weight:700;color:#0f2a5c;padding-top:10px;">TOTAL</td>
-                    <td style="font-weight:700;color:#0f2a5c;padding-top:10px;text-align:right;">$${data.total.toFixed(2)}</td>
+                    <td style="font-weight:700;color:#0f2a5c;padding-top:6px;">TOTAL</td>
+                    <td style="font-weight:700;color:#0f2a5c;padding-top:6px;text-align:right;">$${data.total.toFixed(2)}</td>
                   </tr>
                 </tfoot>
               </table>
@@ -286,6 +301,8 @@ export class EmailService {
     orderId: number;
     nombre: string;
     total: number;
+    subtotal: number;
+    iva: number;
     items: Array<{ producto: string; cantidad: number; precio: number }>;
     cedula?: string;
     telefono?: string;
@@ -376,8 +393,8 @@ export class EmailService {
       y += 14;
 
       // ── TOTALES + SELLO ──────────────────────────────────────
-      const subtotal = parseFloat((data.total / 1.15).toFixed(2));
-      const iva      = parseFloat((data.total - subtotal).toFixed(2));
+      const subtotal = data.subtotal;
+      const iva      = data.iva;
       const totX     = L + W * 0.55;
       const totW     = W * 0.45;
 

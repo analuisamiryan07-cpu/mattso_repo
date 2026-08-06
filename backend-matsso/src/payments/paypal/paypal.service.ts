@@ -199,11 +199,23 @@ export class PaypalService {
       const nombreUsuario = userWeb?.cliente?.nombre ?? (userWeb as any)?.correo ?? 'Cliente';
 
       if (emailTo) {
+        const subtotalItems = orden.items.reduce(
+          (acc, item) => acc + Number(item.precio_unitario) * item.cantidad, 0,
+        );
+        const subtotalCap2 = orden.items.reduce(
+          (acc, item) => item.producto.tipo === 'CAPACITACION'
+            ? acc + Number(item.precio_unitario) * item.cantidad
+            : acc, 0,
+        );
+        const ivaAmount = parseFloat((subtotalCap2 * TASA_IVA).toFixed(2));
+
         await this.emailService.sendPaymentApprovedWithPdf({
           to:        emailTo,
           nombre:    nombreUsuario,
           orderId:   internalOrderId,
           total:     capturedAmount,
+          subtotal:  parseFloat(subtotalItems.toFixed(2)),
+          iva:       ivaAmount,
           items:     orden.items.map((item) => ({
             producto: item.producto.titulo,
             cantidad: item.cantidad,
