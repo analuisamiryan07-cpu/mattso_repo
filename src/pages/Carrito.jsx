@@ -393,6 +393,7 @@ const Carrito = () => {
                           </button>
                         ) : (
                           <PayPalButtons
+                            fundingSource="paypal"
                             style={{ layout: 'vertical', color: 'blue', shape: 'rect', label: 'pay' }}
                             createOrder={async () => {
                               try {
