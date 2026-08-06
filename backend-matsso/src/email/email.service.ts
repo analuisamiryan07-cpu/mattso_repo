@@ -6,11 +6,11 @@ export class EmailService {
   private readonly logger = new Logger(EmailService.name);
   private readonly apiKey: string | null;
   private readonly senderEmail: string;
-  private readonly senderName = 'MATSSO Ecuador';
+  private readonly senderName = 'Sapper Industries';
 
   constructor() {
     this.apiKey    = process.env.BREVO_API_KEY ?? null;
-    this.senderEmail = process.env.BREVO_SENDER_EMAIL ?? 'matssoecuador@gmail.com';
+    this.senderEmail = process.env.BREVO_SENDER_EMAIL ?? 'info@sapper-industries.com';
 
     if (this.apiKey) {
       this.logger.log(`Brevo configurado — sender: ${this.senderEmail}`);
@@ -60,7 +60,7 @@ export class EmailService {
             </div>
             <p style="font-size:13px;color:#6b7280;">
               ¿Tienes dudas? Escríbenos a
-              <a href="mailto:matssoecuador@gmail.com" style="color:#0A2463;">matssoecuador@gmail.com</a>
+              <a href="mailto:info@sapper-industries.com" style="color:#0A2463;">info@sapper-industries.com</a>
               o al WhatsApp <a href="https://wa.me/593983555081" style="color:#0A2463;">+593 98 355 5081</a>.
             </p>
           </div>
@@ -112,7 +112,7 @@ export class EmailService {
             <p>Nos pondremos en contacto contigo pronto para coordinar el proceso de evaluación.</p>
             <p style="font-size:13px;color:#6b7280;">
               Contacto:
-              <a href="mailto:matssoecuador@gmail.com" style="color:#0A2463;">matssoecuador@gmail.com</a>
+              <a href="mailto:info@sapper-industries.com" style="color:#0A2463;">info@sapper-industries.com</a>
               · WhatsApp <a href="https://wa.me/593983555081" style="color:#0A2463;">+593 98 355 5081</a>
             </p>
           </div>
@@ -148,7 +148,7 @@ export class EmailService {
             ${motivoHtml}
             <p>Contáctanos para resolver el inconveniente y volver a intentarlo:</p>
             <ul style="font-size:13px;">
-              <li>Email: <a href="mailto:matssoecuador@gmail.com" style="color:#0A2463;">matssoecuador@gmail.com</a></li>
+              <li>Email: <a href="mailto:info@sapper-industries.com" style="color:#0A2463;">info@sapper-industries.com</a></li>
               <li>WhatsApp: <a href="https://wa.me/593983555081" style="color:#0A2463;">+593 98 355 5081</a></li>
             </ul>
             <p style="font-size:12px;color:#9ca3af;">Referencia: Orden #${data.orderId}</p>
