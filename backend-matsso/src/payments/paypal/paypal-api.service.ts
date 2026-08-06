@@ -1,4 +1,4 @@
-import { Injectable, Logger, InternalServerErrorException } from '@nestjs/common';
+import { Injectable, Logger, InternalServerErrorException, BadRequestException } from '@nestjs/common';
 import axios, { AxiosInstance } from 'axios';
 
 @Injectable()
@@ -87,7 +87,20 @@ export class PaypalApiService {
       );
       return response.data;
     } catch (err: any) {
-      this.logger.error('Error capturando orden PayPal', err?.response?.data);
+      const data = err?.response?.data;
+      this.logger.error('Error capturando orden PayPal', data);
+
+      const issue = data?.details?.[0]?.issue ?? '';
+      if (issue === 'INSTRUMENT_DECLINED') {
+        throw new BadRequestException('La tarjeta fue rechazada por el banco. Verifica los datos o usa otro método de pago.');
+      }
+      if (issue === 'DUPLICATE_INVOICE_ID') {
+        throw new BadRequestException('Este pago ya fue procesado anteriormente.');
+      }
+      if (data?.name === 'ORDER_ALREADY_CAPTURED') {
+        throw new BadRequestException('Este pago ya fue capturado.');
+      }
+
       throw new InternalServerErrorException('No se pudo capturar el pago en PayPal.');
     }
   }
