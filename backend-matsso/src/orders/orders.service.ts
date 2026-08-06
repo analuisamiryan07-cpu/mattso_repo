@@ -161,6 +161,7 @@ export class OrdersService {
         producto: i.producto.titulo,
         cantidad: i.cantidad,
         precio: Number(i.precio_unitario),
+        tipo: i.producto.tipo,
       })),
     }));
   }
