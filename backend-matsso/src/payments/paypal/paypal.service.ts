@@ -159,7 +159,7 @@ export class PaypalService {
       throw new BadRequestException(`Monto capturado (${capturedAmount}) no coincide con el esperado (${expectedTotal}).`);
     if (capturedCurrency !== CURRENCY)
       throw new BadRequestException(`Moneda incorrecta: ${capturedCurrency}`);
-    if (customId !== internalOrderId.toString())
+    if (customId && customId !== internalOrderId.toString())
       throw new BadRequestException('custom_id no coincide con la orden interna.');
 
     const correo = captureDetail?.payer?.email_address
