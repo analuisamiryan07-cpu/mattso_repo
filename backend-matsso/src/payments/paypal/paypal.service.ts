@@ -7,6 +7,7 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { PaypalApiService } from './paypal-api.service';
+import { EmailService } from '../../email/email.service';
 
 const CURRENCY = process.env.PAYPAL_CURRENCY ?? 'USD';
 const TASA_IVA = 0.15;
@@ -18,6 +19,7 @@ export class PaypalService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly api: PaypalApiService,
+    private readonly emailService: EmailService,
   ) {}
 
   // ── Crear orden interna + orden PayPal en un solo paso ──────
@@ -186,6 +188,32 @@ export class PaypalService {
     });
 
     this.logger.log(`Pago completado — orden ${internalOrderId}, capture ${captureId}`);
+
+    // Enviar correo de confirmación
+    try {
+      const userWeb = await this.prisma.usuarioWeb.findUnique({
+        where: { id: BigInt(usuarioId) },
+        include: { cliente: true },
+      });
+      const emailTo     = userWeb?.cliente?.correo ?? (userWeb as any)?.correo ?? null;
+      const nombreUsuario = userWeb?.cliente?.nombre ?? (userWeb as any)?.correo ?? 'Cliente';
+
+      if (emailTo) {
+        await this.emailService.sendOrderConfirmation({
+          to:      emailTo,
+          nombre:  nombreUsuario,
+          orderId: internalOrderId,
+          total:   capturedAmount,
+          iva:     subtotalCap * TASA_IVA,
+          items:   orden.items.map((item) => ({
+            producto: item.producto.titulo,
+            precio:   Number(item.precio_unitario),
+          })),
+        }).catch((err) => this.logger.error('Error enviando email de confirmación PayPal:', err));
+      }
+    } catch (err) {
+      this.logger.error('Error preparando email de confirmación PayPal:', err);
+    }
 
     return {
       mensaje:   'Pago completado con éxito.',
