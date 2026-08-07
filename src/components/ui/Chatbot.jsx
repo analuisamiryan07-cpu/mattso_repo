@@ -79,29 +79,46 @@ export default function Chatbot() {
           </div>
 
           <div className="chatbot-messages">
-            {messages.map((msg, idx) => (
-              <div key={idx} className={`chat-message-group ${msg.sender}`}>
-                <div className={`chat-bubble ${msg.sender} ${msg.isTyping ? 'typing' : ''}`}>
-                  {msg.text}
-                </div>
-                {msg.buttons && msg.buttons.length > 0 && (
-                  <div className="chat-buttons">
-                    {msg.buttons.map((btn, i) => {
-                      const isExternal = btn.url.startsWith('http');
-                      return isExternal ? (
-                        <a key={i} href={btn.url} target="_blank" rel="noopener noreferrer" className="chat-btn">
-                          {btn.label}
-                        </a>
-                      ) : (
-                        <a key={i} href={btn.url} className="chat-btn">
-                          {btn.label}
-                        </a>
-                      );
-                    })}
+            {messages.map((msg, idx) => {
+              const itemCards  = (msg.buttons || []).filter((b) => b.type === 'item');
+              const regularBtns = (msg.buttons || []).filter((b) => b.type !== 'item');
+              return (
+                <div key={idx} className={`chat-message-group ${msg.sender}`}>
+                  <div className={`chat-bubble ${msg.sender} ${msg.isTyping ? 'typing' : ''}`}>
+                    {msg.text}
+                    {itemCards.length > 0 && (
+                      <div className="chat-items-list">
+                        {itemCards.map((item, i) => (
+                          <a key={i} href={item.url} className="chat-item-card">
+                            <span className="chat-item-name">{item.label}</span>
+                            <div className="chat-item-meta">
+                              <span className="chat-item-price">${item.precio}</span>
+                              <span className="chat-item-badge">{item.modalidad}</span>
+                            </div>
+                          </a>
+                        ))}
+                      </div>
+                    )}
                   </div>
-                )}
-              </div>
-            ))}
+                  {regularBtns.length > 0 && (
+                    <div className="chat-buttons">
+                      {regularBtns.map((btn, i) => {
+                        const isExternal = btn.url.startsWith('http');
+                        return isExternal ? (
+                          <a key={i} href={btn.url} target="_blank" rel="noopener noreferrer" className="chat-btn">
+                            {btn.label}
+                          </a>
+                        ) : (
+                          <a key={i} href={btn.url} className="chat-btn">
+                            {btn.label}
+                          </a>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
             <div ref={messagesEndRef} />
           </div>
 

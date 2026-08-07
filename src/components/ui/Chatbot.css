@@ -230,6 +230,60 @@
   border-color: var(--primary-blue, #003366);
 }
 
+.chat-items-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.chat-item-card {
+  display: block;
+  background: #f0f4ff;
+  border: 1px solid #c7d4f0;
+  border-radius: 8px;
+  padding: 8px 10px;
+  text-decoration: none;
+  color: inherit;
+  transition: background 0.15s, border-color 0.15s, transform 0.15s;
+}
+
+.chat-item-card:hover {
+  background: #dce8ff;
+  border-color: #2458b3;
+  transform: translateX(2px);
+}
+
+.chat-item-name {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: #0f2a5c;
+  line-height: 1.35;
+  margin-bottom: 5px;
+}
+
+.chat-item-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.chat-item-price {
+  font-size: 12px;
+  font-weight: 700;
+  color: #16a34a;
+}
+
+.chat-item-badge {
+  font-size: 10px;
+  background: #dbeafe;
+  color: #1e40af;
+  padding: 1px 7px;
+  border-radius: 10px;
+  font-weight: 500;
+}
+
 @media (max-width: 480px) {
   .chatbot-window {
     width: calc(100vw - 40px);
