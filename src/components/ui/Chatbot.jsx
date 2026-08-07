@@ -13,7 +13,7 @@ function esSaludo(msg) {
 export default function Chatbot() {
   const [isOpen, setIsOpen]   = useState(false);
   const [messages, setMessages] = useState([
-    { text: '¡Hola! Soy CertiBot de Sapper Industries. Puedo ayudarte con precios, requisitos, modalidades e inscripciones. ¿Qué certificación te interesa?', sender: 'bot', buttons: [] }
+    { text: '¡Hola! Soy CertiBot de Sapper Industries. Puedo ayudarte con precios, requisitos, modalidades e inscripciones de nuestras certificaciones y capacitaciones. ¿Qué programa te interesa?', sender: 'bot', buttons: [] }
   ]);
   const [input, setInput]     = useState('');
   const messagesEndRef         = useRef(null);
