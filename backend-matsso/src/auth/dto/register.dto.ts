@@ -30,10 +30,10 @@ export class RegisterDto {
   })
   password: string;
 
-  @IsOptional()
   @IsString()
+  @IsNotEmpty({ message: 'La cédula o RUC es requerido.' })
   @Matches(/^\d{10}(\d{3})?$/, { message: 'Ingresa una cédula (10 dígitos) o RUC (13 dígitos) válido.' })
-  cedula?: string;
+  cedula: string;
 
   @IsOptional()
   @IsString()
