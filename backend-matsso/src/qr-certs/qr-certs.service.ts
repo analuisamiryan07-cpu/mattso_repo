@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { sanitizePlainText } from '../common/sanitize.util';
 import * as crypto from 'crypto';
 
 @Injectable()
@@ -39,8 +40,8 @@ export class QrCertsService {
     const record = await db.qrCertificado.create({
       data: {
         codigo,
-        nombres:          data.nombres,
-        certificado:      data.certificado,
+        nombres:          sanitizePlainText(data.nombres),
+        certificado:      sanitizePlainText(data.certificado),
         fecha_emision:    data.fecha_emision,
         fecha_expiracion: data.fecha_expiracion,
         estado:           data.estado || 'VIGENTE',

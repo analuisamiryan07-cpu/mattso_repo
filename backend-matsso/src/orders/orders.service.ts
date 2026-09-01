@@ -58,6 +58,12 @@ export class OrdersService {
     const iva = subtotalConIva * TASA_IVA;
     const total = subtotal + iva;
 
+    // Defensa en profundidad: aunque el DTO ya valida cantidad/precio, nunca
+    // persistir una orden con total inválido si alguna combinación futura lo permitiera.
+    if (total <= 0) {
+      throw new BadRequestException('El total de la orden debe ser mayor a 0.');
+    }
+
     // Verificar que el usuario existe
     const userWeb = await this.prisma.usuarioWeb.findUnique({
       where: { id: BigInt(usuarioId) },

@@ -10,6 +10,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { QrCertsService } from './qr-certs.service';
+import { CreateQrCertDto } from './dto/create-qr-cert.dto';
 
 // Rutas admin: /api/qr-certs/admin
 @Controller('api/qr-certs')
@@ -31,10 +32,10 @@ export class QrCertsController {
   @Post('admin')
   async create(
     @Headers('x-admin-key') key: string,
-    @Body() body: any,
+    @Body() dto: CreateQrCertDto,
   ) {
     this.checkAdmin(key);
-    return this.service.create(body);
+    return this.service.create(dto);
   }
 
   @Delete('admin/:id')

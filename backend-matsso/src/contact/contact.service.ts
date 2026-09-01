@@ -1,11 +1,21 @@
 import { Injectable, Logger } from '@nestjs/common';
 import axios from 'axios';
+import { sanitizePlainText } from '../common/sanitize.util';
 
 @Injectable()
 export class ContactService {
   private readonly logger = new Logger(ContactService.name);
 
-  async receiveContact(dto: { nombre: string; email: string; telefono?: string; asunto?: string; mensaje?: string; ciudad?: string; num_personas?: string | number }) {
+  async receiveContact(dtoRaw: { nombre: string; email: string; telefono?: string; asunto?: string; mensaje?: string; ciudad?: string; num_personas?: string | number }) {
+    // Se sanea antes de guardar y, sobre todo, antes de interpolar en el HTML del correo.
+    const dto = {
+      ...dtoRaw,
+      nombre: sanitizePlainText(dtoRaw.nombre),
+      mensaje: sanitizePlainText(dtoRaw.mensaje),
+      asunto: sanitizePlainText(dtoRaw.asunto),
+      ciudad: sanitizePlainText(dtoRaw.ciudad),
+    };
+
     const apiKey      = process.env.BREVO_API_KEY;
     const senderEmail = process.env.BREVO_SENDER_EMAIL ?? 'notificaciones.matsso@gmail.com';
     const destino     = process.env.CONTACT_DEST_EMAIL ?? 'matssoecuador@gmail.com';

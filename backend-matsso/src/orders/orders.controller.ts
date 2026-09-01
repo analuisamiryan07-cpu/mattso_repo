@@ -15,6 +15,8 @@ import {
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { memoryStorage } from 'multer';
+import { plainToInstance } from 'class-transformer';
+import { validate } from 'class-validator';
 import { OrdersService } from './orders.service';
 import { StorageService } from '../storage/storage.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
@@ -27,7 +29,6 @@ const MAGIC_BYTES: Record<string, (buf: Buffer) => boolean> = {
   'image/jpeg': (b) => b[0] === 0xff && b[1] === 0xd8,
   'image/png':  (b) => b[0] === 0x89 && b[1] === 0x50 && b[2] === 0x4e && b[3] === 0x47,
   'image/webp': (b) => b[8] === 0x57 && b[9] === 0x45 && b[10] === 0x42 && b[11] === 0x50,
-  'application/pdf': (b) => b[0] === 0x25 && b[1] === 0x50 && b[2] === 0x44 && b[3] === 0x46,
 };
 
 function verifyMagicBytes(file: Express.Multer.File): boolean {
@@ -81,18 +82,16 @@ export class OrdersController {
       throw new BadRequestException('El cuerpo de datos de la orden no es JSON válido.');
     }
 
-    // Validar estructura mínima del body
-    if (!Array.isArray(parsedBody?.items) || parsedBody.items.length === 0) {
-      throw new BadRequestException('La orden debe contener al menos un producto.');
+    // Validación real con class-validator — el body llega como JSON-dentro-de-string
+    // en un multipart/form-data, así que el ValidationPipe global no se dispara solo.
+    // Sin este paso, decoradores como @IsPositive()/@Max(10) del DTO nunca se ejecutan.
+    const dto = plainToInstance(CreateOrderDto, parsedBody);
+    const errores = await validate(dto);
+    if (errores.length > 0) {
+      throw new BadRequestException(
+        errores.flatMap((e) => Object.values(e.constraints ?? {})),
+      );
     }
-
-    // Construir DTO limpio — ignoramos precio si el cliente lo envía
-    const dto: CreateOrderDto = {
-      items: parsedBody.items.map((i: any) => ({
-        id: Number(i.id),
-        cantidad: Number(i.cantidad) || 1,
-      })),
-    };
 
     const comprobanteUrl = await this.storageService.uploadComprobante(file);
 

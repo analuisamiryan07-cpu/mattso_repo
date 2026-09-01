@@ -1,58 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-
-// Mapeo fijo número → carpeta Cloudinary (independiente del título en BD)
-const CLOUDINARY_FOLDER: Record<string, string> = {
-  '001': 'Actividades Auxiliares de Liniero',
-  '002': 'Administración de Empresas',
-  '003': 'Armado de Estructuras Metálicas',
-  '004': 'Asesoría de Imagen',
-  '005': 'Asistencia a la Supervisión de Actividades de Construcción - Estructura e Infraestructura',
-  '006': 'Asistencia de Contabilidad',
-  '007': 'Asistencia en Actividades de Articulación Local para la Prevención y Reducción de la Desnutrición Crónica Infantil',
-  '008': 'Asistencia en Gestión Documental y Archivo',
-  '009': 'Asistencia en Seguridad Industrial',
-  '010': 'Atención Integral en Centro de Desarrollo Infantil',
-  '011': 'Conductor Profesional de Bus - NTE INEN 2 463: 2008',
-  '012': 'Consejerías de Atención Familiar del Servicio Creciendo con Nuestros Hijos (CNH)',
-  '013': 'Coordinación en Centros de Desarrollo Infantil',
-  '014': 'Coordinación Territorial para la Prevención y Reducción de la Desnutrición Crónica Infantil',
-  '015': 'Cosmetología',
-  '016': 'Cosmiatría',
-  '017': 'Cuidado de Personas Adultas Mayores',
-  '018': 'Diseño Gráfico y Comunicación Visual',
-  '019': 'Entrenamiento Canino: Defensa y Protección',
-  '020': 'Entrenamiento Canino: Detección de Sustancias y Localización de Personas',
-  '021': 'Entrenamiento Canino: Intervención Asistida con Canes',
-  '022': 'Evaluación de la Calidad y Excelencia en la Gestión Pública',
-  '023': 'Facilitación en Actividades de Capacitación',
-  '024': 'Facilitación en Actividades de Capacitación - Formación Dual',
-  '025': 'Fotógrafo en Medios y Multimedia',
-  '026': 'Gestión Administrativa',
-  '027': 'Gestión Administrativa del Sistema de Salud Desconcentrado',
-  '028': 'Gestión Ambiental',
-  '029': 'Gestión en Promoción de Marcas, Productos y Servicios',
-  '030': 'Gestión de Soldadura',
-  '031': 'Gestión Integral de Riesgos Financieros',
-  '032': 'Instalaciones Eléctricas',
-  '033': 'Instalaciones Hidrosanitarias',
-  '034': 'Maquillaje',
-  '035': 'Neurodesarrollo y Necesidades Educativas Especiales en el Periodo Infantojuvenil',
-  '036': 'Ofimática: Asistencia Administrativa con Manejo de Ofimática',
-  '037': 'Operación y Mantenimiento de las Redes del Sistema de Distribución de Energía Eléctrica - Líneas Aéreas',
-  '038': 'Operación y Mantenimiento de las Redes del Sistema de Distribución de Energía Eléctrica - Líneas Subterráneas',
-  '039': 'Operaciones Archivísticas - Administración de Archivos',
-  '040': 'Operaciones Auxiliares en Limpieza de Unidades de Salud',
-  '041': 'Operaciones de Líneas y Redes Energizadas',
-  '042': 'Preparación Gastronómica de Cocina',
-  '043': 'Prevención de Riesgos Laborales en Actividades de Alto Riesgo: Construcción y Obra Civil',
-  '044': 'Prevención de Riesgos Laborales en Actividades de Alto Riesgo: Energía Eléctrica',
-  '045': 'Prevención e Intervención en los Problemas del Comportamiento y de la Afectividad',
-  '046': 'Seguridad Industrial',
-  '047': 'Soldadura',
-  '048': 'Supervisión de Edificaciones y Obras Civiles',
-  '049': 'Supervisión de la Gestión Documental y Archivo',
-};
+import { sanitizePlainText } from '../common/sanitize.util';
 
 @Injectable()
 export class CatalogService {
@@ -128,9 +76,9 @@ export class CatalogService {
     const created = await this.prisma.producto.create({
       data: {
         tipo:              data.tipo,
-        titulo:            data.titulo,
-        descripcion:       data.descripcion || null,
-        descripcion_larga: data.descripcion_larga || null,
+        titulo:            sanitizePlainText(data.titulo),
+        descripcion:       sanitizePlainText(data.descripcion) || null,
+        descripcion_larga: sanitizePlainText(data.descripcion_larga) || null,
         precio:            Number(data.precio),
         horas:             data.horas ? Number(data.horas) : null,
         modalidad:         data.modalidad || null,
@@ -166,9 +114,9 @@ export class CatalogService {
       where: { id },
       data: {
         ...(data.tipo              !== undefined && { tipo: data.tipo }),
-        ...(data.titulo            !== undefined && { titulo: data.titulo }),
-        ...(data.descripcion       !== undefined && { descripcion: data.descripcion || null }),
-        ...(data.descripcion_larga !== undefined && { descripcion_larga: (data as any).descripcion_larga || null }),
+        ...(data.titulo            !== undefined && { titulo: sanitizePlainText(data.titulo) }),
+        ...(data.descripcion       !== undefined && { descripcion: sanitizePlainText(data.descripcion) || null }),
+        ...(data.descripcion_larga !== undefined && { descripcion_larga: sanitizePlainText((data as any).descripcion_larga) || null }),
         ...(data.precio            !== undefined && { precio: Number(data.precio) }),
         ...(data.horas             !== undefined && { horas: data.horas ? Number(data.horas) : null }),
         ...(data.modalidad         !== undefined && { modalidad: data.modalidad || null }),
@@ -298,9 +246,6 @@ export class CatalogService {
         slug: p.tipo.toLowerCase() !== 'capacitacion' && cert?.codigo
           ? cert.codigo.toLowerCase()
           : p.titulo.toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, ''),
-        cloudinaryFolder: cloudinaryNum
-          ? `Home/Certificaciones/${CLOUDINARY_FOLDER[cloudinaryNum]}`
-          : `Home/Certificaciones/${p.titulo}`,
         cloudinaryNum,
         tipo: p.tipo.toLowerCase(),
         descripcion:       p.descripcion_larga || p.descripcion || 'Sin descripción',

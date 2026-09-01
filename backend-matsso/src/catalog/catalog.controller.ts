@@ -14,6 +14,8 @@ import {
   HttpCode,
 } from '@nestjs/common';
 import { CatalogService } from './catalog.service';
+import { CreateProductDto } from './dto/create-product.dto';
+import { UpdateProductDto } from './dto/update-product.dto';
 
 @Controller('api/catalog')
 export class CatalogController {
@@ -48,20 +50,20 @@ export class CatalogController {
   @Post('admin')
   async createProduct(
     @Headers('x-admin-key') adminKey: string,
-    @Body() body: any,
+    @Body() dto: CreateProductDto,
   ) {
     this.checkAdminKey(adminKey);
-    return this.catalogService.createProduct(body);
+    return this.catalogService.createProduct(dto);
   }
 
   @Put('admin/:id')
   async updateProduct(
     @Param('id') id: string,
     @Headers('x-admin-key') adminKey: string,
-    @Body() body: any,
+    @Body() dto: UpdateProductDto,
   ) {
     this.checkAdminKey(adminKey);
-    return this.catalogService.updateProduct(BigInt(id), body);
+    return this.catalogService.updateProduct(BigInt(id), dto);
   }
 
   @Patch('admin/:id/toggle')
