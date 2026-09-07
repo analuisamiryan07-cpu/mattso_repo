@@ -143,7 +143,8 @@ const Carrito = () => {
 
     setLoading(true);
     try {
-      const orderData = { items: cartItems.map(item => ({ id: Number(item.id), cantidad: item.cantidad })) };
+      // id es el identificador ofuscado que manda el backend (string) — nunca convertir a número.
+      const orderData = { items: cartItems.map(item => ({ id: item.id, cantidad: item.cantidad })) };
       await cursosService.crearOrden(orderData, comprobanteFile);
       addToast(`¡Gracias ${form.nombre.trim()}! Tu pedido ha sido registrado y está en verificación.`, 'success');
       clearCart();
@@ -163,7 +164,7 @@ const Carrito = () => {
     setPaypalReady(true);
   };
 
-  const paypalItems = cartItems.map(item => ({ id: Number(item.id), cantidad: item.cantidad }));
+  const paypalItems = cartItems.map(item => ({ id: item.id, cantidad: item.cantidad }));
 
   return (
     <PayPalScriptProvider options={{ clientId: PAYPAL_CLIENT_ID, currency: 'USD', intent: 'capture' }}>

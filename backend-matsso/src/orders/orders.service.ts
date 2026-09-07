@@ -12,6 +12,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { EmailService } from '../email/email.service';
 import { EMAIL_QUEUE, EMAIL_JOBS } from '../queue/queue.constants';
 import { CreateOrderDto } from './dto/create-order.dto';
+import { encodeId } from '../common/id-hasher';
 
 const TASA_IVA = 0.15;
 
@@ -125,8 +126,8 @@ export class OrdersService {
     }
 
     return {
-      id: Number(order.id),
-      usuario_id: Number(order.usuario_id),
+      id: encodeId(order.id),
+      usuario_id: encodeId(order.usuario_id),
       subtotal: Number(subtotal.toFixed(2)),
       iva: Number(iva.toFixed(2)),
       total: Number(total.toFixed(2)),
@@ -147,7 +148,7 @@ export class OrdersService {
     });
 
     return orders.map((o) => ({
-      id: Number(o.id),
+      id: encodeId(o.id),
       estado: o.estado,
       total: Number(o.total),
       fecha_orden: o.fecha_orden,
@@ -231,7 +232,7 @@ export class OrdersService {
     }
 
     return {
-      id: Number(updated.id),
+      id: encodeId(updated.id),
       estado: updated.estado,
       mensaje: estado === 'PAGADA' ? 'Pago aprobado con éxito.' : 'Orden rechazada.',
       motivo: estado === 'RECHAZADA' ? motivo : undefined,

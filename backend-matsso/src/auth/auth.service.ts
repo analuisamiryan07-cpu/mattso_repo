@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException, ConflictException, BadRequestException } from '@nestjs/common';
+import { Injectable, Logger, UnauthorizedException, ConflictException, BadRequestException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '../prisma/prisma.service';
 import { EmailService } from '../email/email.service';
@@ -7,6 +7,8 @@ import * as crypto from 'crypto';
 
 @Injectable()
 export class AuthService {
+  private readonly logger = new Logger(AuthService.name);
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
@@ -119,7 +121,13 @@ export class AuthService {
     const resetUrl = `${frontendUrl}/reset-password?token=${token}`;
     const nombre   = user.cliente?.nombre || correo;
 
-    await this.emailService.sendPasswordReset({ to: correo, nombre, resetUrl });
+    // No debe propagarse: /forgot-password siempre responde igual, exista o no el correo
+    // (evita enumeración). Si el envío falla, se registra pero la respuesta no cambia.
+    try {
+      await this.emailService.sendPasswordReset({ to: correo, nombre, resetUrl });
+    } catch (err: any) {
+      this.logger.error(`Error enviando correo de recuperación a ${correo}: ${err?.message}`);
+    }
   }
 
   async resetPassword(token: string, newPassword: string): Promise<void> {

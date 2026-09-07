@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { sanitizePlainText } from '../common/sanitize.util';
+import { encodeId } from '../common/id-hasher';
 
 @Injectable()
 export class CatalogService {
@@ -41,7 +42,7 @@ export class CatalogService {
       orderBy: [{ tipo: 'asc' }, { titulo: 'asc' }],
     });
     return (rows as any[]).map(p => ({
-      id:                Number(p.id),
+      id:                encodeId(p.id),
       tipo:              p.tipo,
       titulo:            p.titulo,
       descripcion:       p.descripcion,
@@ -90,7 +91,7 @@ export class CatalogService {
       },
     });
     this.invalidateCache();
-    return { id: Number(created.id), titulo: created.titulo };
+    return { id: encodeId(created.id), titulo: created.titulo };
   }
 
   async updateProduct(
@@ -132,7 +133,7 @@ export class CatalogService {
       } as any,
     });
     this.invalidateCache();
-    return { id: Number(updated.id), titulo: updated.titulo };
+    return { id: encodeId(updated.id), titulo: updated.titulo };
   }
 
   async toggleProduct(id: bigint) {
@@ -143,7 +144,7 @@ export class CatalogService {
       data:  { activo: !product.activo },
     });
     this.invalidateCache();
-    return { id: Number(updated.id), activo: updated.activo };
+    return { id: encodeId(updated.id), activo: updated.activo };
   }
 
   async deleteProduct(id: bigint) {
@@ -234,7 +235,7 @@ export class CatalogService {
       const FALLBACK_IMG = 'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=600&q=80';
 
       return {
-        id: Number(p.id),
+        id: encodeId(p.id),
         titulo: p.titulo,
         precio: Number(p.precio),
         imagen: cloudinaryNum ? FALLBACK_IMG : (p.imagen_url || FALLBACK_IMG),

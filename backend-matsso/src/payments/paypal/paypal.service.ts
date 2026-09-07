@@ -8,6 +8,7 @@ import {
 import { PrismaService } from '../../prisma/prisma.service';
 import { PaypalApiService } from './paypal-api.service';
 import { EmailService } from '../../email/email.service';
+import { encodeId } from '../../common/id-hasher';
 
 const CURRENCY = process.env.PAYPAL_CURRENCY ?? 'USD';
 const TASA_IVA = 0.15;
@@ -107,7 +108,7 @@ export class PaypalService {
       },
     });
 
-    return { paypalOrderId, internalOrderId };
+    return { paypalOrderId, internalOrderId: encodeId(internalOrderId) };
   }
 
   // ── Capturar pago y confirmar orden ─────────────────────────
@@ -209,6 +210,10 @@ export class PaypalService {
         );
         const ivaAmount = parseFloat((subtotalCap2 * TASA_IVA).toFixed(2));
 
+        // No debe romper la respuesta de captura: el pago ya se procesó y la orden ya
+        // se actualizó en la BD antes de este punto — si el correo con el PDF falla,
+        // el .catch() de abajo lo registra pero el cliente igual recibe su confirmación
+        // de pago exitoso.
         await this.emailService.sendPaymentApprovedWithPdf({
           to:        emailTo,
           nombre:    nombreUsuario,

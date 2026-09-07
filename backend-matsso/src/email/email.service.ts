@@ -294,6 +294,10 @@ export class EmailService {
       );
     } catch (err: any) {
       this.logger.error(`Error enviando email con PDF a ${data.to}: ${err?.response?.data?.message ?? err.message}`);
+      // Se propaga a propósito, en vez de tragarse el error en silencio como antes.
+      // El único llamador (paypal.service.ts) ya lo atrapa localmente para no romper
+      // la respuesta de captura de pago — el pago ya se procesó, el correo es aparte.
+      throw err;
     }
   }
 
@@ -466,6 +470,13 @@ export class EmailService {
     } catch (err: any) {
       const msg = err?.response?.data?.message ?? err.message;
       this.logger.error(`Error enviando email a ${payload.to}: ${msg}`);
+      // Se propaga a propósito (antes se tragaba aquí y BullMQ nunca se enteraba de que
+      // el envío falló). Los 3 jobs que pasan por la cola (order-created, payment-approved,
+      // payment-rejected) ahora sí activan el reintento automático ya configurado en
+      // queue.module.ts (3 intentos, backoff exponencial) cuando el fallo es transitorio.
+      // sendPasswordReset se llama fuera de la cola — auth.service.ts lo atrapa localmente
+      // para no romper la respuesta anti-enumeración de /forgot-password.
+      throw err;
     }
   }
 }

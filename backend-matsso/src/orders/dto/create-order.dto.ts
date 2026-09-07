@@ -8,11 +8,17 @@ import {
   ValidateNested,
   Max,
 } from 'class-validator';
-import { Type } from 'class-transformer';
+import { Type, Transform } from 'class-transformer';
+import { decodeId } from '../../common/id-hasher';
 
 export class OrderItemDto {
-  @IsInt({ message: 'El ID del producto debe ser un número entero.' })
-  @IsPositive({ message: 'El ID del producto debe ser positivo.' })
+  // El cliente manda el ID ofuscado (string, ej. "kV3xQ1a9"), nunca el entero real.
+  // Se decodifica ANTES de validar: si no es un hash válido, decodeId da null y las
+  // reglas de abajo lo rechazan igual que rechazarían cualquier otro valor inválido —
+  // un entero plano como 55 nunca llega a pasar esta transformación como string.
+  @Transform(({ value }) => (typeof value === 'string' ? decodeId(value) : null))
+  @IsInt({ message: 'El identificador del producto es inválido.' })
+  @IsPositive({ message: 'El identificador del producto es inválido.' })
   id: number;
 
   @IsInt({ message: 'La cantidad debe ser un número entero.' })
