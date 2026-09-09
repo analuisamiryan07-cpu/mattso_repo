@@ -42,7 +42,7 @@ export class CatalogService {
       orderBy: [{ tipo: 'asc' }, { titulo: 'asc' }],
     });
     return (rows as any[]).map(p => ({
-      id:                encodeId(p.id),
+      id:                Number(p.id), // ruta admin: ID real, no hasheado
       tipo:              p.tipo,
       titulo:            p.titulo,
       descripcion:       p.descripcion,
@@ -91,7 +91,7 @@ export class CatalogService {
       },
     });
     this.invalidateCache();
-    return { id: encodeId(created.id), titulo: created.titulo };
+    return { id: Number(created.id), titulo: created.titulo };
   }
 
   async updateProduct(
@@ -133,7 +133,7 @@ export class CatalogService {
       } as any,
     });
     this.invalidateCache();
-    return { id: encodeId(updated.id), titulo: updated.titulo };
+    return { id: Number(updated.id), titulo: updated.titulo };
   }
 
   async toggleProduct(id: bigint) {
@@ -144,7 +144,7 @@ export class CatalogService {
       data:  { activo: !product.activo },
     });
     this.invalidateCache();
-    return { id: encodeId(updated.id), activo: updated.activo };
+    return { id: Number(updated.id), activo: updated.activo };
   }
 
   async deleteProduct(id: bigint) {

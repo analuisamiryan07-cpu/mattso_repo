@@ -148,7 +148,7 @@ export class OrdersService {
     });
 
     return orders.map((o) => ({
-      id: encodeId(o.id),
+      id: Number(o.id), // ruta admin: ID real, no hasheado
       estado: o.estado,
       total: Number(o.total),
       fecha_orden: o.fecha_orden,
@@ -232,7 +232,7 @@ export class OrdersService {
     }
 
     return {
-      id: encodeId(updated.id),
+      id: Number(updated.id), // ruta admin: ID real, no hasheado
       estado: updated.estado,
       mensaje: estado === 'PAGADA' ? 'Pago aprobado con éxito.' : 'Orden rechazada.',
       motivo: estado === 'RECHAZADA' ? motivo : undefined,

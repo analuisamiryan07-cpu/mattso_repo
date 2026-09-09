@@ -16,7 +16,6 @@ import {
 import { CatalogService } from './catalog.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
-import { ParseHashIdPipe } from '../common/parse-hash-id.pipe';
 
 @Controller('api/catalog')
 export class CatalogController {
@@ -59,7 +58,7 @@ export class CatalogController {
 
   @Put('admin/:id')
   async updateProduct(
-    @Param('id', ParseHashIdPipe) id: number,
+    @Param('id') id: string,
     @Headers('x-admin-key') adminKey: string,
     @Body() dto: UpdateProductDto,
   ) {
@@ -70,7 +69,7 @@ export class CatalogController {
   @Patch('admin/:id/toggle')
   @HttpCode(200)
   async toggleProduct(
-    @Param('id', ParseHashIdPipe) id: number,
+    @Param('id') id: string,
     @Headers('x-admin-key') adminKey: string,
   ) {
     this.checkAdminKey(adminKey);
@@ -80,7 +79,7 @@ export class CatalogController {
   @Delete('admin/:id')
   @HttpCode(200)
   async deleteProduct(
-    @Param('id', ParseHashIdPipe) id: number,
+    @Param('id') id: string,
     @Headers('x-admin-key') adminKey: string,
   ) {
     this.checkAdminKey(adminKey);

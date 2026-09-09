@@ -21,7 +21,6 @@ import { OrdersService } from './orders.service';
 import { StorageService } from '../storage/storage.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { CreateOrderDto } from './dto/create-order.dto';
-import { ParseHashIdPipe } from '../common/parse-hash-id.pipe';
 
 const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 
@@ -112,7 +111,7 @@ export class OrdersController {
   // ── PATCH /api/ordenes/:id/estado — Aprobar o rechazar orden ──────────────
   @Patch(':id/estado')
   async updateStatus(
-    @Param('id', ParseHashIdPipe) id: number,
+    @Param('id') id: string,
     @Body('estado') estado: string,
     @Body('motivo') motivo: string,
     @Headers('x-admin-key') adminKey: string,
@@ -126,6 +125,6 @@ export class OrdersController {
     if (estado === 'RECHAZADA' && !motivo?.trim()) {
       throw new BadRequestException('Se debe indicar el motivo del rechazo.');
     }
-    return this.ordersService.updateOrderStatus(id, estado as 'PAGADA' | 'RECHAZADA', motivo);
+    return this.ordersService.updateOrderStatus(Number(id), estado as 'PAGADA' | 'RECHAZADA', motivo);
   }
 }

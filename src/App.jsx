@@ -1,4 +1,5 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import ScrollToTop from '@components/ScrollToTop';
 import Header from '@components/layout/Header';
 import Footer from '@components/layout/Footer';
 import Home from '@pages/Home';
@@ -23,6 +24,7 @@ import { CatalogProvider } from './context/CatalogContext';
 function App() {
   return (
     <Router>
+      <ScrollToTop />
       <CatalogProvider>
         <div className="app-container">
           <Header />
