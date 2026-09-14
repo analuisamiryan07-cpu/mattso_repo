@@ -7,7 +7,7 @@ datasource db {
   provider   = "postgresql"
   url        = env("DATABASE_URL")
   directUrl  = env("DIRECT_URL")
-  schemas    = ["public", "matsso"]
+  schemas    = ["public", "matsso", "lms"]
 }
 
 // ==========================================
@@ -234,8 +234,12 @@ model UsuarioWeb {
   reset_token            String?   @db.VarChar(255)
   reset_token_expires_at DateTime? @db.Timestamp(0)
 
-  cliente       Cliente?  @relation(fields: [cliente_id], references: [id])
-  ordenes       Orden[]
+  cliente             Cliente?      @relation(fields: [cliente_id], references: [id])
+  ordenes             Orden[]
+  enrollments         Enrollment[]
+  submissions_gradas  ManualGrade[] @relation("SubmissionsGradedBy")
+  cursos_dictados     Course[]      @relation("CoursesTaught")
+  access_codes        AccessCode[]
 
   @@schema("public")
   @@map("usuarios_web")
@@ -261,6 +265,7 @@ model Producto {
   certificacion    Certificacion? @relation(fields: [id_certificacion], references: [id_certificacion])
   esquemas         EsquemaCertificacion[]
   orden_items      OrdenItem[]
+  curso            Course?
 
   @@schema("public")
   @@map("productos")
@@ -302,8 +307,9 @@ model OrdenItem {
   precio_unitario Decimal  @db.Decimal(10, 2)
   cantidad        Int      @default(1)
 
-  orden           Orden    @relation(fields: [orden_id], references: [id], onDelete: Cascade)
-  producto        Producto @relation(fields: [producto_id], references: [id])
+  orden           Orden        @relation(fields: [orden_id], references: [id], onDelete: Cascade)
+  producto        Producto     @relation(fields: [producto_id], references: [id])
+  enrollments     Enrollment[]
 
   @@schema("public")
   @@map("orden_items")
@@ -356,4 +362,330 @@ model QrCertificado {
 
   @@schema("public")
   @@map("qr_certificados")
+}
+
+// ==========================================
+// SCHEMA: LMS (Cursos, progreso y evaluación)
+// ==========================================
+// Ver Moodles/arquitectura_lms_nube.md. Todas las PK son UUID (no requieren
+// ofuscación con id-hasher como las tablas de public/matsso, que usan BigInt
+// autoincremental).
+//
+// Nota de diseño abierta: un orden_item puede representar varios cupos
+// (cantidad > 1, compra corporativa). Por eso Enrollment.orden_item_id NO es
+// único ni 1:1 — un mismo orden_item puede generar varios Enrollment (uno por
+// persona inscrita). La idempotencia real está en @@unique([usuario_id,
+// course_id]): un usuario no puede quedar inscrito dos veces en el mismo
+// curso. Cómo se capturan/resuelven las identidades de los cupos adicionales
+// (formulario del comprador, invitación, alta manual del admin) es lógica de
+// aplicación del webhook/endpoint de inscripción, no del schema.
+
+enum DeliveryMode {
+  TRADICIONAL
+  ASINCRONO_VOD
+
+  @@schema("lms")
+}
+
+enum ContentItemType {
+  VIDEO
+  ASSIGNMENT
+  QUIZ
+  DOCUMENT
+
+  @@schema("lms")
+}
+
+enum EnrollmentSource {
+  ECOMMERCE
+  MANUAL
+  ADMIN
+
+  @@schema("lms")
+}
+
+enum EnrollmentStatus {
+  ACTIVE
+  COMPLETED
+  SUSPENDED
+  CANCELLED
+
+  @@schema("lms")
+}
+
+enum ProgressStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  COMPLETED
+
+  @@schema("lms")
+}
+
+enum QuestionType {
+  SINGLE_CHOICE
+  MULTIPLE_CHOICE
+  TRUE_FALSE
+
+  @@schema("lms")
+}
+
+enum QuizAttemptStatus {
+  IN_PROGRESS
+  SUBMITTED
+  GRADED
+
+  @@schema("lms")
+}
+
+model Course {
+  id                  String       @id @default(uuid()) @db.Uuid
+  producto_id         BigInt?      @unique
+  // Dueño del curso. NULL = creado antes de existir este campo, o por un
+  // profesor que luego fue desactivado sin reasignar sus cursos — se decide
+  // qué hacer con esos casos cuando aparezcan, no se fuerza un valor ahora.
+  profesor_usuario_id BigInt?
+  titulo              String       @db.VarChar(255)
+  descripcion         String?      @db.Text
+  delivery_mode       DeliveryMode
+  is_active           Boolean      @default(true)
+  created_at          DateTime     @default(now()) @db.Timestamptz
+  updated_at          DateTime     @default(now()) @updatedAt @db.Timestamptz
+
+  producto    Producto?   @relation(fields: [producto_id], references: [id])
+  profesor    UsuarioWeb? @relation("CoursesTaught", fields: [profesor_usuario_id], references: [id])
+  modules     Module[]
+  enrollments Enrollment[]
+
+  @@map("courses")
+  @@schema("lms")
+}
+
+model Module {
+  id             String   @id @default(uuid()) @db.Uuid
+  course_id      String   @db.Uuid
+  titulo         String   @db.VarChar(255)
+  sequence_order Int      @db.SmallInt
+  is_active      Boolean  @default(true)
+  created_at     DateTime @default(now()) @db.Timestamptz
+  updated_at     DateTime @default(now()) @updatedAt @db.Timestamptz
+
+  course        Course        @relation(fields: [course_id], references: [id], onDelete: Cascade)
+  content_items ContentItem[]
+
+  @@unique([course_id, sequence_order])
+  @@map("modules")
+  @@schema("lms")
+}
+
+model ContentItem {
+  id                      String          @id @default(uuid()) @db.Uuid
+  module_id               String          @db.Uuid
+  item_type               ContentItemType
+  titulo                  String          @db.VarChar(255)
+  sequence_order          Int             @db.SmallInt
+  cloudinary_public_id    String?         @db.VarChar(255)
+  cloudinary_url          String?         @db.VarChar(500)
+  video_duration_seconds  Int?
+  assignment_instructions String?         @db.Text
+  is_active               Boolean         @default(true)
+  created_at              DateTime        @default(now()) @db.Timestamptz
+  updated_at              DateTime        @default(now()) @updatedAt @db.Timestamptz
+
+  module              Module              @relation(fields: [module_id], references: [id], onDelete: Cascade)
+  quiz                Quiz?
+  student_progress    StudentProgress[]
+  student_submissions StudentSubmission[]
+
+  @@unique([module_id, sequence_order])
+  @@map("content_items")
+  @@schema("lms")
+}
+
+model Enrollment {
+  id            String           @id @default(uuid()) @db.Uuid
+  usuario_id    BigInt
+  course_id     String           @db.Uuid
+  orden_item_id BigInt?
+  source        EnrollmentSource @default(ECOMMERCE)
+  status        EnrollmentStatus @default(ACTIVE)
+  enrolled_at   DateTime         @default(now()) @db.Timestamptz
+  completed_at  DateTime?        @db.Timestamptz
+
+  usuario       UsuarioWeb          @relation(fields: [usuario_id], references: [id])
+  course        Course              @relation(fields: [course_id], references: [id])
+  orden_item    OrdenItem?          @relation(fields: [orden_item_id], references: [id])
+  progress      StudentProgress[]
+  submissions   StudentSubmission[]
+  quiz_attempts QuizAttempt[]
+
+  @@unique([usuario_id, course_id])
+  @@index([orden_item_id])
+  @@map("enrollments")
+  @@schema("lms")
+}
+
+model StudentProgress {
+  id                    String         @id @default(uuid()) @db.Uuid
+  enrollment_id         String         @db.Uuid
+  content_item_id       String         @db.Uuid
+  status                ProgressStatus @default(NOT_STARTED)
+  video_seconds_reached Decimal?       @db.Decimal(10, 2)
+  completed_at          DateTime?      @db.Timestamptz
+  updated_at            DateTime       @default(now()) @updatedAt @db.Timestamptz
+
+  enrollment   Enrollment  @relation(fields: [enrollment_id], references: [id], onDelete: Cascade)
+  content_item ContentItem @relation(fields: [content_item_id], references: [id], onDelete: Cascade)
+
+  @@unique([enrollment_id, content_item_id])
+  @@map("student_progress")
+  @@schema("lms")
+}
+
+model StudentSubmission {
+  id              String   @id @default(uuid()) @db.Uuid
+  enrollment_id   String   @db.Uuid
+  content_item_id String   @db.Uuid
+  attempt_number  Int      @default(1) @db.SmallInt
+  file_url        String   @db.VarChar(500)
+  comentario      String?  @db.Text
+  submitted_at    DateTime @default(now()) @db.Timestamptz
+
+  enrollment   Enrollment   @relation(fields: [enrollment_id], references: [id], onDelete: Cascade)
+  content_item ContentItem  @relation(fields: [content_item_id], references: [id], onDelete: Cascade)
+  grade        ManualGrade?
+
+  @@unique([enrollment_id, content_item_id, attempt_number])
+  @@map("student_submissions")
+  @@schema("lms")
+}
+
+model ManualGrade {
+  id                   String   @id @default(uuid()) @db.Uuid
+  submission_id        String   @unique @db.Uuid
+  graded_by_usuario_id BigInt
+  score                Decimal  @db.Decimal(5, 2)
+  feedback             String?  @db.Text
+  graded_at            DateTime @default(now()) @db.Timestamptz
+
+  submission StudentSubmission @relation(fields: [submission_id], references: [id], onDelete: Cascade)
+  graded_by  UsuarioWeb        @relation("SubmissionsGradedBy", fields: [graded_by_usuario_id], references: [id])
+
+  @@map("manual_grades")
+  @@schema("lms")
+}
+
+model Quiz {
+  id                 String   @id @default(uuid()) @db.Uuid
+  content_item_id    String   @unique @db.Uuid
+  titulo             String   @db.VarChar(255)
+  passing_score      Decimal  @default(70) @db.Decimal(5, 2)
+  max_attempts       Int?     @db.SmallInt
+  time_limit_seconds Int?
+  created_at         DateTime @default(now()) @db.Timestamptz
+  updated_at         DateTime @default(now()) @updatedAt @db.Timestamptz
+
+  content_item ContentItem    @relation(fields: [content_item_id], references: [id], onDelete: Cascade)
+  questions    QuizQuestion[]
+  attempts     QuizAttempt[]
+
+  @@map("quizzes")
+  @@schema("lms")
+}
+
+model QuizQuestion {
+  id             String       @id @default(uuid()) @db.Uuid
+  quiz_id        String       @db.Uuid
+  enunciado      String       @db.Text
+  question_type  QuestionType @default(SINGLE_CHOICE)
+  sequence_order Int          @db.SmallInt
+  points         Decimal      @default(1) @db.Decimal(5, 2)
+
+  quiz    Quiz                @relation(fields: [quiz_id], references: [id], onDelete: Cascade)
+  options QuizOption[]
+  answers QuizAttemptAnswer[]
+
+  @@unique([quiz_id, sequence_order])
+  @@map("quiz_questions")
+  @@schema("lms")
+}
+
+model QuizOption {
+  id             String  @id @default(uuid()) @db.Uuid
+  question_id    String  @db.Uuid
+  texto          String  @db.Text
+  is_correct     Boolean @default(false)
+  sequence_order Int     @db.SmallInt
+
+  question QuizQuestion              @relation(fields: [question_id], references: [id], onDelete: Cascade)
+  answers  QuizAttemptAnswerOption[]
+
+  @@unique([question_id, sequence_order])
+  @@map("quiz_options")
+  @@schema("lms")
+}
+
+model QuizAttempt {
+  id             String            @id @default(uuid()) @db.Uuid
+  enrollment_id  String            @db.Uuid
+  quiz_id        String            @db.Uuid
+  attempt_number Int               @db.SmallInt
+  status         QuizAttemptStatus @default(IN_PROGRESS)
+  score          Decimal?          @db.Decimal(5, 2)
+  passed         Boolean?
+  started_at     DateTime          @default(now()) @db.Timestamptz
+  submitted_at   DateTime?         @db.Timestamptz
+
+  enrollment Enrollment          @relation(fields: [enrollment_id], references: [id], onDelete: Cascade)
+  quiz       Quiz                @relation(fields: [quiz_id], references: [id])
+  answers    QuizAttemptAnswer[]
+
+  @@unique([enrollment_id, quiz_id, attempt_number])
+  @@map("quiz_attempts")
+  @@schema("lms")
+}
+
+model QuizAttemptAnswer {
+  id          String @id @default(uuid()) @db.Uuid
+  attempt_id  String @db.Uuid
+  question_id String @db.Uuid
+
+  attempt          QuizAttempt               @relation(fields: [attempt_id], references: [id], onDelete: Cascade)
+  question         QuizQuestion              @relation(fields: [question_id], references: [id])
+  selected_options QuizAttemptAnswerOption[]
+
+  @@unique([attempt_id, question_id])
+  @@map("quiz_attempt_answers")
+  @@schema("lms")
+}
+
+model QuizAttemptAnswerOption {
+  answer_id String @db.Uuid
+  option_id String @db.Uuid
+
+  answer QuizAttemptAnswer @relation(fields: [answer_id], references: [id], onDelete: Cascade)
+  option QuizOption        @relation(fields: [option_id], references: [id])
+
+  @@id([answer_id, option_id])
+  @@map("quiz_attempt_answer_options")
+  @@schema("lms")
+}
+
+// Segundo factor de acceso al Aula Virtual (Moodles/lms/docs/REQUISITOS_SISTEMA_INTERNO.md
+// §4). El sistema interno la genera vía POST /api/lms/admin/access-codes; el
+// estudiante la ingresa una vez tras iniciar sesión, antes de ver sus cursos.
+// Un solo código activo por usuario (@@unique) — generar uno nuevo reemplaza
+// cualquier código sin usar anterior.
+model AccessCode {
+  id         BigInt    @id @default(autoincrement())
+  usuario_id BigInt    @unique
+  code       String    @db.VarChar(12)
+  used       Boolean   @default(false)
+  used_at    DateTime? @db.Timestamptz
+  expires_at DateTime  @db.Timestamptz
+  created_at DateTime  @default(now()) @db.Timestamptz
+
+  usuario UsuarioWeb @relation(fields: [usuario_id], references: [id], onDelete: Cascade)
+
+  @@map("access_codes")
+  @@schema("lms")
 }

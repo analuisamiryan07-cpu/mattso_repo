@@ -206,6 +206,11 @@ const Header = () => {
             </div>
           </Link>
 
+          {/* Aula Virtual: proyecto y dominio aparte — no una ruta más de este sitio. */}
+          <a href={import.meta.env.VITE_AULA_VIRTUAL_URL || 'https://aula.sapper-industries.com'} className="aula-virtual-btn">
+            <i className="fa-solid fa-graduation-cap" /> Aula Virtual
+          </a>
+
           <button className="mobile-menu-btn" onClick={() => setIsMenuOpen(o => !o)}>
             <i className={`fa-solid ${isMenuOpen ? 'fa-xmark' : 'fa-bars'}`} />
           </button>
