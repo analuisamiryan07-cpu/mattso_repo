@@ -57,6 +57,8 @@ Header opcional `x-lms-m2m-actor` (texto libre) para trazabilidad en logs.
 | POST | `/api/lms/admin/submissions/:submissionId/grade` | `{ graded_by_usuario_id, score, feedback? }` | `graded_by_usuario_id` es el id de `UsuarioWeb` del admin — ver `DECISIONES.md` §3. |
 | POST | `/api/lms/admin/access-codes` | `{ usuario_id }` | Genera la clave del portón y la manda por Brevo. Devuelve `{ code, expires_at }` también en la respuesta (para reenviar por WhatsApp si aplica). |
 | DELETE | `/api/lms/admin/access-codes/:usuarioId` | — | Revoca una clave sin usar. |
+| POST | `/api/lms/admin/professors` | `{ correo, cliente_id? }` | Crea o asciende un `UsuarioWeb` a `rol=PROFESOR`. Si es cuenta nueva, dispara el flujo de "olvidé mi contraseña" para que la defina. |
+| PATCH | `/api/lms/admin/professors/:usuarioId` | `{ activo: boolean }` | Desactiva/reactiva sin borrar su historial de cursos. |
 
 ## Webhook (firma HMAC, sin JWT ni x-admin-key)
 

@@ -1,46 +1,60 @@
 # Estado de la integración — qué ya es real y qué falta
 
-Este documento describía antes una lista de pasos para "mover" el código
-desde `Moodles/lms/` hacia el proyecto real. Eso ya se hizo — el código real
-vive en `backend-matsso/src/lms/` y en el proyecto separado `aula-virtual/`.
-Lo que queda de `Moodles/lms/backend|frontend/` es una copia de referencia,
-no la fuente de verdad. Esto documenta qué falta para que funcione en una
-URL real.
+El código real vive en `backend-matsso/src/lms/` y en el proyecto separado
+`aula-virtual/`. Lo que queda en `Moodles/lms/backend|frontend/` es una
+copia **desactualizada** del primer borrador (antes de separar Moodle de
+Coursera y antes del portón de pago) — no reflejan el diseño actual, se
+recomienda borrarlos (ver `Moodles/lms/README.md`).
 
-## 1. Instalar dependencias (bloqueante — no hay Node en este entorno)
+**Para la lista completa y accionable de qué hacer, en qué orden, ve
+`Moodles/lms/docs/QUE_NECESITO_DE_TI.md`.** Esto de aquí es el detalle
+técnico de respaldo.
 
-Este trabajo se hizo sin poder correr `npm install`/`npm run build` en ningún
-momento — hay que verificarlo apenas se pueda:
+## 1. Compilación — ya verificada de verdad, no solo escrita
 
-```bash
-cd backend-matsso && npm install && npx prisma generate && npm run build
-cd ../aula-virtual && npm install && npm run build
-cd .. && npm run build   # sitio público — confirmar que sigue compilando tras quitar /aula-virtual
-```
+Se instaló Node 22 y se corrió `npm install` + `npm run build` en los 3
+proyectos (backend-matsso, sitio público, aula-virtual): los tres compilan
+sin errores. Además se arrancó el backend real (`node dist/main.js`) con
+credenciales de base de datos falsas a propósito — los 33 endpoints
+`/api/lms/*` se mapean y el grafo de dependencias de NestJS resuelve sin
+errores; el único fallo fue el esperado (no puede conectar a una BD que no
+existe). En el camino se encontraron y corrigieron 2 bugs reales que no se
+habían detectado antes por no poder compilar:
 
-`aula-virtual/` no tiene `package-lock.json` todavía — generarlo con el
-primer `npm install` y comitearlo (el job de CI usa `npm install` en vez de
-`npm ci` por esto mismo, ver `.github/workflows/ci.yml`).
+- `Enrollment.orden_item` sin relación inversa en `OrdenItem` (error de
+  validación de Prisma).
+- `StorageService.uploadEntregaTarea()` no existía — solo estaba documentado
+  como pendiente.
 
-## 2. Variables de entorno nuevas
+`aula-virtual/package-lock.json` ya está generado y comiteado — el CI usa
+`npm ci` en los 3 proyectos ahora.
 
-| Dónde | Variable | Para qué |
-|---|---|---|
-| Render (backend) | `LMS_M2M_API_KEY` | Autentica al sistema interno contra `/api/lms/admin/*`. `openssl rand -hex 32`, distinta de `ADMIN_API_KEY`. |
-| Vercel (aula-virtual) | `VITE_API_URL` | Mismo backend que el sitio público. |
-| Vercel (aula-virtual) | `VITE_SITIO_PUBLICO_URL` | Para "Crear cuenta" y el link de vuelta al sitio. |
-| Vercel (sitio público) | `VITE_AULA_VIRTUAL_URL` | El botón del header apunta aquí — no publicar ese botón hasta tener esta URL real. |
+## 2. Base de datos — script SQL ya generado, falta correrlo
 
-`LMS_ENROLLMENT_WEBHOOK_SECRET` (del webhook de inscripción) sigue sin ser
-necesaria — ver punto 4.
+`db_scripts/11_lms_schema.sql` (nuevo) tiene el SQL exacto para crear el
+schema `lms` completo + la tabla `access_codes`, generado comparando el
+schema real de `origin/main` contra esta rama con
+`npx prisma migrate diff --script` — no escrito a mano, no probado contra
+una base real todavía (no hay acceso a Supabase desde este entorno). Correrlo
+en el SQL Editor de Supabase es el primer paso de `QUE_NECESITO_DE_TI.md`.
 
-## 3. Subdominio (Cloudflare + Vercel)
+## 3. Variables de entorno nuevas
 
-Ver `aula-virtual/README.md` — pendiente de que el dominio de Cloudflare esté
-listo para crear el subdominio (`aula.sapper-industries.com` o el que se
-elija). El código no depende de esto para funcionar en local/preview.
+Ver `QUE_NECESITO_DE_TI.md` puntos 2-4 para dónde exactamente en Render/Vercel.
+Resumen:
 
-## 4. Conectar el webhook de inscripción al flujo real de aprobación de orden
+| Variable | Dónde |
+|---|---|
+| `LMS_M2M_API_KEY` | Render (backend) y sistema interno — debe ser idéntica en los dos. |
+| `VITE_API_URL`, `VITE_SITIO_PUBLICO_URL` | Vercel del proyecto `aula-virtual`. |
+| `VITE_AULA_VIRTUAL_URL` | Vercel del sitio público. |
+
+## 4. Subdominio (Cloudflare + Vercel)
+
+Pasos exactos en `QUE_NECESITO_DE_TI.md` punto 4 — pendiente de que el
+usuario cree el proyecto en Vercel y el registro DNS en Cloudflare.
+
+## 5. Conectar el webhook de inscripción al flujo real de aprobación de orden
 
 Sigue sin conectarse. El punto de enganche real es donde `orders.service.ts`
 (o el flujo de aprobación de pago) marca una orden como pagada. Ahí, por cada
@@ -58,15 +72,21 @@ await this.enrollmentService.enrollFromEcommerce({
 });
 ```
 
-## 5. Contenido real
+## 6. Git — nada subido a GitHub todavía
+
+Ver `QUE_NECESITO_DE_TI.md` punto 6 — no hay credenciales de git configuradas
+en este entorno, se necesita que el usuario haga el push o comparta un
+token de acceso.
+
+## 7. Contenido real
 
 No hay ningún curso creado todavía. Un profesor puede crear el suyo desde
-`aula-virtual` una vez tenga cuenta con `rol=PROFESOR` (asignado por el
-sistema interno — ver `REQUISITOS_SISTEMA_INTERNO.md`), pero nadie va a
-tener acceso al Aula Virtual hasta que exista al menos una orden pagada
-ligada a un `Course` real.
+`aula-virtual` una vez tenga cuenta con `rol=PROFESOR` (creada por el sistema
+interno vía `POST /api/lms/admin/professors` — ya implementado y probado,
+ver `REQUISITOS_SISTEMA_INTERNO.md`). Nadie va a tener acceso al Aula Virtual
+hasta que exista al menos una orden pagada.
 
-## 6. Qué falta, a propósito (no es un olvido)
+## 8. Qué falta, a propósito (no es un olvido)
 
 - Tests automatizados (integración, contrato con el sistema interno).
 - Swagger/OpenAPI.

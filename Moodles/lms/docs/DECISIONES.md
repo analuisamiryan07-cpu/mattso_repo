@@ -108,3 +108,20 @@ selector de archivo con subida real desde el navegador necesita un *upload
 preset* firmado en Cloudinary (para no exponer el `CLOUDINARY_API_SECRET` en
 el cliente) — es trabajo real de infraestructura, no solo de UI, y se dejó
 fuera de esta pasada a propósito en vez de improvisarlo.
+
+## 11. Profesor nuevo: contraseña aleatoria + flujo de "olvidé mi contraseña" existente
+
+`POST /api/lms/admin/professors` necesita crear una cuenta con contraseña
+sin que el sistema interno tenga que inventar/transmitir una. Se generó una
+contraseña aleatoria de 32 bytes que nadie llega a ver ni guardar, y se
+reutilizó `AuthService.forgotPassword()` (el mismo flujo de "olvidé mi
+contraseña" que ya usa el sitio público, con su propio correo Brevo) para
+que el profesor defina la suya. No se construyó un flujo de invitación
+nuevo — hubiera sido reimplementar algo que ya existe, probado, y usa la
+misma UI de `/reset-password` que ya conocen los usuarios.
+
+`cliente_id` es opcional a propósito: `Cliente.cedula` es obligatoria y
+única, y no hay una cédula real que inventarle a un profesor que no viene de
+un registro de `Cliente` existente. Sin `cliente_id`, su nombre no aparece
+(sale "Profesor" genérico en vez del nombre real) — es una limitación
+conocida, no un bug, documentada en `REQUISITOS_SISTEMA_INTERNO.md` §2.
