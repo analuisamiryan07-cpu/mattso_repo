@@ -1,4 +1,3 @@
-//
 // Reproductor HLS con video.js (regla de arquitectura §"Reproducción VOD": no
 // <video> nativo). Envía un ping de progreso cada 10s de reproducción real
 // (no cada 10s de reloj — pausado no cuenta) y uno final al terminar/salir.

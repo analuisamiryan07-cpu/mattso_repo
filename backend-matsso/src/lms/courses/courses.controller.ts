@@ -1,4 +1,3 @@
-//
 // Rutas del estudiante — reutiliza JwtAuthGuard, el mismo guard que ya protege
 // /api/ordenes y /api/auth/profile. No se crea un guard nuevo para esto:
 // "estudiante" y "usuario web logueado" son el mismo concepto en este sistema

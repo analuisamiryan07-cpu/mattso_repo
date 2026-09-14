@@ -1,7 +1,3 @@
-//
-// Mismo patrón que cursosService.js — apiClient ya trae baseURL=".../api" y el
-// JWT inyectado por interceptor, así que las rutas de aquí no llevan "/api".
-
 import apiClient from './client';
 
 export const lmsService = {
@@ -33,8 +29,6 @@ export const lmsService = {
     const formData = new FormData();
     formData.append('archivo', archivo);
     if (comentario) formData.append('comentario', comentario);
-
-    // No fijar Content-Type a mano — mismo motivo que crearOrden() en cursosService.js
     const { data } = await apiClient.post(`/lms/content/${contentItemId}/submissions`, formData, {
       headers: { 'Content-Type': null },
     });
@@ -56,7 +50,7 @@ export const lmsService = {
     return data;
   },
 
-  // ── Portón del Aula Virtual (clave de acceso) ──────────────────────
+  // ── Portón: clave de acceso ────────────────────────────────────────
   async getEstadoAcceso() {
     const { data } = await apiClient.get('/lms/access-codes/status');
     return data; // { desbloqueado }
@@ -75,6 +69,21 @@ export const lmsService = {
 
   async crearCursoProfesor(curso) {
     const { data } = await apiClient.post('/lms/professor/courses', curso);
+    return data;
+  },
+
+  async getMiCursoProfesor(courseId) {
+    const { data } = await apiClient.get(`/lms/professor/courses/${courseId}`);
+    return data;
+  },
+
+  async crearModuloProfesor(courseId, modulo) {
+    const { data } = await apiClient.post(`/lms/professor/courses/${courseId}/modules`, modulo);
+    return data;
+  },
+
+  async crearContenidoProfesor(moduleId, contenido) {
+    const { data } = await apiClient.post(`/lms/professor/modules/${moduleId}/content`, contenido);
     return data;
   },
 

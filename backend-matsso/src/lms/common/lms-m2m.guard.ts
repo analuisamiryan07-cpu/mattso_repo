@@ -1,4 +1,3 @@
-//
 // Guard para las rutas admin del LMS (Laravel backoffice -> NestJS), separado
 // a propósito de `ADMIN_API_KEY` del e-commerce (Moodles/arquitectura_lms_nube.md
 // §6: "credenciales M2M separadas, rotables y con permisos mínimos" — si se

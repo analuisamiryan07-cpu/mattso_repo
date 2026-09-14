@@ -33,6 +33,24 @@ export class ProfessorCoursesService {
     });
   }
 
+  async getMiCurso(usuarioId: number, courseId: string) {
+    await this.verificarDuenoCurso(usuarioId, courseId);
+    return this.prisma.course.findUnique({
+      where: { id: courseId },
+      include: {
+        modules: {
+          orderBy: { sequence_order: 'asc' },
+          include: {
+            content_items: {
+              orderBy: { sequence_order: 'asc' },
+              include: { quiz: { select: { id: true, titulo: true } } },
+            },
+          },
+        },
+      },
+    });
+  }
+
   async crearCurso(usuarioId: number, dto: CreateCourseDto) {
     return this.prisma.course.create({
       data: {

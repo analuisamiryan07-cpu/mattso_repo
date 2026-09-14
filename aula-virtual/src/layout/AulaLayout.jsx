@@ -1,22 +1,20 @@
-// Cabecera propia del Aula Virtual — deliberadamente distinta del Header del
-// sitio público (sin menú de Programas/Nosotros/Contacto): esto es una app
-// aparte, no una sección más del sitio.
-
 import { authService } from '@api/authService';
-import './AulaVirtualLayout.css';
+import './AulaLayout.css';
 
-const AulaVirtualLayout = ({ children }) => {
+const SITIO_PUBLICO_URL = import.meta.env.VITE_SITIO_PUBLICO_URL || 'https://sapper-industries.com';
+
+const AulaLayout = ({ children }) => {
   const user = authService.getCurrentUser();
 
   const handleLogout = () => {
     authService.logout();
-    window.location.href = '/aula-virtual';
+    window.location.reload();
   };
 
   return (
     <div className="av-shell">
       <header className="av-topbar">
-        <a href="/" className="av-brand">
+        <a href={SITIO_PUBLICO_URL} className="av-brand">
           <span className="av-brand-mark">S</span>
           <span className="av-brand-text">
             <b>Sapper Industries</b>
@@ -38,4 +36,4 @@ const AulaVirtualLayout = ({ children }) => {
   );
 };
 
-export default AulaVirtualLayout;
+export default AulaLayout;

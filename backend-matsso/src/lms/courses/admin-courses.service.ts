@@ -1,4 +1,3 @@
-//
 // Contrato M2M Laravel -> NestJS (Moodles/arquitectura_lms.md §5.B). Todo
 // texto libre pasa por sanitizePlainText — mismo patrón que catalog/contact/
 // qr-certs (Moodles/HALLAZGOS_SEGURIDAD_CATALOGO_ORDENES.md).

@@ -1,4 +1,3 @@
-//
 // POST /api/lms/webhooks/enrollment — Moodles/arquitectura_lms_nube.md §5.
 // Protegido por firma HMAC (no JWT ni x-admin-key: es un webhook, el emisor
 // no tiene sesión de usuario). `main.ts` ya crea la app con

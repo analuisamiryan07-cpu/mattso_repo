@@ -6,6 +6,7 @@
 import { Module } from '@nestjs/common';
 import { StorageModule } from '../storage/storage.module';
 import { EmailModule } from '../email/email.module';
+import { AuthModule } from '../auth/auth.module';
 
 import { EnrollmentService } from './enrollment/enrollment.service';
 import { EnrollmentWebhookController } from './enrollment/enrollment-webhook.controller';
@@ -30,12 +31,15 @@ import { AccessCodesController } from './access-codes/access-codes.controller';
 import { ProfessorCoursesService } from './professor/professor-courses.service';
 import { ProfessorCoursesController } from './professor/professor-courses.controller';
 
-// PrismaModule es @Global() — no requiere import. StorageModule y EmailModule
-// NO son globales (se importan explícitamente donde se usan, igual que en
-// OrdersModule), por eso se importan aquí.
+import { LmsGateService } from './gate/lms-gate.service';
+import { LmsGateController } from './gate/lms-gate.controller';
+
+// PrismaModule es @Global() — no requiere import. StorageModule, EmailModule
+// y AuthModule NO son globales (se importan explícitamente donde se usan,
+// igual que en OrdersModule), por eso se importan aquí.
 
 @Module({
-  imports: [StorageModule, EmailModule],
+  imports: [StorageModule, EmailModule, AuthModule],
   controllers: [
     EnrollmentWebhookController,
     CoursesController,
@@ -45,6 +49,7 @@ import { ProfessorCoursesController } from './professor/professor-courses.contro
     QuizzesController,
     AccessCodesController,
     ProfessorCoursesController,
+    LmsGateController,
   ],
   providers: [
     EnrollmentService,
@@ -55,6 +60,7 @@ import { ProfessorCoursesController } from './professor/professor-courses.contro
     QuizzesService,
     AccessCodesService,
     ProfessorCoursesService,
+    LmsGateService,
   ],
 })
 export class LmsModule {}

@@ -1,4 +1,3 @@
-//
 // Moodles/arquitectura_lms_nube.md §5/§6: "NestJS no confía ciegamente en
 // current_time ni total_duration: valida secuencia, saltos anómalos, duración
 // conocida y pertenencia del estudiante." Reglas aplicadas aquí:

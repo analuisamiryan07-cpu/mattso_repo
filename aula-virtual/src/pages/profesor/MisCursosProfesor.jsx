@@ -1,10 +1,9 @@
-// Vista del profesor: sus cursos + entregas pendientes de calificar. La
-// creación de módulos/contenido (subir video, adjuntar quiz) todavía no
-// tiene UI aquí — por ahora se hace vía la API con un cliente HTTP (Postman)
-// hasta wiring de subida a Cloudinary desde el navegador. El profesor SÍ
-// puede crear el curso y calificar, que es el flujo que se pidió primero.
+// Vista del profesor: sus cursos + entregas pendientes de calificar. Cada
+// tarjeta lleva al detalle del curso (CursoProfesor.jsx) para agregar
+// módulos y contenido.
 
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { lmsService } from '@api/lmsService';
 import { useToast } from '@context/ToastContext';
 import './MisCursosProfesor.css';
@@ -61,13 +60,13 @@ const MisCursosProfesor = () => {
 
       <div className="mcp-grid">
         {cursos.map((c) => (
-          <div key={c.id} className="mcp-card">
+          <Link key={c.id} to={`/curso/${c.id}`} className="mcp-card">
             <span className={`mcp-badge ${c.delivery_mode === 'ASINCRONO_VOD' ? 'is-vod' : ''}`}>
               {c.delivery_mode === 'ASINCRONO_VOD' ? 'Video bajo demanda' : 'Tradicional'}
             </span>
             <h3>{c.titulo}</h3>
             <p className="mcp-meta">{c._count.modules} módulos · {c._count.enrollments} estudiantes</p>
-          </div>
+          </Link>
         ))}
         {cursos.length === 0 && <p className="mcp-empty">Todavía no has creado ningún curso.</p>}
       </div>

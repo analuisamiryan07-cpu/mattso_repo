@@ -1,4 +1,3 @@
-//
 // Firma y verificación HMAC-SHA256 para el webhook de inscripción
 // (Moodles/arquitectura_lms_nube.md §5, §6). El mensaje firmado es
 // `${timestamp}.${rawBody}` — nunca solo el body — para que una firma

@@ -1,4 +1,3 @@
-//
 // Rutas M2M consumidas por proyecto_matt (Laravel) — nunca por el navegador
 // del estudiante. Protegidas por LmsM2mGuard (x-lms-m2m-key), no por JWT.
 

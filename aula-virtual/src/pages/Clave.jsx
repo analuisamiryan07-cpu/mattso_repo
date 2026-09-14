@@ -5,9 +5,10 @@
 
 import { useState } from 'react';
 import { lmsService } from '@api/lmsService';
-import './AulaVirtualGate.css';
+import './Login.css';
+import './Clave.css';
 
-const AulaVirtualClave = ({ onSuccess }) => {
+const Clave = ({ onSuccess }) => {
   const [code, setCode] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -62,4 +63,4 @@ const AulaVirtualClave = ({ onSuccess }) => {
   );
 };
 
-export default AulaVirtualClave;
+export default Clave;

@@ -12,12 +12,15 @@
 }
 
 .mcp-card {
+  display: block;
   background: #fff;
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
   padding: 16px 18px;
   box-shadow: var(--shadow-sm);
+  transition: transform 0.15s, box-shadow 0.15s;
 }
+.mcp-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
 
 .mcp-badge {
   display: inline-block;

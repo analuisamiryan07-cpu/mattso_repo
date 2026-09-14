@@ -46,3 +46,28 @@ jobs:
         run: npm run build
         env:
           VITE_API_URL: https://tikky-hg4n.onrender.com/api
+
+  aula-virtual:
+    name: Aula Virtual — Build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: aula-virtual
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      # npm install (no npm ci): todavía no hay package-lock.json comprometido
+      # para este proyecto — generarlo con `npm install` localmente y
+      # commitearlo apenas se pueda, para volver a npm ci como los otros dos jobs.
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build (Vite)
+        run: npm run build
+        env:
+          VITE_API_URL: https://tikky-hg4n.onrender.com/api
+          VITE_SITIO_PUBLICO_URL: https://sapper-industries.com

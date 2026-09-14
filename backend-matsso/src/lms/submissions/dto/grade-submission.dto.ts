@@ -1,4 +1,3 @@
-//
 // graded_by_usuario_id viaja explícito en el body: ManualGrade.graded_by_usuario_id
 // referencia public.usuarios_web (la identidad web, rol ADMIN), que NO es la
 // misma tabla que usuarios_admin de proyecto_matt (Laravel tiene su propio

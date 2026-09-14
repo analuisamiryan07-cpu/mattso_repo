@@ -1,4 +1,3 @@
-//
 // Lado estudiante. La regla de oro de la arquitectura (§7): "React... no debe
 // decidir por sí mismo que un contenido está completado" — todo el cálculo de
 // qué está desbloqueado vive aquí, nunca en el frontend. React solo pinta lo
@@ -93,15 +92,51 @@ export class CoursesService {
     });
     const attemptsByQuizId = new Map(attemptCounts.map((a) => [a.quiz_id, a._count._all]));
 
+    // Nota real por content_item — "Mis calificaciones" (Moodle) la necesita,
+    // no solo el estado COMPLETED/NOT_STARTED.
+    const gradeByContentId = new Map<string, { score: number; feedback: string | null }>();
+
+    const submissions = await this.prisma.studentSubmission.findMany({
+      where: { enrollment_id: enrollment.id },
+      include: { grade: true },
+    });
+    // "COMPLETED" en StudentProgress solo se marca al calificar — por eso
+    // entregado-pero-sin-calificar se ve igual que nunca-entregado si solo
+    // se mira `status`. Esto le da al frontend la distinción real.
+    const submittedContentIds = new Set(submissions.map((s) => s.content_item_id));
+    for (const s of submissions) {
+      if (s.grade) gradeByContentId.set(s.content_item_id, { score: Number(s.grade.score), feedback: s.grade.feedback });
+    }
+
+    const gradedAttempts = await this.prisma.quizAttempt.findMany({
+      where: { enrollment_id: enrollment.id, status: 'GRADED' },
+      include: { quiz: { select: { content_item_id: true } } },
+      orderBy: { submitted_at: 'desc' },
+    });
+    for (const a of gradedAttempts) {
+      const cid = a.quiz.content_item_id;
+      // El primero que aparece por content_item es el intento más reciente (orderBy desc).
+      if (!gradeByContentId.has(cid) && a.score != null) {
+        gradeByContentId.set(cid, { score: Number(a.score), feedback: null });
+      }
+    }
+
+    // TRADICIONAL (Moodle): acceso abierto — un Moodle real no obliga a
+    // completar todo en orden, el estudiante entra a cualquier recurso o
+    // tarea cuando quiera. ASINCRONO_VOD (Coursera): desbloqueo secuencial
+    // estricto, como siempre. Es la única diferencia de comportamiento entre
+    // los dos modos — el resto de este método es igual para ambos.
+    const esSecuencial = course.delivery_mode === 'ASINCRONO_VOD';
+
     let moduleUnlocked = true;
     const modules = course.modules.map((module) => {
-      const thisModuleUnlocked = moduleUnlocked;
+      const thisModuleUnlocked = esSecuencial ? moduleUnlocked : true;
       let itemUnlocked = true;
 
       const items = module.content_items.map((item) => {
         const progress = progressByContentId.get(item.id);
         const status: ProgressStatus = thisModuleUnlocked ? progress?.status ?? 'NOT_STARTED' : 'NOT_STARTED';
-        const unlocked = thisModuleUnlocked && itemUnlocked;
+        const unlocked = esSecuencial ? thisModuleUnlocked && itemUnlocked : true;
         itemUnlocked = status === 'COMPLETED';
 
         return {
@@ -112,6 +147,16 @@ export class CoursesService {
           status,
           unlocked,
           video_duration_seconds: item.video_duration_seconds,
+          assignment_instructions: item.assignment_instructions,
+          grade: gradeByContentId.get(item.id) ?? null,
+          entrega_status:
+            item.item_type !== 'ASSIGNMENT'
+              ? null
+              : gradeByContentId.has(item.id)
+                ? 'CALIFICADA'
+                : submittedContentIds.has(item.id)
+                  ? 'PENDIENTE_CALIFICACION'
+                  : 'NO_ENTREGADA',
           quiz: item.quiz
             ? {
                 id: item.quiz.id,

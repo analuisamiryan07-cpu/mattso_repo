@@ -206,8 +206,8 @@ const Header = () => {
             </div>
           </Link>
 
-          {/* Aula Virtual: app aparte (misma cuenta, login propio) — no una ruta más del sitio. */}
-          <a href="/aula-virtual" className="aula-virtual-btn">
+          {/* Aula Virtual: proyecto y dominio aparte — no una ruta más de este sitio. */}
+          <a href={import.meta.env.VITE_AULA_VIRTUAL_URL || 'https://aula.sapper-industries.com'} className="aula-virtual-btn">
             <i className="fa-solid fa-graduation-cap" /> Aula Virtual
           </a>
 

@@ -25,6 +25,11 @@ export class ProfessorCoursesController {
     return this.professorCoursesService.crearCurso(req.user.id, dto);
   }
 
+  @Get('courses/:courseId')
+  getMiCurso(@Param('courseId') courseId: string, @Req() req: any) {
+    return this.professorCoursesService.getMiCurso(req.user.id, courseId);
+  }
+
   @Post('courses/:courseId/modules')
   crearModulo(@Param('courseId') courseId: string, @Body() dto: CreateModuleDto, @Req() req: any) {
     return this.professorCoursesService.crearModulo(req.user.id, courseId, dto);

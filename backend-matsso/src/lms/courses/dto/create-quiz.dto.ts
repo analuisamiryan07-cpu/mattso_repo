@@ -1,4 +1,3 @@
-//
 // Crea el Quiz completo (preguntas + opciones) en una sola llamada — así lo
 // necesita un formulario admin de "armar cuestionario". No hay endpoints
 // separados para editar preguntas sueltas en esta primera pasada; ver

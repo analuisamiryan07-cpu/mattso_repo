@@ -1,19 +1,19 @@
-//
+// Vista "Coursera": módulos con desbloqueo secuencial estricto, reproductor
+// grande, quiz automático. Para cursos delivery_mode='ASINCRONO_VOD'.
 // El árbol de módulos/contenido con `unlocked`/`status` viene ya calculado
-// del backend (courses.service.ts) — este componente solo lo pinta. Nunca
-// decide por su cuenta si algo está desbloqueado (regla de arquitectura §7).
+// del backend (courses.service.ts) — este componente solo lo pinta.
 
 import { useCallback, useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { lmsService } from '@api/lmsService';
-import VideoPlayer from '@components/lms/VideoPlayer';
-import QuizRunner from '@components/lms/QuizRunner';
-import EntregaTarea from '@components/lms/EntregaTarea';
-import './CursoDetalle.css';
+import VideoPlayer from '@components/VideoPlayer';
+import QuizRunner from '@components/QuizRunner';
+import EntregaTarea from '@components/EntregaTarea';
+import './CursoVOD.css';
 
 const ICONS = { VIDEO: 'fa-circle-play', ASSIGNMENT: 'fa-file-pen', QUIZ: 'fa-list-check', DOCUMENT: 'fa-file-lines' };
 
-const CursoDetalle = () => {
+const CursoVOD = () => {
   const { courseId } = useParams();
   const [detalle, setDetalle] = useState(null);
   const [error, setError] = useState(null);
@@ -33,9 +33,7 @@ const CursoDetalle = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [courseId]);
 
-  useEffect(() => {
-    cargar();
-  }, [cargar]);
+  useEffect(() => { cargar(); }, [cargar]);
 
   if (error) return <div className="lms-page"><p className="lms-error">{error}</p></div>;
   if (!detalle) return <div className="lms-page"><p>Cargando…</p></div>;
@@ -93,10 +91,7 @@ const CursoDetalle = () => {
               <button
                 className="lms-btn-primary"
                 disabled={activeItem.status === 'COMPLETED'}
-                onClick={async () => {
-                  await lmsService.marcarDocumentoLeido(activeItem.id);
-                  cargar();
-                }}
+                onClick={async () => { await lmsService.marcarDocumentoLeido(activeItem.id); cargar(); }}
               >
                 {activeItem.status === 'COMPLETED' ? 'Ya marcado como leído' : 'Marcar como leído'}
               </button>
@@ -108,4 +103,4 @@ const CursoDetalle = () => {
   );
 };
 
-export default CursoDetalle;
+export default CursoVOD;

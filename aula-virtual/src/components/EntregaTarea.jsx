@@ -1,8 +1,8 @@
-//
-// Flujo TRADICIONAL: subir archivo, esperar calificación humana. No marca el
-// contenido como completado al subir — eso solo lo hace el admin al calificar
-// (backend: submissions.service.ts). Por eso, tras enviar, se muestra un
-// estado "entregado, en espera de calificación", no un check verde.
+// Flujo TRADICIONAL: subir archivo, esperar calificación humana. El
+// backend expone `contentItem.entrega_status` (NO_ENTREGADA / PENDIENTE_
+// CALIFICACION / CALIFICADA) — no basta con el `status` genérico porque
+// "entregado pero sin calificar" y "nunca entregado" se veían igual antes
+// de que existiera este campo (courses.service.ts).
 
 import { useState } from 'react';
 import { lmsService } from '@api/lmsService';
@@ -17,7 +17,7 @@ const EntregaTarea = ({ contentItem }) => {
   const [file, setFile] = useState(null);
   const [comentario, setComentario] = useState('');
   const [enviando, setEnviando] = useState(false);
-  const [enviado, setEnviado] = useState(false);
+  const [enviadoAhora, setEnviadoAhora] = useState(false);
 
   const handleFileChange = (e) => {
     const f = e.target.files?.[0];
@@ -41,7 +41,7 @@ const EntregaTarea = ({ contentItem }) => {
     setEnviando(true);
     try {
       await lmsService.enviarEntrega(contentItem.id, file, comentario);
-      setEnviado(true);
+      setEnviadoAhora(true);
       addToast('Entrega enviada — queda pendiente de calificación.', 'success');
     } catch (err) {
       addToast(err?.response?.data?.message || 'No se pudo enviar la entrega.', 'error');
@@ -50,7 +50,17 @@ const EntregaTarea = ({ contentItem }) => {
     }
   };
 
-  if (enviado) {
+  if (contentItem.entrega_status === 'CALIFICADA' && contentItem.grade) {
+    return (
+      <div className="lms-entrega-calificada">
+        <i className="fa-solid fa-circle-check" />
+        <p className="lms-entrega-nota">{contentItem.grade.score}/100</p>
+        {contentItem.grade.feedback && <p className="lms-entrega-feedback">"{contentItem.grade.feedback}"</p>}
+      </div>
+    );
+  }
+
+  if (enviadoAhora || contentItem.entrega_status === 'PENDIENTE_CALIFICACION') {
     return (
       <div className="lms-entrega-done">
         <i className="fa-solid fa-hourglass-half" />

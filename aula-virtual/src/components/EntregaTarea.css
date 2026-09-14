@@ -46,3 +46,27 @@
   margin-bottom: 10px;
   display: block;
 }
+
+.lms-entrega-calificada {
+  text-align: center;
+  padding: 30px 16px;
+  color: #1f8a4c;
+}
+.lms-entrega-calificada i {
+  font-size: 28px;
+  margin-bottom: 10px;
+  display: block;
+}
+.lms-entrega-nota {
+  font-size: 28px;
+  font-weight: 800;
+  color: #16211f;
+  margin-bottom: 6px;
+}
+.lms-entrega-feedback {
+  font-size: 13.5px;
+  color: #4b5c57;
+  font-style: italic;
+  max-width: 46ch;
+  margin: 0 auto;
+}

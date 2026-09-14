@@ -1,4 +1,3 @@
-//
 // Flujo TRADICIONAL (Moodles/arquitectura_lms_nube.md §3): el estudiante sube
 // un archivo, un humano lo califica. El progreso NO se marca COMPLETED al
 // entregar — solo cuando `gradeSubmission()` registra la nota, tal como

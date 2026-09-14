@@ -1,4 +1,3 @@
-//
 // Regla de seguridad clave: `is_correct` de QuizOption NUNCA se envía al
 // cliente antes de calificar (getQuizForStudent lo omite explícitamente). La
 // corrección se calcula siempre en el servidor a partir de lo guardado en BD,

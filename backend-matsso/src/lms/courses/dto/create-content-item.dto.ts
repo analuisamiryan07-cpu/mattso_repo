@@ -1,4 +1,3 @@
-//
 // Un único DTO para los 4 tipos de contenido (VIDEO/ASSIGNMENT/QUIZ/DOCUMENT):
 // los campos que no aplican a un tipo simplemente no se validan más allá de
 // ser opcionales. `item_type: QUIZ` se crea vía POST .../content/quiz (ver

@@ -75,3 +75,36 @@ No hay forma de verificar servidor-side que alguien realmente leyó un PDF. Se
 optó por marcar `COMPLETED` en cuanto el frontend llama a `mark-read` (acción
 explícita del usuario, no automática al cargar la página) — es la misma
 limitación que tiene cualquier LMS con contenido de solo lectura.
+
+## 8. TRADICIONAL (Moodle) es de acceso abierto; ASINCRONO_VOD (Coursera) sigue con candado secuencial
+
+`courses.service.ts::getCourseDetail()` calculaba el mismo desbloqueo
+secuencial estricto para los dos modos — así quedó en la primera pasada,
+cuando Moodle y Coursera compartían una sola pantalla de estudiante. Al
+separar en `CursoTradicional.jsx`/`CursoVOD.jsx` (dos looks distintos, uno
+por modo) se corrigió también el comportamiento real: un Moodle no obliga a
+completar todo en orden — el estudiante entra a cualquier recurso o tarea
+cuando quiera. Solo `ASINCRONO_VOD` mantiene el candado. Es la única
+diferencia de comportamiento entre los dos modos en el backend; todo lo
+demás (progreso, calificación, quiz) es igual para ambos.
+
+## 9. El portón valida `Orden.estado`, no la tabla `pagos`
+
+Se pidió validar contra "los pagos", pero la tabla `public.pagos` solo existe
+para PayPal (la creó `paypal.service.ts` al capturar). Un pago por
+transferencia aprobado a mano por un admin nunca pasa por esa tabla — solo
+actualiza `Orden.estado` a `'PAGADA'`. Verificado leyendo el código real de
+ambos flujos: PayPal *también* actualiza `Orden.estado` a `'PAGADA'` en la
+misma transacción donde crea el `Pago`. Por eso `lms-gate.service.ts` valida
+`Orden.estado='PAGADA'` — es el único campo que cubre los dos métodos de pago
+reales del sitio. Decisión confirmada explícitamente con el usuario antes de
+implementarla, no es una interpretación silenciosa.
+
+## 10. Contenido del profesor sin selector de subida de archivos
+
+`CursoProfesor.jsx` pide la URL de Cloudinary como texto — el profesor sube
+el archivo por su cuenta a cloudinary.com (o donde sea) y pega el link. Un
+selector de archivo con subida real desde el navegador necesita un *upload
+preset* firmado en Cloudinary (para no exponer el `CLOUDINARY_API_SECRET` en
+el cliente) — es trabajo real de infraestructura, no solo de UI, y se dejó
+fuera de esta pasada a propósito en vez de improvisarlo.

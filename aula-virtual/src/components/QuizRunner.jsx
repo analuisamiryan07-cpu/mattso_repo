@@ -1,4 +1,3 @@
-//
 // Carga el quiz (sin respuestas correctas — el backend nunca las manda antes
 // de calificar), deja responder, y envía todo junto al enviar. El límite de
 // tiempo (si existe) se muestra como cuenta regresiva visual; el envío real lo

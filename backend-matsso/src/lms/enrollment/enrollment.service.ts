@@ -1,4 +1,3 @@
-//
 // Lógica real de inscripción, separada del controller HTTP a propósito:
 // - `EnrollmentWebhookController` la llama después de verificar HMAC (llamadas
 //   externas / futuras).
