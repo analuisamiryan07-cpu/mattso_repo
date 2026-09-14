@@ -15,15 +15,10 @@ pasos pendientes (variables de entorno, SQL, subdominio, git).
 - Frontend estudiante/profesor: proyecto separado `aula-virtual/` (dominio y
   deploy aparte del sitio público — ver `aula-virtual/README.md`)
 
-**`backend/` y `frontend/` de esta carpeta están desactualizados — se
-recomienda borrarlos.** Eran una copia de referencia del primer borrador,
-pero no se actualizaron después de separar Moodle/Coursera ni de agregar el
-portón de pago/profesor — les falta `access-codes/`, `professor/`, `gate/`,
-`Login.jsx`, `Clave.jsx`, y `CursoDetalle.jsx` ya no existe en el código real
-(se dividió en `CursoVOD.jsx`/`CursoTradicional.jsx`). Confirmado comparando
-archivo por archivo contra `backend-matsso/src/lms/`. Mantenerlos solo
-genera confusión — el código real siempre está en `backend-matsso/src/lms/`
-y `aula-virtual/`.
+**`backend/` y `frontend/` ya no existen en esta carpeta** — eran una copia
+de referencia desactualizada del primer borrador y se borraron (confirmado
+con el usuario) porque no reflejaban el diseño real. El código real siempre
+está en `backend-matsso/src/lms/` y `aula-virtual/`.
 
 **Rama:** este trabajo vive en la rama local `lms/aula-virtual`, creada a
 partir de `origin/main` real (no de la rama `main` local, que tiene un
@@ -63,8 +58,6 @@ pero sin tests automatizados todavía):
 ```
 Moodles/lms/
 ├── README.md              (este archivo)
-├── backend/                 ⚠ desactualizado — candidato a borrar, ver arriba
-├── frontend/                ⚠ desactualizado — candidato a borrar, ver arriba
 └── docs/
     ├── QUE_NECESITO_DE_TI.md           checklist de lo que falta, para el usuario
     ├── REQUISITOS_SISTEMA_INTERNO.md   qué necesita llamar el sistema interno (Laravel), con código PHP listo
