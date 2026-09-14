@@ -1,0 +1,24 @@
+/* Destino final: src/components/lms/VideoPlayer.css */
+
+.lms-video-wrap {
+  width: 100%;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #000;
+}
+
+.lms-video-error {
+  color: #b3261e;
+  background: #fbe7e5;
+  padding: 10px 14px;
+  font-size: 14px;
+  margin: 0;
+}
+
+.lms-video-wrap .video-js {
+  width: 100%;
+}
+
+.lms-video-wrap .vjs-big-play-button {
+  border-color: var(--primary-yellow, #ffb800);
+}

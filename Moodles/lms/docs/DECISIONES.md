@@ -1,0 +1,77 @@
+# Decisiones y desvíos respecto a `arquitectura_lms_nube.md`
+
+Documento de honestidad técnica: dónde este desarrollo sigue el documento al
+pie de la letra, dónde se adaptó a lo que el sistema real ya tiene construido,
+y qué se dejó explícitamente fuera.
+
+## 1. No hay Supabase Auth — se reutilizó `UsuarioWeb` + JWT existente
+
+El documento original (§4) describe `users` como "extensión de Supabase Auth".
+El sistema real de e-commerce ya tiene su propio login (`UsuarioWeb` con
+`password_hash` bcrypt, JWT propio, `JwtAuthGuard`) — y el schema Prisma del
+LMS que **ya existe** en `schema.prisma` confirma esto: `Enrollment.usuario_id`
+es un `BigInt` que apunta a `UsuarioWeb.id`, no un UUID de Supabase Auth.
+
+Se construyó sobre lo que el schema ya define, no sobre la premisa original
+del documento. Esto simplifica el sistema (una sola identidad de estudiante en
+vez de dos sincronizadas) y es consistente con cómo ya funciona el checkout.
+
+## 2. El webhook de inscripción es HTTP+HMAC, pero el llamador real es interno
+
+El documento pide un webhook real. Se construyó tal cual (`EnrollmentWebhookController`
++ `hmac.util.ts`), pero la lógica vive separada en `EnrollmentService` para que
+el flujo de aprobación de orden (que corre en el mismo proceso NestJS) la
+invoque directamente sin pasar por HTTP — ver `INTEGRACION.md` punto 4. El
+endpoint HTTP queda disponible para el día que haya un emisor externo real.
+
+## 3. `graded_by_usuario_id` viaja explícito, no se infiere del actor M2M
+
+`ManualGrade.graded_by_usuario_id` (ya en el schema) referencia
+`public.usuarios_web`, que **no es la misma tabla** que `usuarios_admin` de
+`proyecto_matt` (Laravel tiene su propio login de backoffice, separado). Un
+admin autenticado en Laravel no tiene automáticamente un id de `UsuarioWeb`.
+
+Por eso `GradeSubmissionDto` exige `graded_by_usuario_id` explícito en el body
+— Laravel debe conocer y enviar el id de `UsuarioWeb` (rol `ADMIN`)
+correspondiente a quien calificó. Esto implica que **cada admin que califica
+tareas necesita una cuenta `UsuarioWeb`** además de su cuenta `usuarios_admin`
+de Laravel — no se resolvió una vinculación automática entre ambas tablas,
+porque no existe hoy y crearla es una decisión de modelo de datos que le
+corresponde al equipo, no a esta pasada de desarrollo.
+
+## 4. `cantidad > 1` (compra corporativa) — no resuelto, contrato dejado abierto
+
+El propio `schema.prisma` ya trae un comentario sobre esto (ver el modelo
+`Enrollment`). La decisión tomada aquí: `EnrollmentService.enrollFromEcommerce()`
+inscribe **una persona por llamada**. Si una orden tiene `cantidad=3`, quien
+dispare la inscripción debe invocar el service 3 veces, una por persona. Cómo
+se capturan esas 3 identidades (¿un formulario que llena el comprador al
+finalizar la compra? ¿altas manuales desde el panel admin?) no se construyó —
+es una decisión de producto, no solo técnica, y se deja fuera a propósito en
+vez de improvisar una UI que probablemente haya que rehacer.
+
+## 5. Sin tabla de auditoría dedicada
+
+El documento pide "auditar quién originó cada operación" (§5). Se implementó
+con `Logger` de NestJS (`req.m2mActor` en cada log de `AdminCoursesService`) —
+no con una tabla persistente. Si se necesita un historial consultable (no solo
+logs de aplicación), hace falta una tabla nueva tipo `lms.audit_log` — no se
+agregó al schema porque no se pidió explícitamente y añadir tablas por cuenta
+propia sin necesidad concreta va contra el criterio de "no diseñar para
+hipotéticos".
+
+## 6. Ruta de veredicto de examen: se devuelve por pregunta, no solo agregado
+
+El documento no especifica el detalle de la respuesta de
+`POST /quizzes/attempts/:id/submit`. Se decidió devolver, además de
+`score`/`passed`, un arreglo `details: [{question_id, correct}]` — útil para
+que el frontend muestre qué se falló sin exponer cuál era la opción correcta
+(eso solo lo sabe quien ya respondió). Si el negocio prefiere no mostrar ese
+detalle inmediatamente, es un cambio de una línea en `quizzes.service.ts`.
+
+## 7. Contenido `DOCUMENT`: completado es "lo abrí", no "lo leí"
+
+No hay forma de verificar servidor-side que alguien realmente leyó un PDF. Se
+optó por marcar `COMPLETED` en cuanto el frontend llama a `mark-read` (acción
+explícita del usuario, no automática al cargar la página) — es la misma
+limitación que tiene cualquier LMS con contenido de solo lectura.

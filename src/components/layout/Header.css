@@ -298,6 +298,31 @@
 
 .cart-btn { font-size: 17px; }
 
+.aula-virtual-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: var(--primary-yellow);
+  color: var(--primary-blue);
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 14px;
+  padding: 9px 16px;
+  border-radius: 999px;
+  white-space: nowrap;
+  transition: background 0.3s ease, transform 0.15s ease;
+}
+
+.aula-virtual-btn:hover {
+  background: var(--primary-yellow-dark);
+  transform: translateY(-1px);
+}
+
+@media (max-width: 900px) {
+  .aula-virtual-btn span,
+  .aula-virtual-btn { font-size: 13px; padding: 8px 12px; }
+}
+
 .cart-icon-wrapper { position: relative; }
 
 .cart-count {

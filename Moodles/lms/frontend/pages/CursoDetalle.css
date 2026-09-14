@@ -1,0 +1,100 @@
+/* Destino final: src/pages/lms/CursoDetalle.css */
+
+.lms-curso-layout {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 28px;
+  align-items: start;
+}
+
+.lms-curso-nav {
+  background: #fff;
+  border: 1px solid #e2e9e6;
+  border-radius: 12px;
+  padding: 16px;
+  position: sticky;
+  top: 20px;
+}
+
+.lms-mod {
+  margin-bottom: 16px;
+}
+.lms-mod:last-child { margin-bottom: 0; }
+
+.lms-mod-title {
+  font-weight: 600;
+  font-size: 13.5px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 0 8px;
+  color: #16211f;
+}
+.lms-mod.is-locked .lms-mod-title {
+  color: #7c8c87;
+}
+
+.lms-mod-items {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.lms-item-btn {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-size: 13.5px;
+  cursor: pointer;
+  color: #4b5c57;
+}
+.lms-item-btn:hover:not(:disabled) {
+  background: #e2e9e6;
+}
+.lms-item-btn.is-active {
+  background: #dbeeee;
+  color: #0d4348;
+  font-weight: 600;
+}
+.lms-item-btn.is-completed i {
+  color: #2e9d63;
+}
+.lms-item-btn:disabled {
+  color: #b7c3be;
+  cursor: not-allowed;
+}
+
+.lms-curso-content {
+  background: #fff;
+  border: 1px solid #e2e9e6;
+  border-radius: 12px;
+  padding: 24px;
+  min-height: 400px;
+}
+
+.lms-document {
+  text-align: center;
+  padding: 40px 20px;
+}
+.lms-document p {
+  font-size: 16px;
+  margin-bottom: 18px;
+}
+
+@media (max-width: 800px) {
+  .lms-curso-layout {
+    grid-template-columns: 1fr;
+  }
+  .lms-curso-nav {
+    position: static;
+  }
+}

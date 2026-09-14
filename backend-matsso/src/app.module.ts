@@ -14,6 +14,7 @@ import { StorageModule } from './storage/storage.module';
 import { CertificatesModule } from './certificates/certificates.module';
 import { PaymentsModule } from './payments/payments.module';
 import { QrCertsModule } from './qr-certs/qr-certs.module';
+import { LmsModule } from './lms/lms.module';
 
 @SkipThrottle()
 @Controller('api')
@@ -48,6 +49,7 @@ const bullImports = process.env.REDIS_URL
     CertificatesModule,
     PaymentsModule,
     QrCertsModule,
+    LmsModule,
   ],
   controllers: [HealthController],
   providers: [

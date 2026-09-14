@@ -1,0 +1,75 @@
+.av-shell {
+  min-height: 100vh;
+  background: var(--bg-color);
+}
+
+.av-topbar {
+  background: var(--primary-blue);
+  color: #fff;
+  padding: 14px 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.av-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  color: #fff;
+}
+
+.av-brand-mark {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: var(--primary-yellow);
+  color: var(--primary-blue);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  flex: none;
+}
+
+.av-brand-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.15;
+}
+.av-brand-text b { font-size: 14.5px; }
+.av-brand-text small { font-size: 11px; color: #c7d3e0; text-transform: uppercase; letter-spacing: 0.04em; }
+
+.av-user {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+}
+.av-user-name { font-weight: 600; }
+.av-user-rol {
+  background: rgba(255,255,255,0.12);
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+.av-logout {
+  background: none;
+  border: none;
+  color: #fff;
+  cursor: pointer;
+  font-size: 15px;
+  padding: 6px;
+  opacity: 0.85;
+}
+.av-logout:hover { opacity: 1; }
+
+.av-main {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 32px 24px 80px;
+}

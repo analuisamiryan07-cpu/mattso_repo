@@ -206,6 +206,11 @@ const Header = () => {
             </div>
           </Link>
 
+          {/* Aula Virtual: app aparte (misma cuenta, login propio) — no una ruta más del sitio. */}
+          <a href="/aula-virtual" className="aula-virtual-btn">
+            <i className="fa-solid fa-graduation-cap" /> Aula Virtual
+          </a>
+
           <button className="mobile-menu-btn" onClick={() => setIsMenuOpen(o => !o)}>
             <i className={`fa-solid ${isMenuOpen ? 'fa-xmark' : 'fa-bars'}`} />
           </button>
