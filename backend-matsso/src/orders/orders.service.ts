@@ -10,6 +10,7 @@ import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
 import { PrismaService } from '../prisma/prisma.service';
 import { EmailService } from '../email/email.service';
+import { EnrollmentService } from '../lms/enrollment/enrollment.service';
 import { EMAIL_QUEUE, EMAIL_JOBS } from '../queue/queue.constants';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { encodeId } from '../common/id-hasher';
@@ -23,6 +24,7 @@ export class OrdersService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly emailService: EmailService,
+    private readonly enrollmentService: EnrollmentService,
     @Optional() @InjectQueue(EMAIL_QUEUE) private readonly emailQueue?: Queue,
   ) {}
 
@@ -192,6 +194,14 @@ export class OrdersService {
       data: { estado },
       include: { usuario: { include: { cliente: true } } },
     });
+
+    if (estado === 'PAGADA') {
+      await this.enrollmentService.enrollAllItemsFromOrder(
+        id,
+        Number(order.usuario_id),
+        order.items.map((i) => ({ id: Number(i.id), producto_id: Number(i.producto_id) })),
+      );
+    }
 
     const correo = updated.usuario.cliente?.correo ?? updated.usuario.correo;
     const nombre = updated.usuario.cliente?.nombre ?? updated.usuario.correo;

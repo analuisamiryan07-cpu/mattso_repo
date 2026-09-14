@@ -67,5 +67,9 @@ import { LmsGateController } from './gate/lms-gate.controller';
     AdminProfessorsService,
     LmsGateService,
   ],
+  // EnrollmentService se exporta a propósito — OrdersModule y PaymentsModule
+  // lo necesitan para inscribir al comprador en cuanto una orden se marca
+  // PAGADA (ver enrollAllItemsFromOrder en enrollment.service.ts).
+  exports: [EnrollmentService],
 })
 export class LmsModule {}

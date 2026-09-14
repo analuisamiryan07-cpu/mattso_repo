@@ -8,6 +8,7 @@ import {
 import { PrismaService } from '../../prisma/prisma.service';
 import { PaypalApiService } from './paypal-api.service';
 import { EmailService } from '../../email/email.service';
+import { EnrollmentService } from '../../lms/enrollment/enrollment.service';
 import { encodeId } from '../../common/id-hasher';
 
 const CURRENCY = process.env.PAYPAL_CURRENCY ?? 'USD';
@@ -21,6 +22,7 @@ export class PaypalService {
     private readonly prisma: PrismaService,
     private readonly api: PaypalApiService,
     private readonly emailService: EmailService,
+    private readonly enrollmentService: EnrollmentService,
   ) {}
 
   // ── Crear orden interna + orden PayPal en un solo paso ──────
@@ -189,6 +191,12 @@ export class PaypalService {
     });
 
     this.logger.log(`Pago completado — orden ${internalOrderId}, capture ${captureId}`);
+
+    await this.enrollmentService.enrollAllItemsFromOrder(
+      internalOrderId,
+      usuarioId,
+      orden.items.map((i) => ({ id: Number(i.id), producto_id: Number(i.producto_id) })),
+    );
 
     // Enviar correo de pago aprobado (PayPal confirma el pago al instante)
     try {
