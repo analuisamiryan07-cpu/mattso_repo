@@ -59,12 +59,11 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: aula-virtual/package-lock.json
 
-      # npm install (no npm ci): todavía no hay package-lock.json comprometido
-      # para este proyecto — generarlo con `npm install` localmente y
-      # commitearlo apenas se pueda, para volver a npm ci como los otros dos jobs.
       - name: Install dependencies
-        run: npm install
+        run: npm ci
 
       - name: Build (Vite)
         run: npm run build

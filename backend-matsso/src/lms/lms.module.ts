@@ -31,6 +31,9 @@ import { AccessCodesController } from './access-codes/access-codes.controller';
 import { ProfessorCoursesService } from './professor/professor-courses.service';
 import { ProfessorCoursesController } from './professor/professor-courses.controller';
 
+import { AdminProfessorsService } from './professor/admin-professors.service';
+import { AdminProfessorsController } from './professor/admin-professors.controller';
+
 import { LmsGateService } from './gate/lms-gate.service';
 import { LmsGateController } from './gate/lms-gate.controller';
 
@@ -49,6 +52,7 @@ import { LmsGateController } from './gate/lms-gate.controller';
     QuizzesController,
     AccessCodesController,
     ProfessorCoursesController,
+    AdminProfessorsController,
     LmsGateController,
   ],
   providers: [
@@ -60,6 +64,7 @@ import { LmsGateController } from './gate/lms-gate.controller';
     QuizzesService,
     AccessCodesService,
     ProfessorCoursesService,
+    AdminProfessorsService,
     LmsGateService,
   ],
 })
