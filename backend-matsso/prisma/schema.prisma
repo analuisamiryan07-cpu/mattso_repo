@@ -307,8 +307,9 @@ model OrdenItem {
   precio_unitario Decimal  @db.Decimal(10, 2)
   cantidad        Int      @default(1)
 
-  orden           Orden    @relation(fields: [orden_id], references: [id], onDelete: Cascade)
-  producto        Producto @relation(fields: [producto_id], references: [id])
+  orden           Orden        @relation(fields: [orden_id], references: [id], onDelete: Cascade)
+  producto        Producto     @relation(fields: [producto_id], references: [id])
+  enrollments     Enrollment[]
 
   @@schema("public")
   @@map("orden_items")

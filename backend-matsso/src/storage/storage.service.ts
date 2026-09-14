@@ -59,4 +59,39 @@ export class StorageService {
       readable.pipe(uploadStream);
     });
   }
+
+  /** Mismo patrón que uploadComprobante, carpeta y tags propios para entregas del LMS. */
+  async uploadEntregaTarea(file: Express.Multer.File): Promise<string> {
+    if (!this.ready) {
+      throw new InternalServerErrorException(
+        'El almacenamiento de entregas no está configurado. Contacte al administrador.',
+      );
+    }
+
+    const isRaw = file.mimetype !== 'image/jpeg' && file.mimetype !== 'image/png';
+    const publicId = `lms/entregas/${randomUUID()}`;
+
+    return new Promise<string>((resolve, reject) => {
+      const uploadStream = cloudinary.uploader.upload_stream(
+        {
+          public_id: publicId,
+          resource_type: isRaw ? 'raw' : 'image',
+          overwrite: false,
+          tags: ['entrega', 'lms', 'matsso'],
+        },
+        (error, result: UploadApiResponse | undefined) => {
+          if (error || !result) {
+            this.logger.error('Error subiendo entrega a Cloudinary:', error?.message);
+            reject(new InternalServerErrorException('No se pudo subir la entrega. Intenta de nuevo.'));
+            return;
+          }
+          this.logger.log(`Entrega subida: ${result.secure_url}`);
+          resolve(result.secure_url);
+        },
+      );
+
+      const readable = Readable.from(file.buffer);
+      readable.pipe(uploadStream);
+    });
+  }
 }
