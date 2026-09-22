@@ -23,6 +23,7 @@ const CursoProfesor = () => {
   const [curso, setCurso] = useState(null);
   const [moduloActivo, setModuloActivo] = useState(null);
   const [nuevoModulo, setNuevoModulo] = useState('');
+  const [nuevoModuloModo, setNuevoModuloModo] = useState('TRADICIONAL');
   const [nuevoContenido, setNuevoContenido] = useState({ titulo: '', item_type: 'DOCUMENT', cloudinary_url: '', video_duration_seconds: '', assignment_instructions: '' });
   const [guardando, setGuardando] = useState(false);
 
@@ -31,12 +32,21 @@ const CursoProfesor = () => {
   };
   useEffect(cargar, [courseId]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  useEffect(() => {
+    if (curso && !curso.modo_moodle && curso.modo_coursera) setNuevoModuloModo('ASINCRONO_VOD');
+  }, [curso]);
+
+  // Un curso puede tener las dos modalidades — el orden del módulo es
+  // independiente por modalidad (module_id_delivery_mode_sequence_order en
+  // el backend), por eso el sequence_order se calcula contando solo los
+  // módulos de la modalidad elegida, no todos.
   const handleCrearModulo = async (e) => {
     e.preventDefault();
     if (!nuevoModulo.trim()) return;
-    const sequence_order = (curso?.modules?.length ?? 0) + 1;
+    const modulosDeEstaModalidad = (curso?.modules ?? []).filter((m) => m.delivery_mode === nuevoModuloModo);
+    const sequence_order = modulosDeEstaModalidad.length + 1;
     try {
-      await lmsService.crearModuloProfesor(courseId, { titulo: nuevoModulo, sequence_order });
+      await lmsService.crearModuloProfesor(courseId, { titulo: nuevoModulo, delivery_mode: nuevoModuloModo, sequence_order });
       setNuevoModulo('');
       addToast('Módulo creado.', 'success');
       cargar();
@@ -89,7 +99,10 @@ const CursoProfesor = () => {
           {curso.modules.map((m) => (
             <div key={m.id} className="cp-modulo">
               <div className="cp-modulo-head">
-                <b>{m.sequence_order}. {m.titulo}</b>
+                <b>
+                  <span className="cp-tipo-tag">{m.delivery_mode === 'ASINCRONO_VOD' ? 'Coursera' : 'Moodle'}</span>{' '}
+                  {m.sequence_order}. {m.titulo}
+                </b>
                 <button className="cp-add-content-btn" onClick={() => setModuloActivo(m.id)}>+ Contenido</button>
               </div>
               <ul>
@@ -112,6 +125,12 @@ const CursoProfesor = () => {
               value={nuevoModulo}
               onChange={(e) => setNuevoModulo(e.target.value)}
             />
+            {curso.modo_moodle && curso.modo_coursera && (
+              <select value={nuevoModuloModo} onChange={(e) => setNuevoModuloModo(e.target.value)}>
+                <option value="TRADICIONAL">Moodle</option>
+                <option value="ASINCRONO_VOD">Coursera</option>
+              </select>
+            )}
             <button type="submit" className="cp-btn">+ Agregar módulo</button>
           </form>
         </div>

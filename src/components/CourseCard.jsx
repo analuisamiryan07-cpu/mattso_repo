@@ -15,11 +15,14 @@ const CourseCard = ({ course }) => {
   const navigate = useNavigate();
 
   const isCertificacion = course.tipo === 'certificacion';
-  const badgeColor = isCertificacion ? '#8E24AA' : 'var(--primary-yellow)';
-  const badgeText = isCertificacion ? 'CERTIFICACIÓN' : 'CAPACITACIÓN';
+  const isCurso = course.tipo === 'curso';
+  const badgeColor = isCertificacion ? '#8E24AA' : isCurso ? '#0A2463' : 'var(--primary-yellow)';
+  const badgeText = isCertificacion ? 'CERTIFICACIÓN' : isCurso ? 'CURSO' : 'CAPACITACIÓN';
   const detailPath = isCertificacion
     ? `/certificacion/${course.slug}`
-    : `/capacitacion/${course.slug}`;
+    : isCurso
+      ? `/curso/${course.slug}`
+      : `/capacitacion/${course.slug}`;
 
   const handleAddToCart = () => {
     addToCart(course);
@@ -28,14 +31,20 @@ const CourseCard = ({ course }) => {
 
   // cloudinaryNum viene del backend cuando imagen_url es un número.
   // Si el backend aún no lo devuelve, el campo imagen contiene el número directamente.
-  const cloudinaryId = course.cloudinaryNum
-    || (course.imagen?.match(/^\d{2,3}$/) ? course.imagen : null);
+  // Un curso no usa número — usa su propia carpeta de Cloudinary (ver
+  // cursoCloudinaryFolder, backend-matsso/src/catalog/catalog.service.ts).
+  const cloudinaryPublicId = isCurso
+    ? (course.cursoCloudinaryFolder ? `${course.cursoCloudinaryFolder}/hero` : undefined)
+    : (() => {
+        const num = course.cloudinaryNum || (course.imagen?.match(/^\d{2,3}$/) ? course.imagen : null);
+        return num ? `${num}_portada` : undefined;
+      })();
 
   return (
     <div className="course-card-modern">
       <div className="ccm__image">
         <CloudinaryImage
-          publicId={cloudinaryId ? `${cloudinaryId}_portada` : undefined}
+          publicId={cloudinaryPublicId}
           alt={course.titulo}
           width={400}
           height={250}

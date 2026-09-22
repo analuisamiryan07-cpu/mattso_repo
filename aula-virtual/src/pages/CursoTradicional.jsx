@@ -1,7 +1,8 @@
-// Vista "Moodle": acceso abierto a todos los recursos y tareas del curso —
-// sin candados secuenciales (courses.service.ts ya no los aplica para
-// delivery_mode='TRADICIONAL', ver el comentario ahí). Tres pestañas:
-// Recursos (ver/leer), Tareas (entregar/rendir), Mis calificaciones.
+// Vista "Moodle": acceso abierto a todos los recursos y tareas del contenido
+// TRADICIONAL de un curso — sin candados secuenciales (courses.service.ts no
+// los aplica para este modo). Un curso puede tener también contenido
+// ASINCRONO_VOD (Coursera) por separado. Tres pestañas: Recursos (ver/leer),
+// Tareas (entregar/rendir), Mis calificaciones.
 
 import { useCallback, useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
@@ -21,7 +22,7 @@ const CursoTradicional = () => {
   const [activeItemId, setActiveItemId] = useState(null);
 
   const cargar = useCallback(() => {
-    lmsService.getCursoDetalle(courseId)
+    lmsService.getCursoDetalle(courseId, 'TRADICIONAL')
       .then(setDetalle)
       .catch(() => setError('No se pudo cargar el curso, o no estás inscrito en él.'));
     // eslint-disable-next-line react-hooks/exhaustive-deps

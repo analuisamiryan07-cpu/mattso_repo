@@ -5,6 +5,7 @@ import { OrdersService } from './orders.service';
 import { PrismaModule } from '../prisma/prisma.module';
 import { EmailModule } from '../email/email.module';
 import { StorageModule } from '../storage/storage.module';
+import { LmsModule } from '../lms/lms.module';
 import { EMAIL_QUEUE } from '../queue/queue.constants';
 
 // Solo registrar la cola si Redis está configurado
@@ -13,7 +14,7 @@ const queueImports = process.env.REDIS_URL
   : [];
 
 @Module({
-  imports: [PrismaModule, EmailModule, StorageModule, ...queueImports],
+  imports: [PrismaModule, EmailModule, StorageModule, LmsModule, ...queueImports],
   controllers: [OrdersController],
   providers: [OrdersService],
   exports: [OrdersService],

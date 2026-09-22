@@ -10,7 +10,13 @@ const Login = () => {
   const location = useLocation();
   const { addToast } = useToast();
 
-  const initialTab = location.state?.tab === 'register' ? 'register' : 'login';
+  // location.state sirve para navegación interna (<Link state={{tab:'register'}}>).
+  // ?tab=register es lo mismo pero por URL — lo necesita el Aula Virtual, que es
+  // otra app (otro dominio) y solo puede enlazar con un <a href>, no con <Link>.
+  const searchParams = new URLSearchParams(location.search);
+  const initialTab = (location.state?.tab === 'register' || searchParams.get('tab') === 'register')
+    ? 'register'
+    : 'login';
   const [tab, setTab] = useState(initialTab);
   const [loading, setLoading] = useState(false);
   const [acceptTerms, setAcceptTerms] = useState(false);

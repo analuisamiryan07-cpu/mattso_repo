@@ -1,16 +1,18 @@
 // Raíz del proyecto Aula Virtual — deploy y dominio aparte del sitio público
-// (ver aula-virtual/README.md). Portón de 2 pasos (login+pago -> clave) y,
-// una vez pasado, enruta por rol:
+// (ver aula-virtual/README.md). Portón de 1 solo paso: correo + contraseña,
+// validado contra el backend (authService.gateLogin exige además una orden
+// pagada — ver lms-gate.service.ts). Ya no hay un segundo paso de "clave"
+// que bloquee toda la app: cada curso tiene su propia clave, y se canjea
+// como una acción dentro de "Mis cursos" (botón "Añadir curso"), no como un
+// portón previo. Una vez logueado, enruta por rol:
 //   - ESTUDIANTE: Mis cursos -> CursoVOD (look Coursera) o CursoTradicional
-//     (look Moodle), según el delivery_mode de cada curso.
+//     (look Moodle), según qué modalidad tenga cada curso.
 //   - PROFESOR: sus cursos + entregas pendientes por calificar.
 
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { authService } from '@api/authService';
-import { lmsService } from '@api/lmsService';
 import Login from '@pages/Login';
-import Clave from '@pages/Clave';
 import AulaLayout from '@layout/AulaLayout';
 import MisCursos from '@pages/MisCursos';
 import CursoVOD from '@pages/CursoVOD';
@@ -19,15 +21,11 @@ import MisCursosProfesor from '@pages/profesor/MisCursosProfesor';
 import CursoProfesor from '@pages/profesor/CursoProfesor';
 
 function Portal() {
-  // 'cargando' | 'login' | 'clave' | 'listo'
+  // 'cargando' | 'login' | 'listo'
   const [paso, setPaso] = useState('cargando');
 
   const revisarEstado = () => {
-    if (!authService.isAuthenticated()) { setPaso('login'); return; }
-    lmsService
-      .getEstadoAcceso()
-      .then(({ desbloqueado }) => setPaso(desbloqueado ? 'listo' : 'clave'))
-      .catch(() => { authService.logout(); setPaso('login'); });
+    setPaso(authService.isAuthenticated() ? 'listo' : 'login');
   };
 
   useEffect(revisarEstado, []);
@@ -39,7 +37,6 @@ function Portal() {
 
   if (paso === 'cargando') return null;
   if (paso === 'login') return <Login onSuccess={revisarEstado} />;
-  if (paso === 'clave') return <Clave onSuccess={revisarEstado} />;
 
   const user = authService.getCurrentUser();
   const esProfesor = user?.rol === 'PROFESOR';

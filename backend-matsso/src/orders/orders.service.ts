@@ -10,8 +10,10 @@ import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
 import { PrismaService } from '../prisma/prisma.service';
 import { EmailService } from '../email/email.service';
+import { EnrollmentService } from '../lms/enrollment/enrollment.service';
 import { EMAIL_QUEUE, EMAIL_JOBS } from '../queue/queue.constants';
 import { CreateOrderDto } from './dto/create-order.dto';
+import { CreateAdminOrderDto } from './dto/create-admin-order.dto';
 import { encodeId } from '../common/id-hasher';
 
 const TASA_IVA = 0.15;
@@ -23,6 +25,7 @@ export class OrdersService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly emailService: EmailService,
+    private readonly enrollmentService: EnrollmentService,
     @Optional() @InjectQueue(EMAIL_QUEUE) private readonly emailQueue?: Queue,
   ) {}
 
@@ -137,6 +140,96 @@ export class OrdersService {
     };
   }
 
+  /**
+   * Orden creada a mano desde el sistema interno (venta por teléfono, sin
+   * pasar por la página web) — nace directamente en PAGADA, no PENDIENTE.
+   * Misma regla de precios que una compra web (nunca se confía en un total
+   * mandado por el cliente): `monto_pagado_manual` es solo el registro de lo
+   * cobrado en la práctica, no lo que decide el total.
+   */
+  async createAdminOrder(dto: CreateAdminOrderDto, actor: string) {
+    const productIds = dto.items.map((i) => BigInt(i.producto_id));
+    const productos = await this.prisma.producto.findMany({
+      where: { id: { in: productIds }, activo: true },
+      select: { id: true, precio: true, titulo: true, tipo: true },
+    });
+
+    if (productos.length !== productIds.length) {
+      const found = new Set(productos.map((p) => Number(p.id)));
+      const missing = dto.items.filter((i) => !found.has(i.producto_id)).map((i) => i.producto_id);
+      throw new BadRequestException(`Productos no encontrados o inactivos: ${missing.join(', ')}`);
+    }
+
+    const precioMap = new Map(productos.map((p) => [Number(p.id), Number(p.precio)]));
+    const tipoMap = new Map(productos.map((p) => [Number(p.id), p.tipo as string]));
+
+    const subtotal = dto.items.reduce(
+      (acc, item) => acc + (precioMap.get(item.producto_id) ?? 0) * item.cantidad,
+      0,
+    );
+    const subtotalConIva = dto.items.reduce((acc, item) => {
+      const tipo = tipoMap.get(item.producto_id) ?? 'CAPACITACION';
+      return tipo === 'CAPACITACION' ? acc + (precioMap.get(item.producto_id) ?? 0) * item.cantidad : acc;
+    }, 0);
+    const iva = subtotalConIva * TASA_IVA;
+    const total = subtotal + iva;
+    if (total <= 0) throw new BadRequestException('El total de la orden debe ser mayor a 0.');
+
+    const userWeb = await this.prisma.usuarioWeb.findUnique({ where: { id: BigInt(dto.usuario_id) } });
+    if (!userWeb) throw new NotFoundException('Usuario no encontrado.');
+
+    const { order, createdItems } = await this.prisma.$transaction(async (tx) => {
+      const dbOrder = await tx.orden.create({
+        data: {
+          usuario_id: BigInt(dto.usuario_id),
+          total,
+          estado: 'PAGADA',
+          metodo_pago: 'MANUAL_SISTEMA_INTERNO',
+          monto_pagado_manual: dto.monto_pagado_manual,
+        },
+      });
+
+      const items = [];
+      for (const item of dto.items) {
+        items.push(
+          await tx.ordenItem.create({
+            data: {
+              orden_id: dbOrder.id,
+              producto_id: BigInt(item.producto_id),
+              precio_unitario: precioMap.get(item.producto_id)!,
+              cantidad: item.cantidad,
+            },
+          }),
+        );
+      }
+
+      return { order: dbOrder, createdItems: items };
+    });
+
+    this.logger.log(`[${actor}] creó orden manual ${order.id} (usuario ${dto.usuario_id}, total ${total.toFixed(2)})`);
+
+    // Nace PAGADA directo — es el 4to lugar del código donde una orden llega
+    // a ese estado (los otros 3: aprobación manual de transferencia arriba,
+    // captura de PayPal, webhook de PayPal), así que dispara la inscripción
+    // igual que ellos. Usa el id real de cada OrdenItem recién creado, no el
+    // índice del loop — es lo que después referencia AccessGrant.
+    await this.enrollmentService.enrollAllItemsFromOrder(
+      Number(order.id),
+      dto.usuario_id,
+      createdItems.map((i) => ({ id: Number(i.id), producto_id: Number(i.producto_id) })),
+    );
+
+    return {
+      id: Number(order.id),
+      usuario_id: dto.usuario_id,
+      subtotal: Number(subtotal.toFixed(2)),
+      iva: Number(iva.toFixed(2)),
+      total: Number(total.toFixed(2)),
+      estado: order.estado,
+      fecha_orden: order.fecha_orden,
+    };
+  }
+
   async getAllOrders() {
     const orders = await this.prisma.orden.findMany({
       orderBy: { fecha_orden: 'desc' },
@@ -192,6 +285,14 @@ export class OrdersService {
       data: { estado },
       include: { usuario: { include: { cliente: true } } },
     });
+
+    if (estado === 'PAGADA') {
+      await this.enrollmentService.enrollAllItemsFromOrder(
+        id,
+        Number(order.usuario_id),
+        order.items.map((i) => ({ id: Number(i.id), producto_id: Number(i.producto_id) })),
+      );
+    }
 
     const correo = updated.usuario.cliente?.correo ?? updated.usuario.correo;
     const nombre = updated.usuario.cliente?.nombre ?? updated.usuario.correo;

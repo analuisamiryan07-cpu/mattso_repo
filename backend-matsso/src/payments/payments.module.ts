@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { PrismaModule } from '../prisma/prisma.module';
 import { EmailModule } from '../email/email.module';
+import { LmsModule } from '../lms/lms.module';
 import { PaypalApiService } from './paypal/paypal-api.service';
 import { PaypalService } from './paypal/paypal.service';
 import { PaypalWebhookService } from './paypal/paypal-webhook.service';
@@ -8,7 +9,7 @@ import { PaypalController } from './paypal/paypal.controller';
 import { PaypalWebhookController } from './paypal/paypal-webhook.controller';
 
 @Module({
-  imports: [PrismaModule, EmailModule],
+  imports: [PrismaModule, EmailModule, LmsModule],
   controllers: [PaypalController, PaypalWebhookController],
   providers: [PaypalApiService, PaypalService, PaypalWebhookService],
 })

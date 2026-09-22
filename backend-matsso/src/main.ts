@@ -5,6 +5,13 @@ import helmet from 'helmet';
 import * as express from 'express';
 import { join } from 'path';
 
+// JSON.stringify no sabe serializar BigInt (los IDs de public.* lo son). Las rutas
+// del LMS devuelven filas de Prisma directamente (p.ej. courses.profesor_usuario_id),
+// y sin esto responden 500. Los IDs son autoincrementales pequeños, sin pérdida al pasar a Number.
+(BigInt.prototype as unknown as { toJSON: () => number }).toJSON = function (this: bigint) {
+  return Number(this);
+};
+
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, { rawBody: true });
 

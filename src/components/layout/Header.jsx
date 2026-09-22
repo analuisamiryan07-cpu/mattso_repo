@@ -124,6 +124,11 @@ const Header = () => {
                   </Link>
                 </li>
                 <li>
+                  <Link to="/cursos" onClick={closeAll}>
+                    <i className="fa-solid fa-laptop-code" /> Cursos
+                  </Link>
+                </li>
+                <li>
                   <Link to="/certificaciones" onClick={closeAll}>
                     <i className="fa-solid fa-certificate" /> Certificaciones
                   </Link>

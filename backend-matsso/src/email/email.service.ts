@@ -188,10 +188,14 @@ export class EmailService {
     });
   }
 
-  async sendAccessCode(data: { to: string; nombre: string; code: string }) {
+  // Reemplaza al antiguo sendAccessCode (código de 6 dígitos, uno por
+  // usuario). Ahora la clave es un JWT largo, uno por cada curso comprado —
+  // ya no cabe como texto grande a la vista, se entrega en una caja
+  // copiable con salto de línea.
+  async sendAccessGrant(data: { to: string; nombre: string; cursoTitulo: string; duracionMeses: number; clave: string }) {
     await this.send({
       to: data.to,
-      subject: `Tu clave de acceso al Aula Virtual — ${this.senderName}`,
+      subject: `Tu clave de acceso a "${data.cursoTitulo}" — ${this.senderName}`,
       html: `
         <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;color:#1f2937;">
           <div style="background:#0A2463;padding:24px;border-radius:8px 8px 0 0;text-align:center;">
@@ -200,14 +204,12 @@ export class EmailService {
           </div>
           <div style="padding:28px;border:1px solid #e5e7eb;border-top:none;border-radius:0 0 8px 8px;background:#fff;">
             <h2 style="color:#0A2463;margin-top:0;">Hola, ${data.nombre}</h2>
-            <p>Ya puedes ingresar al Aula Virtual. Usa esta clave después de iniciar sesión con tu correo y contraseña habituales:</p>
-            <div style="text-align:center;margin:32px 0;">
-              <span style="background:#f9fafb;border:2px dashed #0A2463;color:#0A2463;padding:16px 28px;border-radius:10px;font-weight:800;font-size:28px;letter-spacing:.15em;display:inline-block;font-family:monospace;">
-                ${data.code}
-              </span>
+            <p>Ya puedes añadir el curso <strong>${data.cursoTitulo}</strong> en el Aula Virtual. Inicia sesión con tu correo y contraseña habituales, presiona "Añadir curso" y pega esta clave:</p>
+            <div style="background:#f9fafb;border:2px dashed #0A2463;color:#0A2463;padding:16px;border-radius:10px;font-family:monospace;font-size:13px;word-break:break-all;margin:24px 0;">
+              ${data.clave}
             </div>
             <p style="font-size:13px;color:#6b7280;">
-              Esta clave es de un solo uso. Si no la solicitaste, ignora este correo.
+              Tienes <strong>${data.duracionMeses} ${data.duracionMeses === 1 ? 'mes' : 'meses'}</strong> de acceso a partir del momento en que uses esta clave — no desde hoy. Es de un solo uso. Si no la solicitaste, ignora este correo.
             </p>
           </div>
         </div>`,

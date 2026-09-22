@@ -18,6 +18,7 @@ import { CreateModuleDto } from '../courses/dto/create-module.dto';
 import { CreateContentItemDto } from '../courses/dto/create-content-item.dto';
 import { CreateQuizDto } from '../courses/dto/create-quiz.dto';
 import { ProfessorGradeSubmissionDto } from './dto/professor-grade-submission.dto';
+import { buildCloudinaryFolder } from '../courses/course-cloudinary.util';
 
 @Injectable()
 export class ProfessorCoursesService {
@@ -52,13 +53,25 @@ export class ProfessorCoursesService {
   }
 
   async crearCurso(usuarioId: number, dto: CreateCourseDto) {
+    const modoMoodle = dto.modo_moodle ?? false;
+    const modoCoursera = dto.modo_coursera ?? false;
+    if (!modoMoodle && !modoCoursera) {
+      throw new BadRequestException('El curso debe ofrecerse en Moodle, en Coursera, o en ambos.');
+    }
+
+    const titulo = sanitizePlainText(dto.titulo)!;
+    const cloudinaryFolder = await buildCloudinaryFolder(this.prisma, titulo);
+
     return this.prisma.course.create({
       data: {
         profesor_usuario_id: BigInt(usuarioId),
         producto_id: dto.producto_id ? BigInt(dto.producto_id) : null,
-        titulo: sanitizePlainText(dto.titulo),
+        titulo,
         descripcion: sanitizePlainText(dto.descripcion),
-        delivery_mode: dto.delivery_mode as any,
+        modo_moodle: modoMoodle,
+        modo_coursera: modoCoursera,
+        cloudinary_folder: cloudinaryFolder,
+        duracion_meses: dto.duracion_meses ?? null,
         is_active: dto.is_active ?? true,
       },
     });
@@ -75,15 +88,35 @@ export class ProfessorCoursesService {
   }
 
   async crearModulo(usuarioId: number, courseId: string, dto: CreateModuleDto) {
-    await this.verificarDuenoCurso(usuarioId, courseId);
+    const course = await this.verificarDuenoCurso(usuarioId, courseId);
+    const modoHabilitado = dto.delivery_mode === 'TRADICIONAL' ? course.modo_moodle : course.modo_coursera;
+    if (!modoHabilitado) {
+      throw new BadRequestException(
+        `Este curso no tiene habilitada la modalidad ${dto.delivery_mode === 'TRADICIONAL' ? 'Moodle' : 'Coursera'}.`,
+      );
+    }
+
     const existing = await this.prisma.module.findUnique({
-      where: { course_id_sequence_order: { course_id: courseId, sequence_order: dto.sequence_order } },
+      where: {
+        course_id_delivery_mode_sequence_order: {
+          course_id: courseId,
+          delivery_mode: dto.delivery_mode as any,
+          sequence_order: dto.sequence_order,
+        },
+      },
     });
     if (existing) {
-      throw new BadRequestException(`Ya existe un módulo con sequence_order=${dto.sequence_order} en este curso.`);
+      throw new BadRequestException(
+        `Ya existe un módulo con sequence_order=${dto.sequence_order} en esta modalidad de este curso.`,
+      );
     }
     return this.prisma.module.create({
-      data: { course_id: courseId, titulo: sanitizePlainText(dto.titulo), sequence_order: dto.sequence_order },
+      data: {
+        course_id: courseId,
+        delivery_mode: dto.delivery_mode as any,
+        titulo: sanitizePlainText(dto.titulo),
+        sequence_order: dto.sequence_order,
+      },
     });
   }
 

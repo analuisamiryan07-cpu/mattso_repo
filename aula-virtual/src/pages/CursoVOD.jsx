@@ -1,5 +1,6 @@
 // Vista "Coursera": módulos con desbloqueo secuencial estricto, reproductor
-// grande, quiz automático. Para cursos delivery_mode='ASINCRONO_VOD'.
+// grande, quiz automático. Para el contenido ASINCRONO_VOD de un curso — un
+// curso puede tener también contenido TRADICIONAL (Moodle) por separado.
 // El árbol de módulos/contenido con `unlocked`/`status` viene ya calculado
 // del backend (courses.service.ts) — este componente solo lo pinta.
 
@@ -21,7 +22,7 @@ const CursoVOD = () => {
 
   const cargar = useCallback(() => {
     lmsService
-      .getCursoDetalle(courseId)
+      .getCursoDetalle(courseId, 'ASINCRONO_VOD')
       .then((data) => {
         setDetalle(data);
         if (!activeItemId) {

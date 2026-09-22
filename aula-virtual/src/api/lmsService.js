@@ -6,8 +6,10 @@ export const lmsService = {
     return data;
   },
 
-  async getCursoDetalle(courseId) {
-    const { data } = await apiClient.get(`/lms/courses/${courseId}`);
+  // mode: 'TRADICIONAL' (Moodle) | 'ASINCRONO_VOD' (Coursera) — un curso
+  // puede tener las dos, así que hay que decir cuál se quiere ver.
+  async getCursoDetalle(courseId, mode) {
+    const { data } = await apiClient.get(`/lms/courses/${courseId}`, { params: { mode } });
     return data;
   },
 
@@ -50,14 +52,19 @@ export const lmsService = {
     return data;
   },
 
-  // ── Portón: clave de acceso ────────────────────────────────────────
-  async getEstadoAcceso() {
-    const { data } = await apiClient.get('/lms/access-codes/status');
-    return data; // { desbloqueado }
+  // ── Añadir curso: canjear la clave que mandó el sistema interno ─────
+  // Reemplaza al viejo portón de un solo código para todo — ahora es una
+  // clave JWT por cada curso comprado, y se puede usar en cualquier momento
+  // (la primera vez, o cada vez que se quiera añadir un curso más).
+  async canjearClave(clave) {
+    const { data } = await apiClient.post('/lms/access-grants/canjear', { clave });
+    return data; // { ok, curso, expires_at }
   },
 
-  async verificarClave(code) {
-    const { data } = await apiClient.post('/lms/access-codes/verify', { code });
+  // Para el carrusel de "sin cursos activos" — mismo catálogo público que
+  // usa la página principal, no hace falta sesión especial.
+  async getCursosSugeridos() {
+    const { data } = await apiClient.get('/catalog', { params: { tipo: 'curso' } });
     return data;
   },
 

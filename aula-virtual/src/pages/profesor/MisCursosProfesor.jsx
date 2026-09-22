@@ -12,7 +12,7 @@ const MisCursosProfesor = () => {
   const { addToast } = useToast();
   const [cursos, setCursos] = useState(null);
   const [pendientes, setPendientes] = useState(null);
-  const [nuevoCurso, setNuevoCurso] = useState({ titulo: '', delivery_mode: 'TRADICIONAL', descripcion: '' });
+  const [nuevoCurso, setNuevoCurso] = useState({ titulo: '', modo_moodle: true, modo_coursera: false, descripcion: '' });
   const [creando, setCreando] = useState(false);
   const [calificando, setCalificando] = useState({});
 
@@ -26,11 +26,15 @@ const MisCursosProfesor = () => {
   const handleCrearCurso = async (e) => {
     e.preventDefault();
     if (!nuevoCurso.titulo.trim()) { addToast('Ponle un título al curso.', 'error'); return; }
+    if (!nuevoCurso.modo_moodle && !nuevoCurso.modo_coursera) {
+      addToast('Elige Moodle, Coursera o ambos.', 'error');
+      return;
+    }
     setCreando(true);
     try {
       await lmsService.crearCursoProfesor(nuevoCurso);
       addToast('Curso creado.', 'success');
-      setNuevoCurso({ titulo: '', delivery_mode: 'TRADICIONAL', descripcion: '' });
+      setNuevoCurso({ titulo: '', modo_moodle: true, modo_coursera: false, descripcion: '' });
       cargar();
     } catch (err) {
       addToast(err.response?.data?.message || 'No se pudo crear el curso.', 'error');
@@ -61,9 +65,8 @@ const MisCursosProfesor = () => {
       <div className="mcp-grid">
         {cursos.map((c) => (
           <Link key={c.id} to={`/curso/${c.id}`} className="mcp-card">
-            <span className={`mcp-badge ${c.delivery_mode === 'ASINCRONO_VOD' ? 'is-vod' : ''}`}>
-              {c.delivery_mode === 'ASINCRONO_VOD' ? 'Video bajo demanda' : 'Tradicional'}
-            </span>
+            {c.modo_moodle && <span className="mcp-badge">Moodle</span>}
+            {c.modo_coursera && <span className="mcp-badge is-vod">Coursera</span>}
             <h3>{c.titulo}</h3>
             <p className="mcp-meta">{c._count.modules} módulos · {c._count.enrollments} estudiantes</p>
           </Link>
@@ -78,13 +81,22 @@ const MisCursosProfesor = () => {
           value={nuevoCurso.titulo}
           onChange={(e) => setNuevoCurso((p) => ({ ...p, titulo: e.target.value }))}
         />
-        <select
-          value={nuevoCurso.delivery_mode}
-          onChange={(e) => setNuevoCurso((p) => ({ ...p, delivery_mode: e.target.value }))}
-        >
-          <option value="TRADICIONAL">Tradicional (tareas y calificación humana)</option>
-          <option value="ASINCRONO_VOD">Video bajo demanda (secuencial + quiz automático)</option>
-        </select>
+        <label className="mcp-check">
+          <input
+            type="checkbox"
+            checked={nuevoCurso.modo_moodle}
+            onChange={(e) => setNuevoCurso((p) => ({ ...p, modo_moodle: e.target.checked }))}
+          />
+          Moodle (tareas y calificación humana)
+        </label>
+        <label className="mcp-check">
+          <input
+            type="checkbox"
+            checked={nuevoCurso.modo_coursera}
+            onChange={(e) => setNuevoCurso((p) => ({ ...p, modo_coursera: e.target.checked }))}
+          />
+          Coursera (video secuencial + quiz automático)
+        </label>
         <textarea
           placeholder="Descripción (opcional)"
           value={nuevoCurso.descripcion}

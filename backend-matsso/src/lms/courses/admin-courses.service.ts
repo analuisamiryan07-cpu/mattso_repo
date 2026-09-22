@@ -4,17 +4,23 @@
 
 import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
+import { StorageService } from '../../storage/storage.service';
 import { sanitizePlainText } from '../../common/sanitize.util';
 import { CreateCourseDto, UpdateCourseDto } from './dto/create-course.dto';
 import { CreateModuleDto } from './dto/create-module.dto';
 import { CreateContentItemDto } from './dto/create-content-item.dto';
 import { CreateQuizDto } from './dto/create-quiz.dto';
+import { CourseImageSlot } from './dto/upload-course-image.dto';
+import { buildCloudinaryFolder } from './course-cloudinary.util';
 
 @Injectable()
 export class AdminCoursesService {
   private readonly logger = new Logger(AdminCoursesService.name);
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly storage: StorageService,
+  ) {}
 
   async listCourses() {
     return this.prisma.course.findMany({
@@ -44,12 +50,24 @@ export class AdminCoursesService {
   }
 
   async createCourse(dto: CreateCourseDto, actor: string) {
+    const modoMoodle = dto.modo_moodle ?? false;
+    const modoCoursera = dto.modo_coursera ?? false;
+    if (!modoMoodle && !modoCoursera) {
+      throw new BadRequestException('El curso debe ofrecerse en Moodle, en Coursera, o en ambos.');
+    }
+
+    const titulo = sanitizePlainText(dto.titulo)!;
+    const cloudinaryFolder = await buildCloudinaryFolder(this.prisma, titulo);
+
     const course = await this.prisma.course.create({
       data: {
         producto_id: dto.producto_id ? BigInt(dto.producto_id) : null,
-        titulo: sanitizePlainText(dto.titulo),
+        titulo,
         descripcion: sanitizePlainText(dto.descripcion),
-        delivery_mode: dto.delivery_mode as any,
+        modo_moodle: modoMoodle,
+        modo_coursera: modoCoursera,
+        cloudinary_folder: cloudinaryFolder,
+        duracion_meses: dto.duracion_meses ?? null,
         is_active: dto.is_active ?? true,
       },
     });
@@ -58,12 +76,21 @@ export class AdminCoursesService {
   }
 
   async updateCourse(courseId: string, dto: UpdateCourseDto, actor: string) {
-    await this.ensureCourseExists(courseId);
+    const current = await this.ensureCourseExists(courseId);
+    const modoMoodle = dto.modo_moodle ?? current.modo_moodle;
+    const modoCoursera = dto.modo_coursera ?? current.modo_coursera;
+    if (!modoMoodle && !modoCoursera) {
+      throw new BadRequestException('El curso debe ofrecerse en Moodle, en Coursera, o en ambos.');
+    }
+
     const course = await this.prisma.course.update({
       where: { id: courseId },
       data: {
         ...(dto.titulo !== undefined && { titulo: sanitizePlainText(dto.titulo) }),
         ...(dto.descripcion !== undefined && { descripcion: sanitizePlainText(dto.descripcion) }),
+        ...(dto.modo_moodle !== undefined && { modo_moodle: dto.modo_moodle }),
+        ...(dto.modo_coursera !== undefined && { modo_coursera: dto.modo_coursera }),
+        ...(dto.duracion_meses !== undefined && { duracion_meses: dto.duracion_meses }),
         ...(dto.is_active !== undefined && { is_active: dto.is_active }),
       },
     });
@@ -72,17 +99,37 @@ export class AdminCoursesService {
   }
 
   async createModule(courseId: string, dto: CreateModuleDto, actor: string) {
-    await this.ensureCourseExists(courseId);
+    const course = await this.ensureCourseExists(courseId);
+    const modoHabilitado = dto.delivery_mode === 'TRADICIONAL' ? course.modo_moodle : course.modo_coursera;
+    if (!modoHabilitado) {
+      throw new BadRequestException(
+        `Este curso no tiene habilitada la modalidad ${dto.delivery_mode === 'TRADICIONAL' ? 'Moodle' : 'Coursera'}.`,
+      );
+    }
+
     const existing = await this.prisma.module.findUnique({
-      where: { course_id_sequence_order: { course_id: courseId, sequence_order: dto.sequence_order } },
+      where: {
+        course_id_delivery_mode_sequence_order: {
+          course_id: courseId,
+          delivery_mode: dto.delivery_mode as any,
+          sequence_order: dto.sequence_order,
+        },
+      },
     });
     if (existing) {
-      throw new BadRequestException(`Ya existe un módulo con sequence_order=${dto.sequence_order} en este curso.`);
+      throw new BadRequestException(
+        `Ya existe un módulo con sequence_order=${dto.sequence_order} en esta modalidad de este curso.`,
+      );
     }
     const module = await this.prisma.module.create({
-      data: { course_id: courseId, titulo: sanitizePlainText(dto.titulo), sequence_order: dto.sequence_order },
+      data: {
+        course_id: courseId,
+        delivery_mode: dto.delivery_mode as any,
+        titulo: sanitizePlainText(dto.titulo),
+        sequence_order: dto.sequence_order,
+      },
     });
-    this.logger.log(`[${actor}] creó módulo ${module.id} en curso ${courseId}`);
+    this.logger.log(`[${actor}] creó módulo ${module.id} (${dto.delivery_mode}) en curso ${courseId}`);
     return module;
   }
 
@@ -165,8 +212,29 @@ export class AdminCoursesService {
     return quiz;
   }
 
-  private async ensureCourseExists(courseId: string) {
-    const course = await this.prisma.course.findUnique({ where: { id: courseId }, select: { id: true } });
+  async uploadImagen(courseId: string, slot: CourseImageSlot, file: Express.Multer.File, actor: string) {
+    const course = await this.prisma.course.findUnique({
+      where: { id: courseId },
+      select: { cloudinary_folder: true },
+    });
     if (!course) throw new NotFoundException('Curso no encontrado.');
+    if (!course.cloudinary_folder) {
+      // No debería pasar — se calcula siempre al crear el curso — pero si
+      // pasa es mejor un error claro que subir a una carpeta genérica.
+      throw new BadRequestException('Este curso no tiene una carpeta de Cloudinary asignada.');
+    }
+
+    const url = await this.storage.uploadCourseImage(file, course.cloudinary_folder, slot);
+    this.logger.log(`[${actor}] subió imagen "${slot}" del curso ${courseId}`);
+    return { url };
+  }
+
+  private async ensureCourseExists(courseId: string) {
+    const course = await this.prisma.course.findUnique({
+      where: { id: courseId },
+      select: { id: true, modo_moodle: true, modo_coursera: true },
+    });
+    if (!course) throw new NotFoundException('Curso no encontrado.');
+    return course;
   }
 }

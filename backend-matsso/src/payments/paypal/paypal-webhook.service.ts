@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { PaypalApiService } from './paypal-api.service';
+import { EnrollmentService } from '../../lms/enrollment/enrollment.service';
 
 @Injectable()
 export class PaypalWebhookService {
@@ -9,6 +10,7 @@ export class PaypalWebhookService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly api: PaypalApiService,
+    private readonly enrollmentService: EnrollmentService,
   ) {}
 
   async handleWebhook(headers: Record<string, string>, rawBody: string): Promise<void> {
@@ -80,17 +82,24 @@ export class PaypalWebhookService {
     if (paypalOrderId) {
       const pagoPorOrder = await this.prisma.pago.findUnique({ where: { paypal_order_id: paypalOrderId } });
       if (pagoPorOrder) {
-        await this.prisma.$transaction(async (tx) => {
+        const orden = await this.prisma.$transaction(async (tx) => {
           await tx.pago.update({
             where: { paypal_order_id: paypalOrderId },
             data: { capture_id: captureId, estado: 'COMPLETADO', paid_at: new Date(), updated_at: new Date() },
           });
-          await tx.orden.update({
+          return tx.orden.update({
             where: { id: pagoPorOrder.orden_id },
             data:  { estado: 'PAGADA' },
+            include: { items: true },
           });
         });
         this.logger.log(`Orden ${pagoPorOrder.orden_id} marcada PAGADA vía webhook.`);
+
+        await this.enrollmentService.enrollAllItemsFromOrder(
+          Number(orden.id),
+          Number(orden.usuario_id),
+          orden.items.map((i) => ({ id: Number(i.id), producto_id: Number(i.producto_id) })),
+        );
       }
     }
   }

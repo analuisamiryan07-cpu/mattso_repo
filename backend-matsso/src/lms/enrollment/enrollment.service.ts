@@ -1,9 +1,13 @@
 // Lógica real de inscripción, separada del controller HTTP a propósito:
 // - `EnrollmentWebhookController` la llama después de verificar HMAC (llamadas
 //   externas / futuras).
-// - Una vez integrado, `OrdersService` (o el flujo que aprueba una orden) debe
-//   llamar a `enrollFromEcommerce()` directamente, en el mismo proceso, sin
-//   pasar por HTTP+HMAC — ver Moodles/lms/docs/INTEGRACION.md punto 4.
+// - `OrdersService.updateOrderStatus()`, `PaypalService.capturePaypalOrder()`
+//   y `PaypalWebhookService` llaman a `enrollAllItemsFromOrder()` directamente
+//   en el mismo proceso, sin pasar por HTTP+HMAC, en el momento exacto en que
+//   cada uno marca una orden como PAGADA (son 3 lugares distintos porque hay
+//   3 formas de que una orden termine pagada: aprobación manual de
+//   transferencia, captura síncrona de PayPal, y el webhook asíncrono de
+//   PayPal como respaldo).
 //
 // Nota sobre `cantidad > 1` (compra corporativa, ver el comentario en el
 // schema.prisma sobre Enrollment.orden_item_id): este service inscribe UNA
@@ -83,6 +87,36 @@ export class EnrollmentService {
       enrollment_id: enrollment.id,
       already_enrolled: alreadyExisted,
     };
+  }
+
+  /**
+   * Punto de enganche real desde el e-commerce: se llama una vez, cuando una
+   * orden pasa a PAGADA, con todos sus items. Inscribe al comprador en el
+   * curso de cada item que tenga uno vinculado — un item sin curso se omite
+   * (no_course_linked), no rompe el resto. Cada item falla de forma aislada
+   * (try/catch individual) para que un problema en un curso no bloquee la
+   * inscripción a los demás productos de la misma orden.
+   */
+  async enrollAllItemsFromOrder(
+    ordenId: number,
+    usuarioId: number,
+    items: { id: number; producto_id: number }[],
+  ): Promise<void> {
+    for (const item of items) {
+      try {
+        await this.enrollFromEcommerce({
+          event_id: `orden-item-${item.id}`,
+          usuario_id: usuarioId,
+          producto_id: item.producto_id,
+          orden_item_id: item.id,
+          source: 'ECOMMERCE',
+        });
+      } catch (err: any) {
+        this.logger.error(
+          `No se pudo inscribir usuario=${usuarioId} desde orden=${ordenId} item=${item.id}: ${err?.message}`,
+        );
+      }
+    }
   }
 
   /** Registro de trazabilidad en la tabla ya existente `public.webhook_events` (schema public, provider genérico). */

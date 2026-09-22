@@ -60,6 +60,8 @@
   font-size: 13.5px;
 }
 .mcp-form textarea { min-height: 60px; resize: vertical; }
+.mcp-check { display: flex; align-items: center; gap: 8px; font-size: 13.5px; }
+.mcp-check input { width: auto; }
 
 .mcp-btn {
   background: var(--primary-yellow);
