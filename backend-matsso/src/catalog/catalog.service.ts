@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { sanitizePlainText } from '../common/sanitize.util';
 import { encodeId } from '../common/id-hasher';
+import { cloudinaryCourseFolderPath } from '../lms/courses/course-cloudinary.util';
 
 @Injectable()
 export class CatalogService {
@@ -171,7 +172,9 @@ export class CatalogService {
             familia:  true,
             sector:   true,
           }
-        }
+        },
+        // Solo lo poblado para tipo CURSO — el resto de productos no tiene curso.
+        curso: { select: { cloudinary_folder: true, modo_moodle: true, modo_coursera: true, duracion_meses: true } },
       }
     });
 
@@ -229,26 +232,40 @@ export class CatalogService {
 
       const categoria = cert?.familia?.nombre
         || cert?.sector?.nombre
-        || (p.tipo === 'CERTIFICACION' ? 'Certificación Profesional' : 'Capacitación');
+        || (p.tipo === 'CERTIFICACION' ? 'Certificación Profesional' : p.tipo === 'CURSO' ? 'Curso' : 'Capacitación');
 
       const cloudinaryNum = p.imagen_url?.match(/^\d{2,3}$/) ? p.imagen_url : null;
       const FALLBACK_IMG = 'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=600&q=80';
+
+      // Un curso no usa el número fijo (imagen_url) — su imagen vive en su
+      // propia carpeta de Cloudinary (ver course-cloudinary.util.ts), subida
+      // desde el panel de Cursos. Se manda el "public_id" crudo (sin
+      // dominio ni transformaciones) — igual que cloudinaryNum, para que el
+      // frontend arme la URL con CloudinaryImage/cloudinaryUrl (srcSet 2x,
+      // f_auto/q_auto, etc.), no una URL ya armada de un solo tamaño.
+      const cursoCloudinaryFolder = p.curso?.cloudinary_folder
+        ? cloudinaryCourseFolderPath(p.curso.cloudinary_folder)
+        : null;
 
       return {
         id: encodeId(p.id),
         titulo: p.titulo,
         precio: Number(p.precio),
-        imagen: cloudinaryNum ? FALLBACK_IMG : (p.imagen_url || FALLBACK_IMG),
+        imagen: cloudinaryNum || cursoCloudinaryFolder ? FALLBACK_IMG : (p.imagen_url || FALLBACK_IMG),
+        cursoCloudinaryFolder,
         categoria,
         modalidad: p.modalidad || 'Virtual',
         horas: p.horas ? `${p.horas} horas` : '40 horas',
         vigencia: cert?.vigencia?.anos || 2,
         inicia: 'Inscripciones Abiertas',
-        slug: p.tipo.toLowerCase() !== 'capacitacion' && cert?.codigo
-          ? cert.codigo.toLowerCase()
-          : p.titulo.toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, ''),
+        slug: p.tipo === 'CAPACITACION' || p.tipo === 'CURSO' || !cert?.codigo
+          ? p.titulo.toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, '')
+          : cert.codigo.toLowerCase(),
         cloudinaryNum,
         tipo: p.tipo.toLowerCase(),
+        modo_moodle: p.curso?.modo_moodle ?? undefined,
+        modo_coursera: p.curso?.modo_coursera ?? undefined,
+        duracion_meses: p.curso?.duracion_meses ?? undefined,
         descripcion:       p.descripcion_larga || p.descripcion || 'Sin descripción',
         descripcion_larga: p.descripcion_larga || null,
         fecha:             p.fecha    || null,

@@ -25,8 +25,8 @@ import { SubmissionsController } from './submissions/submissions.controller';
 import { QuizzesService } from './quizzes/quizzes.service';
 import { QuizzesController } from './quizzes/quizzes.controller';
 
-import { AccessCodesService } from './access-codes/access-codes.service';
-import { AccessCodesController } from './access-codes/access-codes.controller';
+import { AccessGrantsService } from './access-grants/access-grants.service';
+import { AccessGrantsController } from './access-grants/access-grants.controller';
 
 import { ProfessorCoursesService } from './professor/professor-courses.service';
 import { ProfessorCoursesController } from './professor/professor-courses.controller';
@@ -50,7 +50,7 @@ import { LmsGateController } from './gate/lms-gate.controller';
     ProgressController,
     SubmissionsController,
     QuizzesController,
-    AccessCodesController,
+    AccessGrantsController,
     ProfessorCoursesController,
     AdminProfessorsController,
     LmsGateController,
@@ -62,7 +62,7 @@ import { LmsGateController } from './gate/lms-gate.controller';
     ProgressService,
     SubmissionsService,
     QuizzesService,
-    AccessCodesService,
+    AccessGrantsService,
     ProfessorCoursesService,
     AdminProfessorsService,
     LmsGateService,

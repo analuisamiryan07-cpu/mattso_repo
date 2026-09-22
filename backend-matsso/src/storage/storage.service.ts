@@ -60,6 +60,53 @@ export class StorageService {
     });
   }
 
+  // Slots de imagen fija: se pisan al volver a subir (mismo public_id,
+  // overwrite: true) — igual que el viejo esquema numérico de
+  // capacitaciones/certificaciones, pero sin choque posible porque la
+  // carpeta es única por curso (ver lms/courses/course-cloudinary.util.ts).
+  // "moodle"/"coursera" no son un slot fijo: cada imagen que se sube ahí
+  // queda como un archivo nuevo dentro de esa subcarpeta.
+  private static readonly SLOTS_FIJOS = ['hero', 'izquierda', 'derecha'] as const;
+
+  /** Imagen de un curso — Cursos/{cloudinaryFolder}/{slot} (fijos) o Cursos/{cloudinaryFolder}/{slot}/{uuid}. */
+  async uploadCourseImage(
+    file: Express.Multer.File,
+    cloudinaryFolder: string,
+    slot: string,
+  ): Promise<string> {
+    if (!this.ready) {
+      throw new InternalServerErrorException('El almacenamiento de imágenes no está configurado. Contacte al administrador.');
+    }
+
+    const esFijo = (StorageService.SLOTS_FIJOS as readonly string[]).includes(slot);
+    const publicId = esFijo
+      ? `Cursos/${cloudinaryFolder}/${slot}`
+      : `Cursos/${cloudinaryFolder}/${slot}/${randomUUID()}`;
+
+    return new Promise<string>((resolve, reject) => {
+      const uploadStream = cloudinary.uploader.upload_stream(
+        {
+          public_id: publicId,
+          resource_type: 'image',
+          overwrite: esFijo,
+          tags: ['curso', 'lms', 'matsso'],
+        },
+        (error, result: UploadApiResponse | undefined) => {
+          if (error || !result) {
+            this.logger.error('Error subiendo imagen de curso a Cloudinary:', error?.message);
+            reject(new InternalServerErrorException('No se pudo subir la imagen. Intenta de nuevo.'));
+            return;
+          }
+          this.logger.log(`Imagen de curso subida: ${result.secure_url}`);
+          resolve(result.secure_url);
+        },
+      );
+
+      const readable = Readable.from(file.buffer);
+      readable.pipe(uploadStream);
+    });
+  }
+
   /** Mismo patrón que uploadComprobante, carpeta y tags propios para entregas del LMS. */
   async uploadEntregaTarea(file: Express.Multer.File): Promise<string> {
     if (!this.ready) {

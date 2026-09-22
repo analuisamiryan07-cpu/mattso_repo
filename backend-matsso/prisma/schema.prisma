@@ -239,7 +239,7 @@ model UsuarioWeb {
   enrollments         Enrollment[]
   submissions_gradas  ManualGrade[] @relation("SubmissionsGradedBy")
   cursos_dictados     Course[]      @relation("CoursesTaught")
-  access_codes        AccessCode[]
+  access_grants       AccessGrant[]
 
   @@schema("public")
   @@map("usuarios_web")
@@ -291,6 +291,12 @@ model Orden {
   fecha_orden     DateTime? @default(now()) @db.Timestamp(0)
   metodo_pago     String?   @db.VarChar(100)
   comprobante_url String?   @db.VarChar(255)
+  // Solo para órdenes creadas a mano desde el sistema interno (venta por
+  // teléfono, sin pasar por la página web): reemplaza al comprobante, que
+  // esas órdenes no tienen. `total` se sigue calculando igual que en una
+  // compra web (precio de catálogo + IVA) — este campo es el registro de
+  // cuánto se cobró en la práctica, para conciliar, no lo que decide el total.
+  monto_pagado_manual Decimal? @db.Decimal(10, 2)
 
   usuario      UsuarioWeb  @relation(fields: [usuario_id], references: [id])
   items        OrdenItem[]
@@ -310,6 +316,10 @@ model OrdenItem {
   orden           Orden        @relation(fields: [orden_id], references: [id], onDelete: Cascade)
   producto        Producto     @relation(fields: [producto_id], references: [id])
   enrollments     Enrollment[]
+  // Lista, no un solo registro: una compra revocada sin canjear libera el
+  // cupo para generar otra clave (ver comentario en AccessGrant) — puede
+  // haber más de una fila en el tiempo, aunque como mucho una esté vigente.
+  access_grants   AccessGrant[]
 
   @@schema("public")
   @@map("orden_items")
@@ -446,33 +456,57 @@ model Course {
   profesor_usuario_id BigInt?
   titulo              String       @db.VarChar(255)
   descripcion         String?      @db.Text
-  delivery_mode       DeliveryMode
+  // Un curso puede tener contenido para las dos modalidades a la vez —
+  // reemplaza al antiguo campo único `delivery_mode` (ver DECISIONES.md,
+  // "curso dual"). Cada Module ahora carga su propio DeliveryMode; estas dos
+  // banderas son lo que decide qué secciones se ofrecen/venden y qué le
+  // permite ver una AccessGrant una vez canjeada. Al menos una debe ser true
+  // (se valida en el service, no aquí: Prisma no hace CHECK entre columnas).
+  modo_moodle   Boolean  @default(false)
+  modo_coursera Boolean  @default(false)
+  // Nombre de la carpeta en Cloudinary (Cursos/{cloudinary_folder}/...). Se
+  // calcula una sola vez al crear el curso, a partir del título, con
+  // desambiguación si ya existe otro curso con el mismo nombre limpio — ver
+  // AdminCoursesService.buildCloudinaryFolder(). No se recalcula si el título
+  // cambia después (las imágenes ya subidas seguirían ahí).
+  cloudinary_folder String?      @unique @db.VarChar(255)
+  // Meses de acceso desde que el ESTUDIANTE canjea la clave (no desde la
+  // compra). Se copia a AccessGrant.duracion_meses al generar cada clave, así
+  // que cambiar esto después no afecta claves ya generadas.
+  duracion_meses    Int?
   is_active           Boolean      @default(true)
   created_at          DateTime     @default(now()) @db.Timestamptz
   updated_at          DateTime     @default(now()) @updatedAt @db.Timestamptz
 
-  producto    Producto?   @relation(fields: [producto_id], references: [id])
-  profesor    UsuarioWeb? @relation("CoursesTaught", fields: [profesor_usuario_id], references: [id])
-  modules     Module[]
-  enrollments Enrollment[]
+  producto      Producto?     @relation(fields: [producto_id], references: [id])
+  profesor      UsuarioWeb?   @relation("CoursesTaught", fields: [profesor_usuario_id], references: [id])
+  modules       Module[]
+  enrollments   Enrollment[]
+  access_grants AccessGrant[]
 
   @@map("courses")
   @@schema("lms")
 }
 
 model Module {
-  id             String   @id @default(uuid()) @db.Uuid
-  course_id      String   @db.Uuid
-  titulo         String   @db.VarChar(255)
-  sequence_order Int      @db.SmallInt
-  is_active      Boolean  @default(true)
-  created_at     DateTime @default(now()) @db.Timestamptz
-  updated_at     DateTime @default(now()) @updatedAt @db.Timestamptz
+  id             String       @id @default(uuid()) @db.Uuid
+  course_id      String       @db.Uuid
+  // A qué árbol de contenido pertenece este módulo dentro del curso — ver el
+  // comentario de Course.modo_moodle/modo_coursera. El desbloqueo secuencial
+  // (courses.service.ts) se calcula por separado dentro de cada modalidad.
+  delivery_mode  DeliveryMode
+  titulo         String       @db.VarChar(255)
+  sequence_order Int          @db.SmallInt
+  is_active      Boolean      @default(true)
+  created_at     DateTime     @default(now()) @db.Timestamptz
+  updated_at     DateTime     @default(now()) @updatedAt @db.Timestamptz
 
   course        Course        @relation(fields: [course_id], references: [id], onDelete: Cascade)
   content_items ContentItem[]
 
-  @@unique([course_id, sequence_order])
+  // El orden es independiente por modalidad — un mismo curso puede tener
+  // módulo 1 de Moodle Y módulo 1 de Coursera al mismo tiempo.
+  @@unique([course_id, delivery_mode, sequence_order])
   @@map("modules")
   @@schema("lms")
 }
@@ -673,19 +707,57 @@ model QuizAttemptAnswerOption {
 // Segundo factor de acceso al Aula Virtual (Moodles/lms/docs/REQUISITOS_SISTEMA_INTERNO.md
 // §4). El sistema interno la genera vía POST /api/lms/admin/access-codes; el
 // estudiante la ingresa una vez tras iniciar sesión, antes de ver sus cursos.
-// Un solo código activo por usuario (@@unique) — generar uno nuevo reemplaza
-// cualquier código sin usar anterior.
-model AccessCode {
-  id         BigInt    @id @default(autoincrement())
-  usuario_id BigInt    @unique
-  code       String    @db.VarChar(12)
-  used       Boolean   @default(false)
-  used_at    DateTime? @db.Timestamptz
-  expires_at DateTime  @db.Timestamptz
-  created_at DateTime  @default(now()) @db.Timestamptz
+// Reemplaza a AccessCode (código de 6 dígitos, uno por usuario, desbloqueaba
+// todo para siempre). Ahora es una clave por CADA compra de curso: el sistema
+// interno la genera como JWT (nombre del curso, duración, permisos
+// moodle/coursera — ver access-grants/jwt.util.ts) y se la entrega a la
+// persona por fuera de la nube (correo/WhatsApp). Esta fila es el registro
+// del lado del servidor: guarda el `jti` del JWT (para poder invalidarlo sin
+// tener que decodificarlo) y el estado real del canje — el JWT en sí nunca
+// se guarda completo aquí.
+//
+// Como mucho UNA fila sin revocar por cada OrdenItem — es el candado de
+// "esta compra ya se usó" que pide la arquitectura (se aparta al GENERAR,
+// no al canjear). No es un @unique de columna porque revocar una clave sin
+// canjear debe liberar el cupo (§2.4 del contrato: "se generó por error...
+// hay que anularla antes de generar otra") — la unicidad real es "por
+// OrdenItem, a lo sumo una fila con revoked_at IS NULL", que se garantiza
+// con un índice único parcial en la migración (ver 12_lms_cursos_dual.sql)
+// y se revisa también en el service antes de crear.
+model AccessGrant {
+  id             String    @id @default(uuid()) @db.Uuid
+  usuario_id     BigInt
+  course_id      String    @db.Uuid
+  orden_item_id  BigInt
+  // Copiado de Course.duracion_meses en el momento de generar — si el curso
+  // cambia su duración después, esta clave ya generada no se ve afectada.
+  duracion_meses Int
+  // El `jti` (JWT ID) que va dentro del token firmado. Es lo que se compara
+  // al canjear — permite invalidar la clave sin tener que verificar la firma
+  // primero, y sin guardar el JWT completo (que podría filtrarse en un log).
+  jwt_id       String    @unique @db.Uuid
+  generado_at  DateTime  @default(now()) @db.Timestamptz
+  // Actor M2M que la generó (ej. "laravel-admin:12"), igual que en el resto
+  // del LMS — nunca un id que mande el navegador.
+  generado_por String    @db.VarChar(100)
+  // NULL hasta que el estudiante la canjea con éxito. expires_at se calcula
+  // recién en ese momento (redeemed_at + duracion_meses) — antes de canjear
+  // la clave no "gasta" tiempo de nadie.
+  redeemed_at  DateTime? @db.Timestamptz
+  expires_at   DateTime? @db.Timestamptz
+  // Para "revocar clave sin usar" (§2.4 del contrato). Solo se puede revocar
+  // si redeemed_at es NULL — una clave ya canjeada no se revoca (el acceso
+  // ya se le dio, y con qué se define su vencimiento). Al revocar SÍ se
+  // libera el cupo de esta compra: se puede generar una clave nueva para el
+  // mismo orden_item_id (ver AccessGrantsService.revocar/generar).
+  revoked_at   DateTime? @db.Timestamptz
 
-  usuario UsuarioWeb @relation(fields: [usuario_id], references: [id], onDelete: Cascade)
+  usuario    UsuarioWeb @relation(fields: [usuario_id], references: [id], onDelete: Cascade)
+  course     Course     @relation(fields: [course_id], references: [id])
+  orden_item OrdenItem  @relation(fields: [orden_item_id], references: [id])
 
-  @@map("access_codes")
+  @@index([usuario_id])
+  @@index([orden_item_id])
+  @@map("access_grants")
   @@schema("lms")
 }

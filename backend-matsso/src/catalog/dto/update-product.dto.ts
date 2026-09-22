@@ -4,7 +4,7 @@ import { Type } from 'class-transformer';
 export class UpdateProductDto {
   @IsOptional()
   @IsString()
-  @IsIn(['CERTIFICACION', 'CAPACITACION'])
+  @IsIn(['CERTIFICACION', 'CAPACITACION', 'CURSO'])
   tipo?: string;
 
   @IsOptional()

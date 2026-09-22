@@ -3,7 +3,7 @@ import { Type } from 'class-transformer';
 
 export class CreateProductDto {
   @IsString()
-  @IsIn(['CERTIFICACION', 'CAPACITACION'])
+  @IsIn(['CERTIFICACION', 'CAPACITACION', 'CURSO'])
   tipo: string;
 
   @IsString()

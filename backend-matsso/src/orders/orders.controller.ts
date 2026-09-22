@@ -18,6 +18,7 @@ import { memoryStorage } from 'multer';
 import { plainToInstance } from 'class-transformer';
 import { validate } from 'class-validator';
 import { OrdersService } from './orders.service';
+import { CreateAdminOrderDto } from './dto/create-admin-order.dto';
 import { StorageService } from '../storage/storage.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { CreateOrderDto } from './dto/create-order.dto';
@@ -97,6 +98,17 @@ export class OrdersController {
 
     // El usuario viene del JWT — nunca del body del cliente
     return this.ordersService.createOrder(dto, req.user.id, comprobanteUrl);
+  }
+
+  // ── POST /api/ordenes/admin — Crear orden ya PAGADA (venta por teléfono) ──
+  // Mismo x-admin-key que el resto de este controller (no LMS_M2M_API_KEY:
+  // esto no es exclusivo del LMS, sirve para cualquier tipo de producto).
+  @Post('admin')
+  async createAdminOrder(@Body() dto: CreateAdminOrderDto, @Headers('x-admin-key') adminKey: string) {
+    if (!process.env.ADMIN_API_KEY || adminKey !== process.env.ADMIN_API_KEY) {
+      throw new UnauthorizedException('Clave de administrador inválida.');
+    }
+    return this.ordersService.createAdminOrder(dto, 'sistema-interno');
   }
 
   // ── GET /api/ordenes — Listar órdenes (panel admin — clave temporal) ───────
