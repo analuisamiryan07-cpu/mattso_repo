@@ -27,6 +27,18 @@ export const cursosService = {
     return data;
   },
 
+  // Aula Virtual — Moodle/Coursera. Mismo endpoint de catálogo que
+  // capacitaciones/certificaciones, tipo=curso.
+  async getCursosLms() {
+    const { data } = await apiClient.get('/catalog?tipo=curso');
+    return data;
+  },
+
+  async getCursoLmsBySlug(slug) {
+    const { data } = await apiClient.get(`/catalog/${slug}`);
+    return data;
+  },
+
   async getDestacados() {
     const { data } = await apiClient.get('/catalog?destacado=true');
     return data;

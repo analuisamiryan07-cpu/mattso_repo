@@ -5,8 +5,10 @@ import Footer from '@components/layout/Footer';
 import Home from '@pages/Home';
 import Capacitaciones from '@pages/Capacitaciones';
 import Certificaciones from '@pages/Certificaciones';
+import Cursos from '@pages/Cursos';
 import CertificationDetail from '@pages/CertificationDetail';
 import CapacitacionDetail from '@pages/CapacitacionDetail';
+import CursoDetail from '@pages/CursoDetail';
 import Carrito from '@pages/Carrito';
 import Login from '@pages/Login';
 import ForgotPassword from '@pages/ForgotPassword';
@@ -34,8 +36,10 @@ function App() {
               <Route path="/nosotros"             element={<Nosotros />} />
               <Route path="/capacitaciones"       element={<Capacitaciones />} />
               <Route path="/certificaciones"      element={<Certificaciones />} />
+              <Route path="/cursos"               element={<Cursos />} />
               <Route path="/certificacion/:slug"  element={<CertificationDetail />} />
               <Route path="/capacitacion/:slug"   element={<CapacitacionDetail />} />
+              <Route path="/curso/:slug"          element={<CursoDetail />} />
               <Route path="/carrito"              element={<Carrito />} />
               <Route path="/login"                element={<Login />} />
               <Route path="/forgot-password"     element={<ForgotPassword />} />
