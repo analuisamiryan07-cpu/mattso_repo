@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="MATSSO">
+<meta name="theme-color" content="#0f2a5c">
+<title>MATSSO Asistencia</title>
+<link rel="manifest" href="manifest.json">
+<link id="touch-icon" rel="apple-touch-icon" href="">
+<style>
+:root{--navy:#0f2a5c;--blue:#2458b3;--accent:#f5a623;--success:#15803d;--danger:#b91c1c;--warn:#b45309;--bg:#f0f2f8;--surface:#fff;--border:#dde1ec;--text:#111827;--muted:#64748b}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;-webkit-font-smoothing:antialiased}
+html,body{height:100%;overflow:hidden;touch-action:manipulation}
+body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',sans-serif;background:var(--bg);color:var(--text)}
+.screen{position:fixed;inset:0;display:none;flex-direction:column;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:max(env(safe-area-inset-bottom),16px)}
+.screen.active{display:flex}
+#sc-splash{align-items:center;justify-content:center;background:var(--navy)}
+.splash-logo{width:84px;height:84px;border-radius:22px;background:rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;font-size:46px;font-weight:900;color:var(--accent);margin-bottom:18px}
+.splash-name{font-size:28px;font-weight:800;color:#fff;letter-spacing:2px}
+.splash-sub{font-size:13px;color:rgba(255,255,255,.45);margin-top:6px}
+.spinner{width:32px;height:32px;border:3px solid rgba(255,255,255,.15);border-top-color:var(--accent);border-radius:50%;animation:spin .75s linear infinite;margin-top:36px}
+@keyframes spin{to{transform:rotate(360deg)}}
+#sc-login,#sc-register{background:var(--bg)}
+.auth-header{background:var(--navy);padding:44px 24px 30px;padding-top:calc(44px + env(safe-area-inset-top));display:flex;flex-direction:column;align-items:center}
+.auth-logo{width:60px;height:60px;border-radius:15px;background:rgba(255,255,255,.12);display:flex;align-items:center;justify-content:center;font-size:32px;font-weight:900;color:var(--accent);margin-bottom:13px}
+.auth-title{font-size:22px;font-weight:800;color:#fff}
+.auth-sub{font-size:12px;color:rgba(255,255,255,.45);margin-top:4px}
+.auth-body{padding:22px 18px;flex:1}
+.card{background:var(--surface);border-radius:14px;padding:18px;box-shadow:0 3px 14px rgba(0,0,0,.07);margin-bottom:14px}
+label{display:block;font-size:12px;font-weight:700;color:var(--muted);margin-bottom:5px;text-transform:uppercase;letter-spacing:.4px}
+input,select{width:100%;border:1.5px solid var(--border);border-radius:9px;padding:13px 14px;font-size:16px;color:var(--text);background:#fafbff;-webkit-appearance:none;outline:none;transition:border-color .18s;font-family:inherit}
+input:focus,select:focus{border-color:var(--blue);background:#fff}
+.field{margin-bottom:12px}
+.row-2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.btn-primary{width:100%;background:var(--navy);color:#fff;border:none;border-radius:10px;padding:15px;font-size:16px;font-weight:700;cursor:pointer;margin-top:8px;-webkit-appearance:none;transition:opacity .15s;min-height:50px;font-family:inherit}
+.btn-primary:active{opacity:.8}
+.btn-primary:disabled{opacity:.45;cursor:default}
+.btn-secondary{width:100%;background:transparent;color:var(--navy);border:1.5px solid var(--border);border-radius:10px;padding:13px;font-size:15px;font-weight:600;cursor:pointer;-webkit-appearance:none;font-family:inherit;margin-top:6px}
+.link-row{text-align:center;margin-top:12px}
+.link-btn{background:none;border:none;color:var(--blue);font-size:13px;font-weight:600;cursor:pointer;padding:4px}
+.ip-tag{display:inline-block;font-size:11px;background:#e8eef8;color:var(--blue);border-radius:5px;padding:3px 7px;font-weight:600;margin-top:4px}
+.topbar{background:var(--navy);padding:12px 16px;padding-top:calc(12px + env(safe-area-inset-top));display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.topbar-greeting{font-size:17px;font-weight:800;color:#fff}
+.topbar-date{font-size:11px;color:rgba(255,255,255,.5);margin-top:2px;font-variant-numeric:tabular-nums}
+.topbar-refresh{background:rgba(255,255,255,.12);border:none;color:rgba(255,255,255,.9);font-size:12px;font-weight:600;padding:7px 13px;border-radius:20px;cursor:pointer}
+#sc-home{background:var(--bg)}
+.home-body{padding:16px;flex:1}
+.warn-box{background:#fff7ed;border-left:4px solid #f59e0b;border-radius:8px;padding:12px 14px;margin-bottom:16px;font-size:13px;color:#92400e;line-height:1.55}
+.sec-title{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px}
+.marc-card{background:var(--surface);border-radius:13px;overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,.06);margin-bottom:22px}
+.marc-row{display:flex;align-items:center;gap:10px;padding:13px 14px;border-bottom:1px solid var(--border)}
+.marc-row:last-child{border-bottom:none}
+.marc-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.marc-info{flex:1;min-width:0}
+.marc-label{font-size:14px;font-weight:600;color:var(--text)}
+.marc-exp{font-size:11px;color:var(--muted);margin-top:1px}
+.marc-r{text-align:right;flex-shrink:0}
+.marc-hora{font-size:15px;font-weight:700;font-variant-numeric:tabular-nums}
+.marc-atraso{font-size:11px;color:var(--danger);font-weight:600}
+.marc-pending{font-size:12px;color:var(--muted);font-style:italic}
+.marc-verif{font-size:11px;color:var(--warn);font-style:italic}
+.big-btn{width:100%;background:var(--navy);border:none;border-radius:16px;padding:26px 20px;text-align:center;cursor:pointer;-webkit-appearance:none;box-shadow:0 6px 22px rgba(15,42,92,.28);transition:opacity .15s}
+.big-btn:active{opacity:.82}
+.big-btn-icon{font-size:34px;display:block;margin-bottom:8px}
+.big-btn-text{font-size:19px;font-weight:800;color:#fff;display:block}
+.big-btn-sub{font-size:12px;color:rgba(255,255,255,.5);display:block;margin-top:4px}
+.pull-hint{text-align:center;padding:10px;font-size:12px;color:var(--muted);font-style:italic}
+#sc-marking{background:var(--bg)}
+.marking-hdr{background:var(--navy);padding:12px 16px;padding-top:calc(12px + env(safe-area-inset-top));display:flex;align-items:center;gap:10px;flex-shrink:0}
+.back-btn{background:rgba(255,255,255,.13);border:none;color:#fff;font-size:13px;font-weight:600;padding:7px 14px;border-radius:20px;cursor:pointer}
+.marking-title{font-size:17px;font-weight:800;color:#fff}
+.marking-hint{font-size:14px;color:var(--muted);text-align:center;padding:18px 20px 10px;font-weight:600}
+.opt-grid{display:grid;grid-template-columns:1fr 1fr;gap:13px;padding:0 16px 24px}
+.opt-btn{background:var(--surface);border:2.5px solid var(--border);border-radius:16px;padding:18px 10px;display:flex;flex-direction:column;align-items:center;gap:7px;cursor:pointer;-webkit-appearance:none;min-height:128px;box-shadow:0 2px 8px rgba(0,0,0,.06);justify-content:center;font-family:inherit;transition:opacity .15s}
+.opt-btn:active:not(:disabled){opacity:.72}
+.opt-btn:disabled{cursor:default}
+.opt-btn.unavailable{opacity:.35}
+.opt-circle{width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.opt-check{font-size:22px;color:#fff;font-weight:900;line-height:1}
+.opt-label{font-size:13px;font-weight:800;text-align:center;line-height:1.2}
+.opt-sub{font-size:11px;color:var(--muted);text-align:center}
+.opt-spinner{width:34px;height:34px;border:3px solid rgba(0,0,0,.08);border-radius:50%;animation:spin .75s linear infinite}
+#sc-success{background:var(--bg);align-items:center;justify-content:center;padding:24px}
+.suc-card{background:var(--surface);border-radius:20px;padding:36px 22px;text-align:center;width:100%;max-width:340px;box-shadow:0 8px 30px rgba(0,0,0,.1);animation:popIn .38s cubic-bezier(.34,1.56,.64,1)}
+@keyframes popIn{from{transform:scale(.72);opacity:0}to{transform:scale(1);opacity:1}}
+.suc-icon{font-size:56px;display:block;margin-bottom:12px}
+.suc-title{font-size:21px;font-weight:800;color:var(--navy);margin-bottom:8px}
+.suc-hora{font-size:48px;font-weight:900;font-variant-numeric:tabular-nums;display:block;margin-bottom:10px}
+.suc-cd{font-size:12px;color:var(--muted);margin-top:14px;font-style:italic}
+.toast{position:fixed;bottom:calc(22px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%) translateY(12px);background:#1e293b;color:#fff;padding:12px 18px;border-radius:10px;font-size:14px;line-height:1.4;max-width:88%;text-align:center;z-index:200;opacity:0;transition:opacity .25s,transform .25s;pointer-events:none}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.ld{display:inline-block;width:18px;height:18px;border:2.5px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle}
+</style>
+</head>
+<body>
+<div id="sc-splash" class="screen active">
+  <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh">
+    <div class="splash-logo">M</div>
+    <div class="splash-name">MATSSO</div>
+    <div class="splash-sub">Control de Asistencia</div>
+    <div class="spinner"></div>
+  </div>
+</div>
+<div id="sc-login" class="screen">
+  <div class="auth-header">
+    <div class="auth-logo">M</div>
+    <div class="auth-title">Iniciar sesión</div>
+    <div class="auth-sub">Ingresa con tu cédula</div>
+  </div>
+  <div class="auth-body">
+    <div class="card">
+      <div class="field"><label for="l-ced">Cédula</label><input id="l-ced" type="tel" inputmode="numeric" placeholder="0912345678" autocomplete="username"></div>
+      <div class="field"><label for="l-pw">Contraseña</label><input id="l-pw" type="password" placeholder="••••••" autocomplete="current-password"></div>
+      <button class="btn-primary" id="btn-login">Entrar</button>
+    </div>
+    <div class="link-row"><button class="link-btn" id="btn-go-reg">¿Primera vez? Regístrate aquí</button></div>
+  </div>
+</div>
+<div id="sc-register" class="screen">
+  <div class="auth-header">
+    <div class="auth-logo">M</div>
+    <div class="auth-title">Crear cuenta</div>
+    <div class="auth-sub">Solo para empleados nuevos</div>
+  </div>
+  <div class="auth-body">
+    <div class="card">
+      <div class="field"><label for="r-nom">Nombre completo</label><input id="r-nom" type="text" placeholder="JUAN CARLOS PÉREZ" autocapitalize="words"></div>
+      <div class="row-2">
+        <div class="field"><label for="r-ced">Cédula</label><input id="r-ced" type="tel" inputmode="numeric" placeholder="0912345678"></div>
+        <div class="field"><label for="r-gen">Género</label><select id="r-gen"><option value="M">Masculino</option><option value="F">Femenino</option></select></div>
+      </div>
+      <div class="field"><label for="r-cor">Correo (opcional)</label><input id="r-cor" type="email" inputmode="email" placeholder="correo@ejemplo.com"></div>
+      <div class="field"><label for="r-cel">Celular (opcional)</label><input id="r-cel" type="tel" inputmode="numeric" placeholder="0987654321"></div>
+      <div class="row-2">
+        <div class="field"><label for="r-pw">Contraseña</label><input id="r-pw" type="password" placeholder="••••••" autocomplete="new-password"></div>
+        <div class="field"><label for="r-pw2">Confirmar</label><input id="r-pw2" type="password" placeholder="••••••" autocomplete="new-password"></div>
+      </div>
+      <div class="field"><label>IP detectada</label><div class="ip-tag" id="r-ip">detectando…</div></div>
+      <button class="btn-primary" id="btn-reg">Registrarme</button>
+      <button class="btn-secondary" id="btn-back-login">Ya tengo cuenta</button>
+    </div>
+  </div>
+</div>
+<div id="sc-home" class="screen">
+  <div class="topbar">
+    <div><div class="topbar-greeting" id="h-greet">Hola</div><div class="topbar-date" id="h-clock"></div></div>
+    <button class="topbar-refresh" id="btn-refresh">↻ Actualizar</button>
+  </div>
+  <div class="home-body" id="home-body">
+    <div id="h-warn" class="warn-box" style="display:none">Tu equipo aún no tiene IP configurada. Avisa al administrador antes de marcar.</div>
+    <div class="sec-title">Marcaciones de hoy</div>
+    <div class="marc-card" id="marc-list"></div>
+    <button class="big-btn" id="btn-marking"><span class="big-btn-icon">⏱</span><span class="big-btn-text">Registrar marcación</span><span class="big-btn-sub">Toca para marcar tu asistencia</span></button>
+    <div class="pull-hint">Tira hacia abajo para actualizar</div>
+  </div>
+</div>
+<div id="sc-marking" class="screen">
+  <div class="marking-hdr">
+    <button class="back-btn" id="btn-back">← Volver</button>
+    <div class="marking-title">Marcar asistencia</div>
+  </div>
+  <div class="marking-hint">Selecciona el tipo de marcación</div>
+  <div class="opt-grid" id="opt-grid"></div>
+</div>
+<div id="sc-success" class="screen">
+  <div class="suc-card">
+    <span class="suc-icon">✅</span>
+    <div class="suc-title" id="suc-t">Registro exitoso</div>
+    <span class="suc-hora" id="suc-h"></span>
+    <div class="suc-cd" id="suc-cd"></div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+const BASE='http://192.168.100.18';
+const EP={login:BASE+'/api/asistencia/login',reg:BASE+'/api/asistencia/registrar',marcar:BASE+'/api/asistencia/marcar',estado:BASE+'/api/asistencia/estado-hoy'};
+const TIPOS=['LLEGADA','SALIDA_ALMUERZO','REGRESO_ALMUERZO','SALIDA'];
+const LBL={LLEGADA:'Llegada',SALIDA_ALMUERZO:'Salida almuerzo',REGRESO_ALMUERZO:'Regreso almuerzo',SALIDA:'Salida'};
+const SUB={LLEGADA:'Entrada al trabajo',SALIDA_ALMUERZO:'Inicio del almuerzo',REGRESO_ALMUERZO:'Regreso del almuerzo',SALIDA:'Fin de jornada'};
+const COL={LLEGADA:'#15803d',SALIDA_ALMUERZO:'#b45309',REGRESO_ALMUERZO:'#2458b3',SALIDA:'#0f2a5c'};
+let TOKEN=localStorage.getItem('ms_tok')||null,NOMBRE=localStorage.getItem('ms_nom')||'',ESTADO=null,clockId=null,cdId=null,marking=null,phoneIp=null;
+const el=id=>document.getElementById(id);
+function saveAuth(t,n){TOKEN=t;NOMBRE=n;localStorage.setItem('ms_tok',t);localStorage.setItem('ms_nom',n);}
+let toastT;
+function toast(m,d=3800){const e=el('toast');e.textContent=m;e.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>e.classList.remove('show'),d);}
+function errMsg(e){if(e&&e.message){if(/failed to fetch|networkerror|load failed/i.test(e.message))return 'No se pudo conectar con el sistema. Revisa que el wifi esté encendido y conectado a la red de la empresa. Si el wifi está bien y sigue sin funcionar, cierra esta app y vuelve a abrirla.';if(/abort/i.test(e.message))return 'El sistema tardó demasiado en responder. Revisa tu señal de wifi e intenta de nuevo.';return e.message;}return 'Ocurrió un error inesperado. Vuelve a intentarlo. Si el problema sigue, avisa al administrador.';}
+async function apiFetch(url,opts={},_retried){const c=new AbortController();const t=setTimeout(()=>c.abort(),10000);try{const r=await fetch(url,{...opts,signal:c.signal});clearTimeout(t);const j=await r.json();if(!r.ok)throw new Error(j.error||j.message||'Error '+r.status);return j;}catch(e){clearTimeout(t);if(!_retried&&(e instanceof TypeError||e.name==='AbortError')){await new Promise(res=>setTimeout(res,1500));return apiFetch(url,opts,true);}throw e;}}
+(function(){const c=document.createElement('canvas');c.width=c.height=192;const x=c.getContext('2d');if(x.roundRect)x.roundRect(0,0,192,192,42);else x.rect(0,0,192,192);x.fillStyle='#0f2a5c';x.fill();x.fillStyle='#f5a623';x.font='bold 112px -apple-system,Arial';x.textAlign='center';x.textBaseline='middle';x.fillText('M',96,102);el('touch-icon').href=c.toDataURL('image/png');})();
+function go(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));el('sc-'+id).classList.add('active');if(id!=='home'&&clockId){clearInterval(clockId);clockId=null;}}
+async function detectIp(){return new Promise(r=>{try{const pc=new RTCPeerConnection({iceServers:[]});pc.createDataChannel('');let done=false;pc.onicecandidate=e=>{if(done||!e.candidate)return;const m=/(\d{1,3}(?:\.\d{1,3}){3})/.exec(e.candidate.candidate);if(m&&!m[1].startsWith('127.')){done=true;pc.close();r(m[1]);}};pc.createOffer().then(o=>pc.setLocalDescription(o)).catch(()=>r(null));setTimeout(()=>{if(!done){pc.close();r(null);}},3000);}catch{r(null);}});}
+function enabled(t,m){if(m.SALIDA)return false;switch(t){case'LLEGADA':return!m.LLEGADA;case'SALIDA_ALMUERZO':return!!m.LLEGADA&&!m.SALIDA_ALMUERZO;case'REGRESO_ALMUERZO':return!!m.LLEGADA&&!!m.SALIDA_ALMUERZO&&!m.REGRESO_ALMUERZO;case'SALIDA':return!!m.LLEGADA&&(!m.SALIDA_ALMUERZO||!!m.REGRESO_ALMUERZO);}return false;}
+function startClock(){const e=el('h-clock');if(!e)return;function tick(){const n=new Date();e.textContent=(ESTADO&&ESTADO.fecha?ESTADO.fecha+' · ':'')+String(n.getHours()).padStart(2,'0')+':'+String(n.getMinutes()).padStart(2,'0')+':'+String(n.getSeconds()).padStart(2,'0');}tick();clockId=setInterval(tick,1000);}
+function renderMarc(){const m=ESTADO?ESTADO.marcaciones:{LLEGADA:null,SALIDA_ALMUERZO:null,REGRESO_ALMUERZO:null,SALIDA:null};const h=ESTADO?ESTADO.horarios_esperados:null;const esp={LLEGADA:h&&h.llegada,SALIDA_ALMUERZO:h&&h.salida_almuerzo,REGRESO_ALMUERZO:h&&h.regreso_almuerzo,SALIDA:h&&h.salida};el('marc-list').innerHTML=TIPOS.map(t=>{const marc=m[t];const col=COL[t];let r='';if(marc){r='<div class="marc-hora" style="color:'+col+'">'+(marc.hora||'').slice(0,5)+'</div>';if(marc.atraso_minutos>0)r+='<div class="marc-atraso">+'+marc.atraso_minutos+' min</div>';if(!marc.confirmado)r+='<div class="marc-verif">verificando…</div>';}else{r='<div class="marc-pending">Pendiente</div>';}return '<div class="marc-row"><div class="marc-dot" style="background:'+(marc?col:'#dde1ec')+'"></div><div class="marc-info"><div class="marc-label">'+LBL[t]+'</div><div class="marc-exp">Esperado: '+(esp[t]||'--:--')+'</div></div><div class="marc-r">'+r+'</div></div>';}).join('');}
+async function loadHome(){el('marc-list').innerHTML='<div style="padding:20px;text-align:center;color:var(--muted);font-size:13px">Cargando…</div>';try{ESTADO=await apiFetch(EP.estado,{headers:{Authorization:'Bearer '+TOKEN,Accept:'application/json'}});el('h-greet').textContent='Hola, '+(ESTADO.nombre||NOMBRE||'').split(' ')[0];el('h-warn').style.display=ESTADO.ip_configurada?'none':'block';renderMarc();startClock();}catch(e){toast(errMsg(e));el('marc-list').innerHTML='<div style="padding:18px;text-align:center;color:var(--muted);font-size:13px">No se pudo cargar. Tira hacia abajo para reintentar.</div>';}}
+function renderMark(){const m=ESTADO?ESTADO.marcaciones:{LLEGADA:null,SALIDA_ALMUERZO:null,REGRESO_ALMUERZO:null,SALIDA:null};el('opt-grid').innerHTML=TIPOS.map(t=>{const marc=m[t];const done=!!marc;const av=!done&&enabled(t,m);const isL=marking===t;const col=COL[t];const bc=done?'#15803d':av?col:'#dde1ec';const cls='opt-btn'+(done?' done':'')+(!av&&!done?' unavailable':'');const dis=done||!av||!!marking;let inner='';if(isL){inner='<div class="opt-spinner" style="border-top-color:'+col+'"></div>';}else if(done){inner='<div class="opt-circle" style="background:#15803d"><span class="opt-check">✓</span></div><div class="opt-label" style="color:#15803d">'+LBL[t]+'</div><div class="opt-sub" style="color:#15803d">Registrado</div>';}else{inner='<div class="opt-circle" style="background:'+(av?col:'#cbd5e1')+'"></div><div class="opt-label" style="color:'+(av?col:'var(--muted)')+'">'+LBL[t]+'</div><div class="opt-sub">'+(av?SUB[t]:'Bloqueado')+'</div>';}return '<button class="'+cls+'" style="border-color:'+bc+'"'+(dis?' disabled':'')+' onclick="marcar(\''+t+'\')">'+inner+'</button>';}).join('');}
+async function marcar(t){if(marking)return;marking=t;renderMark();try{const res=await apiFetch(EP.marcar,{method:'POST',headers:{Authorization:'Bearer '+TOKEN,'Content-Type':'application/json',Accept:'application/json'},body:JSON.stringify({tipo:t})});if(ESTADO)ESTADO.marcaciones[t]={hora:res.hora,atraso_minutos:0,confirmado:false};el('suc-h').textContent=res.hora;el('suc-h').style.color=COL[t];go('success');let n=4;el('suc-cd').textContent='Cerrando en '+n+'s…';if(cdId)clearInterval(cdId);cdId=setInterval(()=>{n--;el('suc-cd').textContent='Cerrando en '+n+'s…';if(n<=0){clearInterval(cdId);marking=null;go('home');loadHome();}},1000);}catch(e){toast(errMsg(e));marking=null;renderMark();}}
+el('btn-login').addEventListener('click',async()=>{const ced=el('l-ced').value.trim();const pw=el('l-pw').value;if(!ced||!pw){toast('Ingresa tu cédula y contraseña.');return;}const btn=el('btn-login');btn.disabled=true;btn.innerHTML='<span class="ld"></span>';try{const r=await apiFetch(EP.login,{method:'POST',headers:{'Content-Type':'application/json',Accept:'application/json'},body:JSON.stringify({cedula:ced,password:pw})});saveAuth(r.token,r.nombre);go('home');loadHome();}catch(e){toast(errMsg(e));}finally{btn.disabled=false;btn.textContent='Entrar';}});
+el('l-pw').addEventListener('keydown',e=>{if(e.key==='Enter')el('btn-login').click();});
+el('btn-go-reg').addEventListener('click',async()=>{go('register');el('r-ip').textContent='detectando…';phoneIp=await detectIp();el('r-ip').textContent=phoneIp||'no detectada';});
+el('btn-back-login').addEventListener('click',()=>go('login'));
+el('btn-reg').addEventListener('click',async()=>{const nom=el('r-nom').value.trim().toUpperCase();const ced=el('r-ced').value.trim();const gen=el('r-gen').value;const cor=el('r-cor').value.trim()||null;const cel=el('r-cel').value.trim()||null;const pw=el('r-pw').value;const pw2=el('r-pw2').value;if(!nom||!ced||!pw){toast('Nombre, cédula y contraseña son obligatorios.');return;}if(ced.length<8){toast('La cédula parece muy corta.');return;}if(pw.length<6){toast('La contraseña debe tener al menos 6 caracteres.');return;}if(pw!==pw2){toast('Las contraseñas no coinciden.');return;}const btn=el('btn-reg');btn.disabled=true;btn.innerHTML='<span class="ld"></span>';try{const r=await apiFetch(EP.reg,{method:'POST',headers:{'Content-Type':'application/json',Accept:'application/json'},body:JSON.stringify({nombres_completos:nom,cedula:ced,genero:gen,correo:cor,celular:cel,ip_celular:phoneIp,password:pw})});saveAuth(r.token,r.nombre);go('home');loadHome();}catch(e){toast(errMsg(e));}finally{btn.disabled=false;btn.textContent='Registrarme';}});
+el('btn-refresh').addEventListener('click',()=>{loadHome();});
+el('btn-marking').addEventListener('click',()=>{marking=null;renderMark();go('marking');});
+el('btn-back').addEventListener('click',()=>{go('home');loadHome();});
+let ty0=0;const hb=el('home-body');hb.addEventListener('touchstart',e=>{ty0=e.touches[0].clientY;},{passive:true});hb.addEventListener('touchend',e=>{if(e.changedTouches[0].clientY-ty0>70&&hb.scrollTop<=0)loadHome();},{passive:true});
+if('serviceWorker'in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
+window.addEventListener('load',()=>{setTimeout(()=>{if(TOKEN){go('home');loadHome();}else go('login');},750);});
+// Auto-refresco: en vez de que el empleado tenga que cerrar y reabrir la app
+// cuando el wifi de la empresa falla un momento, se recarga sola apenas la
+// conexión real vuelve, y también cada vez que se retoma la app (se abre de
+// nuevo desde el ícono, o vuelve de segundo plano en iOS).
+function autoRefresh(){if(TOKEN&&el('sc-home').classList.contains('active'))loadHome();}
+window.addEventListener('online',autoRefresh);
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')autoRefresh();});
+</script>
+</body>
+</html>

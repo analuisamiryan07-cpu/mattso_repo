@@ -1,0 +1,11 @@
+{
+  "name": "MATSSO Asistencia",
+  "short_name": "MATSSO",
+  "description": "Control de asistencia MATSSO",
+  "start_url": "/app/",
+  "scope": "/app/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0f2a5c",
+  "theme_color": "#0f2a5c"
+}
