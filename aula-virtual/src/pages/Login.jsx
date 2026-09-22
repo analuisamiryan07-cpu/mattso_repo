@@ -112,7 +112,10 @@ const Login = ({ onSuccess }) => {
 
         <p style={{ textAlign: 'center', marginTop: 20, fontSize: '0.85rem' }}>
           ¿Todavía no tienes cuenta?{' '}
-          <a href={`${SITIO_PUBLICO_URL}/login`} style={{ color: 'var(--primary-blue)', fontWeight: 700, textDecoration: 'underline' }}>
+          {/* ?tab=register abre directo el formulario de registro — Login.jsx del
+              sitio público también lee esto (además de location.state, que solo
+              sirve para navegación interna con <Link>, no entre apps distintas). */}
+          <a href={`${SITIO_PUBLICO_URL}/login?tab=register`} style={{ color: 'var(--primary-blue)', fontWeight: 700, textDecoration: 'underline' }}>
             Crear cuenta
           </a>
         </p>
