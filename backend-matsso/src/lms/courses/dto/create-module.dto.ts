@@ -1,10 +1,14 @@
-import { IsIn, IsInt, IsNotEmpty, IsString, Min } from 'class-validator';
+import { IsIn, IsInt, IsNotEmpty, IsOptional, IsString, Min } from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class CreateModuleDto {
   @IsString()
   @IsNotEmpty({ message: 'El título del módulo es obligatorio.' })
   titulo: string;
+
+  @IsOptional()
+  @IsString()
+  descripcion?: string;
 
   // A qué árbol de contenido pertenece este módulo — el curso debe tener esa
   // modalidad habilitada (Course.modo_moodle / modo_coursera), se valida en

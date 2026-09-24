@@ -496,6 +496,7 @@ model Module {
   // (courses.service.ts) se calcula por separado dentro de cada modalidad.
   delivery_mode  DeliveryMode
   titulo         String       @db.VarChar(255)
+  descripcion    String?      @db.Text
   sequence_order Int          @db.SmallInt
   is_active      Boolean      @default(true)
   created_at     DateTime     @default(now()) @db.Timestamptz

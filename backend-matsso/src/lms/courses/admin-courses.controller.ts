@@ -42,6 +42,12 @@ export class AdminCoursesController {
     return this.adminCoursesService.listCourses();
   }
 
+  // Antes de 'courses/:courseId' — si no, ':courseId' capturaría "dashboard".
+  @Get('courses/dashboard')
+  getDashboard() {
+    return this.adminCoursesService.getDashboard();
+  }
+
   @Get('courses/:courseId')
   getCourseTree(@Param('courseId') courseId: string, @Req() req: any) {
     return this.adminCoursesService.getCourseTree(courseId, req.m2mActor);

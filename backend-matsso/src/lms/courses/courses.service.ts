@@ -227,6 +227,7 @@ export class CoursesService {
       return {
         id: module.id,
         titulo: module.titulo,
+        descripcion: module.descripcion,
         sequence_order: module.sequence_order,
         unlocked: thisModuleUnlocked,
         content_items: items,

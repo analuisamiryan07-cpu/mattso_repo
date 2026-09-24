@@ -29,6 +29,46 @@ export class AdminCoursesService {
     });
   }
 
+  /** Panel general: todos los cursos, cuántos alumnos y cuántos ya completaron todo. */
+  async getDashboard() {
+    const courses = await this.prisma.course.findMany({
+      orderBy: { created_at: 'desc' },
+      include: { _count: { select: { enrollments: true } }, profesor: { select: { correo: true } } },
+    });
+
+    return Promise.all(
+      courses.map(async (c) => {
+        const totalItems = await this.prisma.contentItem.count({
+          where: { module: { course_id: c.id }, is_active: true },
+        });
+
+        let completados = 0;
+        if (totalItems > 0 && c._count.enrollments > 0) {
+          const enrollments = await this.prisma.enrollment.findMany({
+            where: { course_id: c.id },
+            select: { id: true },
+          });
+          for (const e of enrollments) {
+            const hechos = await this.prisma.studentProgress.count({
+              where: { enrollment_id: e.id, status: 'COMPLETED' },
+            });
+            if (hechos === totalItems) completados++;
+          }
+        }
+
+        return {
+          id: c.id,
+          titulo: c.titulo,
+          modo_moodle: c.modo_moodle,
+          modo_coursera: c.modo_coursera,
+          profesor_correo: c.profesor?.correo ?? null,
+          total_estudiantes: c._count.enrollments,
+          total_completados: completados,
+        };
+      }),
+    );
+  }
+
   async getCourseTree(courseId: string, actor: string) {
     const course = await this.prisma.course.findUnique({
       where: { id: courseId },
@@ -127,6 +167,7 @@ export class AdminCoursesService {
         course_id: courseId,
         delivery_mode: dto.delivery_mode as any,
         titulo: sanitizePlainText(dto.titulo),
+        descripcion: sanitizePlainText(dto.descripcion) ?? null,
         sequence_order: dto.sequence_order,
       },
     });
