@@ -19,6 +19,21 @@ export class AdminProfessorsService {
     private readonly authService: AuthService,
   ) {}
 
+  /** Para el desplegable de "asignar profesor" del panel de Cursos. */
+  async listar() {
+    const profesores = await this.prisma.usuarioWeb.findMany({
+      where: { rol: 'PROFESOR' },
+      select: { id: true, correo: true, activo: true, cliente: { select: { nombre: true } } },
+      orderBy: { correo: 'asc' },
+    });
+    return profesores.map((p) => ({
+      id: Number(p.id),
+      correo: p.correo,
+      nombre: p.cliente?.nombre ?? null,
+      activo: p.activo,
+    }));
+  }
+
   async crearOAscender(dto: CreateProfessorDto, actor: string) {
     const existente = await this.prisma.usuarioWeb.findUnique({ where: { correo: dto.correo } });
 

@@ -101,7 +101,33 @@
     @endif
 </div>
 
-{{-- 3. Contenido Moodle --}}
+{{-- 3. Profesor (solo Moodle — Coursera es autoevaluado, sin profesor) --}}
+@if($curso['modo_moodle'])
+<div class="card" style="max-width:520px;margin-top:1.25rem">
+    <h3 style="margin:0 0 .5rem">Profesor</h3>
+    @if(!empty($curso['profesor']))
+        <p>Asignado: <strong>{{ $curso['profesor']['correo'] }}</strong></p>
+    @else
+        <p class="muted">Este curso todavía no tiene profesor asignado.</p>
+    @endif
+    @if(count($profesores) === 0)
+        <p class="muted" style="font-size:.82rem">No hay profesores activos todavía. <a href="{{ route('profesores.index') }}">Crea uno aquí</a>.</p>
+    @else
+        <form method="POST" action="{{ route('cursos.profesor.store', $curso['id']) }}" style="display:flex;gap:.5rem">
+            @csrf
+            <select name="profesor_usuario_id" required style="flex:1">
+                <option value="">— Elige un profesor —</option>
+                @foreach($profesores as $p)
+                    <option value="{{ $p['id'] }}">{{ $p['correo'] }}</option>
+                @endforeach
+            </select>
+            <button type="submit" class="btn btn-sm">Asignar</button>
+        </form>
+    @endif
+</div>
+@endif
+
+{{-- 4. Contenido Moodle --}}
 @if($curso['modo_moodle'])
 <div class="card" style="margin-top:1.25rem">
     <h3 style="margin:0 0 .75rem">Contenido — Moodle</h3>
@@ -110,19 +136,17 @@
             <strong>{{ $m['sequence_order'] }}. {{ $m['titulo'] }}</strong>
             <ul style="margin:.5rem 0 0;padding-left:1.1rem">
                 @forelse($m['content_items'] as $ci)
-                    <li>{{ $ci['sequence_order'] }}. [{{ $ci['item_type'] }}] {{ $ci['titulo'] }}</li>
+                    <li>
+                        {{ $ci['sequence_order'] }}. [{{ $ci['item_type'] }}] {{ $ci['titulo'] }}
+                        @if($ci['item_type'] === 'DOCUMENT' && !empty($ci['body_text']))
+                            <div class="muted" style="font-size:.78rem;white-space:pre-wrap">{{ Str::limit($ci['body_text'], 200) }}</div>
+                        @endif
+                    </li>
                 @empty
                     <li class="muted">Sin contenido todavía.</li>
                 @endforelse
             </ul>
-            <form method="POST" action="{{ route('cursos.contenidos.store', $m['id']) }}" style="margin-top:.6rem;display:flex;gap:.4rem;flex-wrap:wrap">
-                @csrf
-                <input type="hidden" name="course" value="{{ $curso['id'] }}">
-                <input type="text" name="titulo" placeholder="Título de la tarea" maxlength="255" required style="flex:2;min-width:160px">
-                <input type="number" name="sequence_order" placeholder="Orden" min="1" max="999" required style="width:80px">
-                <input type="text" name="assignment_instructions" placeholder="Instrucciones" maxlength="5000" required style="flex:3;min-width:200px">
-                <button type="submit" class="btn btn-sm">+ Tarea</button>
-            </form>
+            @include('cursos._form_contenido', ['m' => $m, 'curso' => $curso])
         </div>
     @endforeach
 
@@ -136,28 +160,27 @@
 </div>
 @endif
 
-{{-- 4. Contenido Coursera --}}
+{{-- 5. Contenido Coursera --}}
 @if($curso['modo_coursera'])
 <div class="card" style="margin-top:1.25rem">
     <h3 style="margin:0 0 .75rem">Contenido — Coursera</h3>
+    <p class="muted" style="font-size:.8rem;margin-top:-.4rem">Sin profesor — se autoevalúa. Video y examen (quiz) se agregan en una fase siguiente.</p>
     @foreach($modulosCoursera as $m)
         <div style="border:1px solid var(--border);border-radius:8px;padding:.85rem 1rem;margin-bottom:.75rem">
             <strong>{{ $m['sequence_order'] }}. {{ $m['titulo'] }}</strong>
             <ul style="margin:.5rem 0 0;padding-left:1.1rem">
                 @forelse($m['content_items'] as $ci)
-                    <li>{{ $ci['sequence_order'] }}. [{{ $ci['item_type'] }}] {{ $ci['titulo'] }}</li>
+                    <li>
+                        {{ $ci['sequence_order'] }}. [{{ $ci['item_type'] }}] {{ $ci['titulo'] }}
+                        @if($ci['item_type'] === 'DOCUMENT' && !empty($ci['body_text']))
+                            <div class="muted" style="font-size:.78rem;white-space:pre-wrap">{{ Str::limit($ci['body_text'], 200) }}</div>
+                        @endif
+                    </li>
                 @empty
                     <li class="muted">Sin contenido todavía.</li>
                 @endforelse
             </ul>
-            <form method="POST" action="{{ route('cursos.contenidos.store', $m['id']) }}" style="margin-top:.6rem;display:flex;gap:.4rem;flex-wrap:wrap">
-                @csrf
-                <input type="hidden" name="course" value="{{ $curso['id'] }}">
-                <input type="text" name="titulo" placeholder="Título de la tarea" maxlength="255" required style="flex:2;min-width:160px">
-                <input type="number" name="sequence_order" placeholder="Orden" min="1" max="999" required style="width:80px">
-                <input type="text" name="assignment_instructions" placeholder="Instrucciones" maxlength="5000" required style="flex:3;min-width:200px">
-                <button type="submit" class="btn btn-sm">+ Tarea</button>
-            </form>
+            @include('cursos._form_contenido', ['m' => $m, 'curso' => $curso])
         </div>
     @endforeach
 
@@ -168,7 +191,6 @@
         <div><label style="font-size:.78rem">Orden</label><input type="number" name="sequence_order" min="1" max="999" required style="width:80px"></div>
         <button type="submit" class="btn btn-sm btn-secondary">+ Módulo</button>
     </form>
-    <p class="muted" style="font-size:.8rem;margin-top:.5rem">Video y cuestionarios (quiz) se agregan en una fase siguiente.</p>
 </div>
 @endif
 @endsection

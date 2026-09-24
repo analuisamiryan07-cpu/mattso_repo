@@ -54,4 +54,11 @@ export class CreateContentItemDto {
   @IsString()
   @IsNotEmpty({ message: 'assignment_instructions es obligatorio para contenido ASSIGNMENT.' })
   assignment_instructions?: string;
+
+  // Texto directo, escrito a mano (no un archivo subido) — para
+  // item_type=DOCUMENT.
+  @ValidateIf((o) => o.item_type === 'DOCUMENT')
+  @IsString()
+  @IsNotEmpty({ message: 'body_text es obligatorio para contenido DOCUMENT.' })
+  body_text?: string;
 }

@@ -23,6 +23,7 @@ import { CreateModuleDto } from './dto/create-module.dto';
 import { CreateContentItemDto } from './dto/create-content-item.dto';
 import { CreateQuizDto } from './dto/create-quiz.dto';
 import { UploadCourseImageDto } from './dto/upload-course-image.dto';
+import { AsignarProfesorDto } from './dto/asignar-profesor.dto';
 
 const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 const MAGIC_BYTES: Record<string, (buf: Buffer) => boolean> = {
@@ -59,6 +60,11 @@ export class AdminCoursesController {
   @Post('courses/:courseId/modules')
   createModule(@Param('courseId') courseId: string, @Body() dto: CreateModuleDto, @Req() req: any) {
     return this.adminCoursesService.createModule(courseId, dto, req.m2mActor);
+  }
+
+  @Patch('courses/:courseId/profesor')
+  asignarProfesor(@Param('courseId') courseId: string, @Body() dto: AsignarProfesorDto, @Req() req: any) {
+    return this.adminCoursesService.asignarProfesor(courseId, dto.profesor_usuario_id, req.m2mActor);
   }
 
   // Imagen del curso. Va POR AQUÍ (a diferencia del video, que es Laravel ->

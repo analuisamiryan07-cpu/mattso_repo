@@ -103,6 +103,49 @@ class LmsApiService
         return $r->json() ?? [];
     }
 
+    // ── Profesores (solo Moodle usa profesor; se crean/asignan aquí) ─────
+    public function listarProfesores(): array
+    {
+        $r = $this->client()->get("{$this->baseUrl}/api/lms/admin/professors");
+        throw_unless($r->successful(), RuntimeException::class, $this->mensajeError($r, 'No se pudieron consultar los profesores.'));
+        return $r->json() ?? [];
+    }
+
+    public function crearOAscenderProfesor(string $correo, ?int $clienteId = null): array
+    {
+        $r = $this->client()->post("{$this->baseUrl}/api/lms/admin/professors", array_filter([
+            'correo' => $correo,
+            'cliente_id' => $clienteId,
+        ]));
+        if ($r->failed()) {
+            Log::error('LmsApi::crearOAscenderProfesor — '.$r->status().' — '.$r->body());
+            throw new RuntimeException($this->mensajeError($r, 'No se pudo crear/ascender al profesor.'));
+        }
+        return $r->json() ?? [];
+    }
+
+    public function cambiarActivoProfesor(int $usuarioId, bool $activo): array
+    {
+        $r = $this->client()->patch("{$this->baseUrl}/api/lms/admin/professors/{$usuarioId}", ['activo' => $activo]);
+        if ($r->failed()) {
+            Log::error('LmsApi::cambiarActivoProfesor — '.$r->status().' — '.$r->body());
+            throw new RuntimeException($this->mensajeError($r, 'No se pudo cambiar el estado del profesor.'));
+        }
+        return $r->json() ?? [];
+    }
+
+    public function asignarProfesor(string $courseId, int $profesorUsuarioId): array
+    {
+        $r = $this->client()->patch("{$this->baseUrl}/api/lms/admin/courses/{$courseId}/profesor", [
+            'profesor_usuario_id' => $profesorUsuarioId,
+        ]);
+        if ($r->failed()) {
+            Log::error('LmsApi::asignarProfesor — '.$r->status().' — '.$r->body());
+            throw new RuntimeException($this->mensajeError($r, 'No se pudo asignar el profesor.'));
+        }
+        return $r->json() ?? [];
+    }
+
     // ── Claves de acceso (access grants) ───────────────────────────────
     public function listarClavesDisponibles(?string $correo, ?int $ordenId): array
     {

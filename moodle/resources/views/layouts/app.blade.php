@@ -418,11 +418,16 @@
             </div>
         </div>
         @if(auth()->user()->isAdministrator())
-            <a href="{{ route('capacitaciones.index') }}" @class(['active' => request()->routeIs('capacitaciones.*')])>Capacitaciones</a>
-        @endif
-        @if(auth()->user()->isAdministrator())
-            <a href="{{ route('cursos.index') }}" @class(['active' => request()->routeIs('cursos.*')])>Cursos</a>
-            <a href="{{ route('catalog.index') }}" @class(['active' => request()->routeIs('catalog.*')])>Certificaciones</a>
+            <div class="nav-dd-wrap">
+                <button class="nav-dd-btn @if(request()->routeIs('capacitaciones.*') || request()->routeIs('cursos.*') || request()->routeIs('catalog.*')) active @endif">
+                    Programas <span class="nav-dd-arrow">▾</span>
+                </button>
+                <div class="nav-dd-menu">
+                    <a href="{{ route('capacitaciones.index') }}" @class(['active' => request()->routeIs('capacitaciones.*')])>Capacitaciones</a>
+                    <a href="{{ route('cursos.index') }}" @class(['active' => request()->routeIs('cursos.*')])>Cursos</a>
+                    <a href="{{ route('catalog.index') }}" @class(['active' => request()->routeIs('catalog.*')])>Certificaciones</a>
+                </div>
+            </div>
             <a href="{{ route('qr-certs.index') }}" @class(['active' => request()->routeIs('qr-certs.*')])>QR Certs</a>
             <a href="{{ route('users.index') }}" @class(['active' => request()->routeIs('users.*')])>Usuarios</a>
             <a href="{{ route('payments.index') }}" @class(['active' => request()->routeIs('payments.*')])>Pagos</a>

@@ -1,4 +1,4 @@
-import { Body, Controller, Param, Patch, Post, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Post, Req, UseGuards } from '@nestjs/common';
 import { LmsM2mGuard } from '../common/lms-m2m.guard';
 import { AdminProfessorsService } from './admin-professors.service';
 import { CreateProfessorDto } from './dto/create-professor.dto';
@@ -8,6 +8,11 @@ import { SetProfessorActiveDto } from './dto/set-professor-active.dto';
 @Controller('api/lms/admin/professors')
 export class AdminProfessorsController {
   constructor(private readonly adminProfessorsService: AdminProfessorsService) {}
+
+  @Get()
+  listar() {
+    return this.adminProfessorsService.listar();
+  }
 
   @Post()
   crear(@Body() dto: CreateProfessorDto, @Req() req: any) {

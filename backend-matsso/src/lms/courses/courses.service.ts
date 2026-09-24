@@ -201,6 +201,7 @@ export class CoursesService {
           unlocked,
           video_duration_seconds: item.video_duration_seconds,
           assignment_instructions: item.assignment_instructions,
+          body_text: item.body_text,
           grade: gradeByContentId.get(item.id) ?? null,
           entrega_status:
             item.item_type !== 'ASSIGNMENT'
