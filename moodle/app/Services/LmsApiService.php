@@ -103,6 +103,13 @@ class LmsApiService
         return $r->json() ?? [];
     }
 
+    public function getDashboard(): array
+    {
+        $r = $this->client()->get("{$this->baseUrl}/api/lms/admin/courses/dashboard");
+        throw_unless($r->successful(), RuntimeException::class, $this->mensajeError($r, 'No se pudo cargar el panel.'));
+        return $r->json() ?? [];
+    }
+
     // ── Profesores (solo Moodle usa profesor; se crean/asignan aquí) ─────
     public function listarProfesores(): array
     {

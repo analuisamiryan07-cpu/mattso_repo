@@ -23,6 +23,18 @@ class CursosController extends Controller
     ) {
     }
 
+    public function dashboard()
+    {
+        try {
+            $cursos = $this->lms->getDashboard();
+        } catch (Throwable $e) {
+            $cursos = [];
+            session()->flash('error', 'No fue posible cargar el panel.');
+        }
+
+        return view('cursos.dashboard', compact('cursos'));
+    }
+
     public function index()
     {
         try {
@@ -36,20 +48,40 @@ class CursosController extends Controller
         return view('cursos.index', compact('cursos'));
     }
 
+    public const MAX_MODULOS = 12;
+
     public function create()
     {
-        return view('cursos.create');
+        try {
+            $profesores = collect($this->lms->listarProfesores())->where('activo', true)->values()->all();
+        } catch (Throwable $e) {
+            $profesores = [];
+        }
+
+        return view('cursos.create', ['profesores' => $profesores, 'maxModulos' => self::MAX_MODULOS]);
     }
 
     public function store(Request $request)
     {
         $validated = $this->validarDatosGenerales($request);
-
-        if (!$request->boolean('modo_moodle') && !$request->boolean('modo_coursera')) {
+        $modoMoodle = $request->boolean('modo_moodle');
+        $modoCoursera = $request->boolean('modo_coursera');
+        if (!$modoMoodle && !$modoCoursera) {
             return back()->withInput()->withErrors(['modo_moodle' => 'Elige Moodle, Coursera o ambos.']);
         }
 
+        $profesor = $this->validarProfesor($request, $modoMoodle);
+        if ($profesor instanceof \Illuminate\Http\RedirectResponse) {
+            return $profesor;
+        }
+        $modulos = $this->validarModulos($request, $modoCoursera);
+        if ($modulos instanceof \Illuminate\Http\RedirectResponse) {
+            return $modulos;
+        }
+
         $productoId = null;
+        $cursoId = null;
+        $avisos = [];
         try {
             $producto = $this->catalog->create([
                 'tipo' => 'CURSO',
@@ -67,13 +99,14 @@ class CursosController extends Controller
                 'producto_id' => $productoId,
                 'titulo' => $validated['titulo'],
                 'descripcion' => $validated['descripcion'] ?? null,
-                'modo_moodle' => $request->boolean('modo_moodle'),
-                'modo_coursera' => $request->boolean('modo_coursera'),
+                'modo_moodle' => $modoMoodle,
+                'modo_coursera' => $modoCoursera,
                 'duracion_meses' => $validated['duracion_meses'],
             ]);
+            $cursoId = $curso['id'];
         } catch (Throwable $e) {
-            // Si el curso (LMS) falló pero el producto (catálogo) sí se creó,
-            // no dejar un producto "fantasma" visible en la web sin curso detrás.
+            // Todavía no existe el curso — si el producto sí se creó, no dejar
+            // un producto "fantasma" visible en la web sin curso detrás.
             if ($productoId) {
                 try {
                     $this->catalog->delete($productoId);
@@ -85,12 +118,137 @@ class CursosController extends Controller
             return back()->withInput()->with('error', 'No se pudo crear el curso: '.$e->getMessage());
         }
 
-        // Directo a "editar" — ahí es donde viven las partes 2 y 3 (contenido
-        // de Moodle y de Coursera), no tiene sentido crear un módulo antes de
-        // que el curso exista, así que el flujo continúa en la misma pantalla
-        // de después, no se queda a medias en el listado.
-        return redirect()->route('cursos.edit', $curso['id'])
-            ->with('status', 'Curso "'.$validated['titulo'].'" creado. Ahora completa el contenido de Moodle y/o Coursera abajo.');
+        // De aquí para abajo el curso YA existe — si algo falla, no se
+        // deshace nada (perdería lo que sí funcionó): se avisa y la persona
+        // completa lo que falte desde "Editar curso".
+        if ($profesor) {
+            try {
+                $this->lms->asignarProfesor($cursoId, $profesor);
+            } catch (Throwable $e) {
+                Log::error('Cursos::store — no se pudo asignar profesor: '.$e->getMessage());
+                $avisos[] = 'El curso se creó, pero no se pudo asignar el profesor: '.$e->getMessage();
+            }
+        }
+
+        foreach ($modulos as $i => $mod) {
+            try {
+                $moduloCreado = $this->lms->createModule($cursoId, [
+                    'delivery_mode' => 'ASINCRONO_VOD',
+                    'titulo' => $mod['titulo'],
+                    'descripcion' => $mod['descripcion'] ?? null,
+                    'sequence_order' => $i + 1,
+                ]);
+            } catch (Throwable $e) {
+                Log::error('Cursos::store — no se pudo crear el módulo '.($i + 1).': '.$e->getMessage());
+                $avisos[] = 'No se pudo crear el módulo "'.$mod['titulo'].'": '.$e->getMessage();
+                continue;
+            }
+
+            $orden = 1;
+            if (!empty($mod['video_url'])) {
+                try {
+                    $this->lms->createContent($moduloCreado['id'], [
+                        'item_type' => 'VIDEO',
+                        'titulo' => $mod['titulo'].' — Video',
+                        'sequence_order' => $orden++,
+                        'cloudinary_public_id' => \Illuminate\Support\Str::slug($mod['titulo']).'-'.$moduloCreado['id'],
+                        'cloudinary_url' => $mod['video_url'],
+                        'video_duration_seconds' => $mod['video_duration_seconds'],
+                    ]);
+                } catch (Throwable $e) {
+                    $avisos[] = 'Módulo "'.$mod['titulo'].'": no se pudo guardar el video — '.$e->getMessage();
+                }
+            }
+            if (!empty($mod['texto'])) {
+                try {
+                    $this->lms->createContent($moduloCreado['id'], [
+                        'item_type' => 'DOCUMENT',
+                        'titulo' => $mod['titulo'].' — Recurso',
+                        'sequence_order' => $orden++,
+                        'body_text' => $mod['texto'],
+                    ]);
+                } catch (Throwable $e) {
+                    $avisos[] = 'Módulo "'.$mod['titulo'].'": no se pudo guardar el recurso — '.$e->getMessage();
+                }
+            }
+            if (!empty($mod['tarea_titulo']) && !empty($mod['tarea_instrucciones'])) {
+                try {
+                    $this->lms->createContent($moduloCreado['id'], [
+                        'item_type' => 'ASSIGNMENT',
+                        'titulo' => $mod['tarea_titulo'],
+                        'sequence_order' => $orden++,
+                        'assignment_instructions' => $mod['tarea_instrucciones'],
+                    ]);
+                } catch (Throwable $e) {
+                    $avisos[] = 'Módulo "'.$mod['titulo'].'": no se pudo guardar la tarea — '.$e->getMessage();
+                }
+            }
+            // El examen (quiz) todavía no tiene armador de preguntas — se
+            // agrega después, desde "Editar curso", cuando esa pantalla exista.
+        }
+
+        $mensaje = 'Curso "'.$validated['titulo'].'" creado correctamente.';
+        if ($avisos) {
+            $mensaje .= ' Ojo: '.implode(' | ', $avisos);
+        }
+
+        return redirect()->route('cursos.edit', $cursoId)->with($avisos ? 'error' : 'status', $mensaje);
+    }
+
+    private function validarProfesor(Request $request, bool $modoMoodle): int|null|\Illuminate\Http\RedirectResponse
+    {
+        if (!$modoMoodle || $request->input('profesor_modo', 'ninguno') === 'ninguno') {
+            return null;
+        }
+
+        if ($request->input('profesor_modo') === 'existente') {
+            $v = $request->validate(['profesor_usuario_id' => ['required', 'integer', 'min:1']]);
+            return (int) $v['profesor_usuario_id'];
+        }
+
+        // 'nuevo': se crea (o asciende) primero, y se devuelve su id para asignar después.
+        $v = $request->validate(['profesor_correo' => ['required', 'email']]);
+        try {
+            $creado = $this->lms->crearOAscenderProfesor($v['profesor_correo']);
+            return (int) $creado['id'];
+        } catch (Throwable $e) {
+            return back()->withInput()->with('error', 'No se pudo crear el profesor: '.$e->getMessage());
+        }
+    }
+
+    /** @return array|\Illuminate\Http\RedirectResponse */
+    private function validarModulos(Request $request, bool $modoCoursera)
+    {
+        if (!$modoCoursera) {
+            return [];
+        }
+
+        $num = (int) $request->input('num_modulos', 0);
+        if ($num < 0 || $num > self::MAX_MODULOS) {
+            return back()->withInput()->withErrors(['num_modulos' => 'El número de módulos debe estar entre 0 y '.self::MAX_MODULOS.'.']);
+        }
+        if ($num === 0) {
+            return [];
+        }
+
+        $rules = [];
+        for ($i = 1; $i <= $num; $i++) {
+            $rules["modulos.$i.titulo"] = ['required', 'string', 'max:255'];
+            $rules["modulos.$i.descripcion"] = ['nullable', 'string', 'max:2000'];
+            $rules["modulos.$i.video_url"] = ['nullable', 'url', 'max:500'];
+            $rules["modulos.$i.video_duration_seconds"] = ['nullable', 'integer', 'min:1', 'required_with:modulos.'.$i.'.video_url'];
+            $rules["modulos.$i.texto"] = ['nullable', 'string', 'max:20000'];
+            $rules["modulos.$i.tarea_titulo"] = ['nullable', 'string', 'max:255'];
+            $rules["modulos.$i.tarea_instrucciones"] = ['nullable', 'string', 'max:5000', 'required_with:modulos.'.$i.'.tarea_titulo'];
+        }
+
+        $validator = validator($request->all(), $rules);
+        if ($validator->fails()) {
+            return back()->withInput()->withErrors($validator);
+        }
+
+        $data = $validator->validated();
+        return array_values($data['modulos'] ?? []);
     }
 
     public function edit(string $course)

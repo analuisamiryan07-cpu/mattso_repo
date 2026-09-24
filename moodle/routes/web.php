@@ -91,6 +91,7 @@ Route::middleware('auth')->group(function (): void {
             Route::get('/',       [CursosController::class, 'index'])->name('index');
             Route::get('/nuevo',  [CursosController::class, 'create'])->name('create');
             Route::post('/',      [CursosController::class, 'store'])->name('store');
+            Route::get('/dashboard', [CursosController::class, 'dashboard'])->name('dashboard');
 
             // Buscador de "Generar clave" — va antes de {course} para no chocar.
             Route::get('/claves/buscar',    [CursosController::class, 'buscarClaves'])->name('claves.buscar');

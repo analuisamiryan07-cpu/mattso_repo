@@ -13,7 +13,7 @@
         <p class="muted">Cursos del Aula Virtual — Moodle y Coursera. Aparecen en la página pública cuando están activos.</p>
     </div>
     <div style="display:flex;gap:.6rem;flex-wrap:wrap">
-        <a href="{{ route('profesores.index') }}" class="btn btn-secondary">Profesores</a>
+        <a href="{{ route('cursos.dashboard') }}" class="btn btn-secondary">Dashboard</a>
         <a href="{{ route('cursos.claves.buscar') }}" class="btn btn-secondary">Generar clave</a>
         <a href="{{ route('cursos.create') }}" class="btn">+ Nuevo curso</a>
     </div>
