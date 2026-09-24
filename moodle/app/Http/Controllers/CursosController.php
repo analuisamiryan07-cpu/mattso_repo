@@ -63,7 +63,7 @@ class CursosController extends Controller
             ]);
             $productoId = $producto['id'];
 
-            $this->lms->createCourse([
+            $curso = $this->lms->createCourse([
                 'producto_id' => $productoId,
                 'titulo' => $validated['titulo'],
                 'descripcion' => $validated['descripcion'] ?? null,
@@ -85,7 +85,12 @@ class CursosController extends Controller
             return back()->withInput()->with('error', 'No se pudo crear el curso: '.$e->getMessage());
         }
 
-        return redirect()->route('cursos.index')->with('status', 'Curso "'.$validated['titulo'].'" creado correctamente.');
+        // Directo a "editar" — ahí es donde viven las partes 2 y 3 (contenido
+        // de Moodle y de Coursera), no tiene sentido crear un módulo antes de
+        // que el curso exista, así que el flujo continúa en la misma pantalla
+        // de después, no se queda a medias en el listado.
+        return redirect()->route('cursos.edit', $curso['id'])
+            ->with('status', 'Curso "'.$validated['titulo'].'" creado. Ahora completa el contenido de Moodle y/o Coursera abajo.');
     }
 
     public function edit(string $course)
@@ -98,7 +103,18 @@ class CursosController extends Controller
             return redirect()->route('cursos.index')->with('error', 'No fue posible cargar el curso.');
         }
 
-        return view('cursos.edit', compact('curso', 'producto'));
+        // Solo hace falta si el curso tiene Moodle habilitado — un curso
+        // 100% Coursera no necesita elegir profesor.
+        $profesores = [];
+        if ($curso['modo_moodle'] ?? false) {
+            try {
+                $profesores = collect($this->lms->listarProfesores())->where('activo', true)->values()->all();
+            } catch (Throwable $e) {
+                // No es motivo para romper la pantalla completa del curso.
+            }
+        }
+
+        return view('cursos.edit', compact('curso', 'producto', 'profesores'));
     }
 
     public function update(Request $request, string $course)
@@ -176,27 +192,43 @@ class CursosController extends Controller
 
     public function storeContent(Request $request, string $module)
     {
-        // Por ahora solo tareas (ASSIGNMENT) — video y documento se habilitan
-        // en la fase de cargas de archivos; quiz tiene su propia pantalla.
+        // Tarea (con instrucciones) o documento/texto (con contenido escrito).
+        // Video y quiz (examen, con banco de preguntas) quedan pendientes.
         $validated = $request->validate([
             'course' => ['required', 'string'],
+            'item_type' => ['required', Rule::in(['ASSIGNMENT', 'DOCUMENT'])],
             'titulo' => ['required', 'string', 'max:255'],
             'sequence_order' => ['required', 'integer', 'min:1', 'max:999'],
-            'assignment_instructions' => ['required', 'string', 'max:5000'],
+            'assignment_instructions' => ['required_if:item_type,ASSIGNMENT', 'nullable', 'string', 'max:5000'],
+            'body_text' => ['required_if:item_type,DOCUMENT', 'nullable', 'string', 'max:20000'],
         ]);
 
         try {
             $this->lms->createContent($module, [
-                'item_type' => 'ASSIGNMENT',
+                'item_type' => $validated['item_type'],
                 'titulo' => $validated['titulo'],
                 'sequence_order' => $validated['sequence_order'],
-                'assignment_instructions' => $validated['assignment_instructions'],
+                'assignment_instructions' => $validated['assignment_instructions'] ?? null,
+                'body_text' => $validated['body_text'] ?? null,
             ]);
         } catch (Throwable $e) {
             return back()->with('error', 'No se pudo crear el contenido: '.$e->getMessage());
         }
 
         return redirect()->route('cursos.edit', $validated['course'])->with('status', 'Contenido agregado.');
+    }
+
+    public function asignarProfesor(Request $request, string $course)
+    {
+        $validated = $request->validate(['profesor_usuario_id' => ['required', 'integer', 'min:1']]);
+
+        try {
+            $this->lms->asignarProfesor($course, $validated['profesor_usuario_id']);
+        } catch (Throwable $e) {
+            return back()->with('error', 'No se pudo asignar el profesor: '.$e->getMessage());
+        }
+
+        return redirect()->route('cursos.edit', $course)->with('status', 'Profesor asignado.');
     }
 
     public function uploadImagen(Request $request, string $course)

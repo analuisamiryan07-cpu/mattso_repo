@@ -33,6 +33,7 @@ export class AdminCoursesService {
     const course = await this.prisma.course.findUnique({
       where: { id: courseId },
       include: {
+        profesor: { select: { id: true, correo: true } },
         modules: {
           orderBy: { sequence_order: 'asc' },
           include: {
@@ -154,6 +155,7 @@ export class AdminCoursesService {
         cloudinary_url: dto.cloudinary_url ?? null,
         video_duration_seconds: dto.video_duration_seconds ?? null,
         assignment_instructions: sanitizePlainText(dto.assignment_instructions) ?? null,
+        body_text: sanitizePlainText(dto.body_text) ?? null,
       },
     });
     this.logger.log(`[${actor}] creó contenido ${item.id} (${item.item_type}) en módulo ${moduleId}`);
@@ -227,6 +229,32 @@ export class AdminCoursesService {
     const url = await this.storage.uploadCourseImage(file, course.cloudinary_folder, slot);
     this.logger.log(`[${actor}] subió imagen "${slot}" del curso ${courseId}`);
     return { url };
+  }
+
+  /**
+   * El profesor califica y sube recursos en Moodle — un curso Coursera puro
+   * no necesita uno, pero no se impide asignarlo (podría tener las dos
+   * modalidades). Solo se puede asignar una cuenta con rol PROFESOR y activa.
+   */
+  async asignarProfesor(courseId: string, profesorUsuarioId: number, actor: string) {
+    await this.ensureCourseExists(courseId);
+    const profesor = await this.prisma.usuarioWeb.findUnique({
+      where: { id: BigInt(profesorUsuarioId) },
+      select: { id: true, rol: true, activo: true },
+    });
+    if (!profesor || profesor.rol !== 'PROFESOR') {
+      throw new BadRequestException('El usuario indicado no es un profesor.');
+    }
+    if (!profesor.activo) {
+      throw new BadRequestException('Este profesor está desactivado — actívalo antes de asignarlo.');
+    }
+
+    const course = await this.prisma.course.update({
+      where: { id: courseId },
+      data: { profesor_usuario_id: profesor.id },
+    });
+    this.logger.log(`[${actor}] asignó profesor ${profesorUsuarioId} al curso ${courseId}`);
+    return course;
   }
 
   private async ensureCourseExists(courseId: string) {

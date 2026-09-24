@@ -521,6 +521,9 @@ model ContentItem {
   cloudinary_url          String?         @db.VarChar(500)
   video_duration_seconds  Int?
   assignment_instructions String?         @db.Text
+  // Contenido de texto directo (item_type=DOCUMENT) — el profesor o el
+  // admin lo escribe aquí, no es un archivo subido.
+  body_text                String?         @db.Text
   is_active               Boolean         @default(true)
   created_at              DateTime        @default(now()) @db.Timestamptz
   updated_at              DateTime        @default(now()) @updatedAt @db.Timestamptz

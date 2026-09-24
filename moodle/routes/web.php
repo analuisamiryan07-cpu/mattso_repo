@@ -10,6 +10,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\QrCertController;
 use App\Http\Controllers\WebClientController;
 use App\Http\Controllers\CursosController;
+use App\Http\Controllers\ProfesoresController;
 use App\Http\Controllers\Admin\HorasController;
 use App\Http\Controllers\Admin\ReporteController;
 use App\Http\Controllers\Api\AsistenciaApiController;
@@ -101,7 +102,15 @@ Route::middleware('auth')->group(function (): void {
             Route::patch('/{course}/estado', [CursosController::class, 'toggle'])->whereUuid('course')->name('toggle');
             Route::post('/{course}/modulos', [CursosController::class, 'storeModule'])->whereUuid('course')->name('modulos.store');
             Route::post('/{course}/imagen',  [CursosController::class, 'uploadImagen'])->whereUuid('course')->name('imagen.store');
+            Route::post('/{course}/profesor', [CursosController::class, 'asignarProfesor'])->whereUuid('course')->name('profesor.store');
             Route::post('/modulos/{module}/contenidos', [CursosController::class, 'storeContent'])->whereUuid('module')->name('contenidos.store');
+        });
+
+        // ── Profesores (solo relevantes para cursos Moodle) ──────────────────
+        Route::prefix('profesores')->name('profesores.')->group(function (): void {
+            Route::get('/',                [ProfesoresController::class, 'index'])->name('index');
+            Route::post('/',               [ProfesoresController::class, 'store'])->name('store');
+            Route::patch('/{usuarioId}/estado', [ProfesoresController::class, 'toggle'])->name('toggle');
         });
 
         // ── Control de Horas ──────────────────────────────────────────────────
