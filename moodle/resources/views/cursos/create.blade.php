@@ -56,9 +56,9 @@
     </div>
 
     {{-- 2. Moodle --}}
-    <div class="card" id="parte-moodle" style="max-width:720px;margin-top:1.25rem;{{ old('modo_moodle') ? '' : 'display:none' }}">
+    <div class="card" id="parte-moodle" style="max-width:720px;margin-top:1.25rem">
         <h3 style="margin:0 0 .5rem">2. Moodle — profesor y acceso</h3>
-        <p class="muted" style="font-size:.82rem">El profesor sube recursos y califica. Solo ve este curso y a los estudiantes que se inscriban en él — nunca otros cursos.</p>
+        <p class="muted" style="font-size:.82rem">Esto se guarda solo si marcaste "Moodle" arriba, en la parte 1. El profesor sube recursos y califica — solo ve este curso y a los estudiantes que se inscriban en él, nunca otros cursos.</p>
 
         <div style="display:flex;gap:1.25rem;flex-wrap:wrap;margin:.75rem 0">
             <label class="check-label"><input type="radio" name="profesor_modo" value="ninguno" checked onchange="mostrarProfesor(this)"> Sin profesor por ahora</label>
@@ -85,9 +85,9 @@
     </div>
 
     {{-- 3. Coursera --}}
-    <div class="card" id="parte-coursera" style="margin-top:1.25rem;{{ old('modo_coursera') ? '' : 'display:none' }}">
+    <div class="card" id="parte-coursera" style="margin-top:1.25rem">
         <h3 style="margin:0 0 .5rem">3. Coursera — módulos</h3>
-        <p class="muted" style="font-size:.82rem">Sin profesor — se autoevalúa. Puedes dejarlo en 0 y agregar módulos después desde "Editar curso".</p>
+        <p class="muted" style="font-size:.82rem">Esto se guarda solo si marcaste "Coursera" arriba, en la parte 1. Sin profesor — se autoevalúa. Puedes dejarlo en 0 y agregar módulos después desde "Editar curso".</p>
 
         <div style="max-width:200px;margin:.75rem 0">
             <label for="num_modulos">¿Cuántos módulos?</label>
@@ -143,13 +143,8 @@
 </form>
 
 <script>
-document.getElementById('modo_moodle').addEventListener('change', function () {
-    document.getElementById('parte-moodle').style.display = this.checked ? '' : 'none';
-});
-document.getElementById('modo_coursera').addEventListener('change', function () {
-    document.getElementById('parte-coursera').style.display = this.checked ? '' : 'none';
-});
-
+// Las 3 partes se ven siempre — Moodle/Coursera arriba solo marcan qué se
+// guarda de cada una al enviar el formulario, no esconden nada.
 function mostrarProfesor(radio) {
     document.getElementById('profesor-existente').style.display = radio.value === 'existente' ? '' : 'none';
     document.getElementById('profesor-nuevo').style.display = radio.value === 'nuevo' ? '' : 'none';
