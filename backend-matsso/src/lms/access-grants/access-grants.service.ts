@@ -1,5 +1,5 @@
 // Reemplaza a access-codes (código de 6 dígitos, uno por usuario, para
-// siempre). Ahora es una clave JWT por CADA compra de curso — ver
+// siempre). Ahora es un código corto por CADA compra de curso — ver
 // clave.util.ts y Moodles/lms/docs/DECISIONES.md.
 //
 // Candado de "esta compra ya se usó": se aparta al GENERAR (no al canjear) —
@@ -9,7 +9,6 @@
 import {
   BadRequestException,
   ConflictException,
-  ForbiddenException,
   Injectable,
   Logger,
   NotFoundException,
@@ -18,7 +17,7 @@ import { Prisma } from '@prisma/client';
 import { randomUUID } from 'crypto';
 import { PrismaService } from '../../prisma/prisma.service';
 import { EmailService } from '../../email/email.service';
-import { addMonths, signClave, verifyClave } from './clave.util';
+import { addMonths, generarCodigoCorto, signClave } from './clave.util';
 
 function esViolacionUnicidad(e: unknown): boolean {
   return e instanceof Prisma.PrismaClientKnownRequestError && e.code === 'P2002';
@@ -103,15 +102,14 @@ export class AccessGrantsService {
       where: { orden_item_id: ordenItem.id, revoked_at: null },
     });
     if (yaVigente) {
-      // Ya canjeada: no se puede "recuperar" el token original (nunca se
-      // guarda completo), y regenerar invalidaría el acceso ya dado. Hay que
-      // revocar y generar una clave nueva a propósito, no en automático.
+      // Ya canjeada: no tiene sentido reenviar — el acceso ya se le dio, y
+      // reenviar un código que ya no sirve solo confunde.
       if (yaVigente.redeemed_at) {
-        throw new ConflictException('Esta compra ya tiene una clave y ya fue canjeada — no se puede reenviar.');
+        throw new ConflictException('Esta compra ya tiene una clave y ya fue canjeada.');
       }
-      // Todavía no se canjeó: "generar" de nuevo es simplemente "reenviar" —
-      // mismo jti, se vuelve a firmar y a mandar por correo. Resuelve el caso
-      // real de "se generó pero se perdió el correo/la copié mal".
+      // Todavía no se canjeó: "generar" de nuevo es simplemente "reenviar" el
+      // MISMO código — resuelve el caso real de "se generó pero se perdió el
+      // correo, o se copió mal".
       return this.reenviar(yaVigente, actor);
     }
 
@@ -122,7 +120,10 @@ export class AccessGrantsService {
     if (!usuario) throw new NotFoundException('El comprador de esta orden ya no existe.');
 
     const jwtId = randomUUID();
-    const clave = signClave({
+    // El JWT sigue existiendo como identificador interno/de auditoría (el
+    // jti queda guardado en jwt_id), pero ya no es lo que se le entrega al
+    // estudiante ni lo que se compara al canjear — ver canjear() más abajo.
+    signClave({
       jti: jwtId,
       sub: usuario.id.toString(),
       course_id: course.id,
@@ -132,26 +133,7 @@ export class AccessGrantsService {
       modo_coursera: course.modo_coursera,
     });
 
-    let grant;
-    try {
-      grant = await this.prisma.accessGrant.create({
-        data: {
-          usuario_id: usuario.id,
-          course_id: course.id,
-          orden_item_id: ordenItem.id,
-          duracion_meses: course.duracion_meses,
-          jwt_id: jwtId,
-          generado_por: actor,
-        },
-      });
-    } catch (e) {
-      // Índice único parcial (orden_item_id WHERE revoked_at IS NULL): dos
-      // llamadas simultáneas sobre la misma compra.
-      if (esViolacionUnicidad(e)) {
-        throw new ConflictException('Esta compra ya tiene una clave generada.');
-      }
-      throw e;
-    }
+    const { grant, codigo } = await this.crearConCodigoUnico(ordenItem.id, usuario.id, course.id, course.duracion_meses, jwtId, actor);
 
     this.emailService
       .sendAccessGrant({
@@ -159,25 +141,65 @@ export class AccessGrantsService {
         nombre: usuario.cliente?.nombre ?? 'estudiante',
         cursoTitulo: course.titulo,
         duracionMeses: course.duracion_meses,
-        clave,
+        codigo,
       })
       .catch((err) => this.logger.error('No se pudo enviar el correo de la clave:', err?.message));
 
     this.logger.log(`[${actor}] generó clave para orden_item=${ordenItem.id} (curso ${course.id}, usuario ${usuario.id})`);
 
-    // La clave también viaja en la respuesta (no solo por correo) — igual
-    // que el código de 6 dígitos antes, por si el sistema interno la quiere
-    // reenviar por WhatsApp. La nube no maneja WhatsApp.
+    // El código también viaja en la respuesta (no solo por correo) — por si
+    // el sistema interno lo quiere reenviar por WhatsApp. La nube no maneja WhatsApp.
     return {
       access_grant_id: grant.id,
       usuario_id: Number(usuario.id),
       course_id: course.id,
-      clave,
+      codigo,
     };
   }
 
-  /** Vuelve a firmar el MISMO jti y lo reenvía por correo — no crea una fila nueva. */
-  private async reenviar(grant: { id: string; jwt_id: string; usuario_id: bigint; course_id: string }, actor: string) {
+  /** Crea la fila con un código único, reintentando si (con probabilidad ínfima) choca con uno ya existente. */
+  private async crearConCodigoUnico(
+    ordenItemId: bigint,
+    usuarioId: bigint,
+    courseId: string,
+    duracionMeses: number,
+    jwtId: string,
+    actor: string,
+  ) {
+    for (let intento = 0; intento < 5; intento++) {
+      const codigo = generarCodigoCorto();
+      try {
+        const grant = await this.prisma.accessGrant.create({
+          data: {
+            usuario_id: usuarioId,
+            course_id: courseId,
+            orden_item_id: ordenItemId,
+            duracion_meses: duracionMeses,
+            jwt_id: jwtId,
+            codigo,
+            generado_por: actor,
+          },
+        });
+        return { grant, codigo };
+      } catch (e) {
+        if (esViolacionUnicidad(e)) {
+          // orden_item_id (índice parcial) o codigo — reintenta solo si es
+          // el código el que chocó; si es la compra, ya no tiene sentido seguir.
+          const yaExiste = await this.prisma.accessGrant.findFirst({
+            where: { orden_item_id: ordenItemId, revoked_at: null },
+            select: { id: true },
+          });
+          if (yaExiste) throw new ConflictException('Esta compra ya tiene una clave generada.');
+          continue; // el código chocó — reintenta con uno nuevo
+        }
+        throw e;
+      }
+    }
+    throw new Error('No se pudo generar un código único después de varios intentos.');
+  }
+
+  /** Reenvía el MISMO código por correo — no crea una fila nueva ni cambia nada. */
+  private async reenviar(grant: { id: string; codigo: string | null; usuario_id: bigint; course_id: string }, actor: string) {
     const usuario = await this.prisma.usuarioWeb.findUnique({
       where: { id: grant.usuario_id },
       select: { id: true, correo: true, cliente: { select: { nombre: true } } },
@@ -188,16 +210,11 @@ export class AccessGrantsService {
     if (!course || course.duracion_meses == null) {
       throw new BadRequestException('El curso de esta clave ya no está disponible o no tiene duración configurada.');
     }
-
-    const clave = signClave({
-      jti: grant.jwt_id,
-      sub: usuario.id.toString(),
-      course_id: course.id,
-      curso_titulo: course.titulo,
-      duracion_meses: course.duracion_meses,
-      modo_moodle: course.modo_moodle,
-      modo_coursera: course.modo_coursera,
-    });
+    if (!grant.codigo) {
+      // Claves generadas ANTES de este cambio no tienen código — no hay nada
+      // que reenviar; hay que revocar y generar una nueva.
+      throw new BadRequestException('Esta clave es de un formato anterior sin código — revócala y genera una nueva.');
+    }
 
     this.emailService
       .sendAccessGrant({
@@ -205,22 +222,22 @@ export class AccessGrantsService {
         nombre: usuario.cliente?.nombre ?? 'estudiante',
         cursoTitulo: course.titulo,
         duracionMeses: course.duracion_meses,
-        clave,
+        codigo: grant.codigo,
       })
       .catch((err) => this.logger.error('No se pudo reenviar el correo de la clave:', err?.message));
 
-    this.logger.log(`[${actor}] reenvió la clave de orden_item=${grant.id.slice(0, 8)}… (curso ${course.id}, usuario ${usuario.id})`);
+    this.logger.log(`[${actor}] reenvió la clave de orden_item para curso ${course.id}, usuario ${usuario.id}`);
 
     return {
       access_grant_id: grant.id,
       usuario_id: Number(usuario.id),
       course_id: course.id,
-      clave,
+      codigo: grant.codigo,
       reenviada: true,
     };
   }
 
-  /** Historial completo (generadas/canjeadas/revocadas) — para que el sistema interno vea qué pasó con cada clave. */
+  /** Historial completo (generadas/canjeadas/revocadas) — incluye el código para poder mostrarlo/reenviarlo desde el panel. */
   async listarHistorial(correo?: string, ordenId?: number) {
     if (!correo && !ordenId) {
       throw new BadRequestException('Indica el correo del comprador o el número de orden.');
@@ -244,6 +261,7 @@ export class AccessGrantsService {
       orden_item_id: Number(g.orden_item_id),
       orden_id: Number(g.orden_item.orden_id),
       curso_titulo: g.course.titulo,
+      codigo: g.codigo,
       generado_at: g.generado_at,
       generado_por: g.generado_por,
       estado: g.revoked_at ? 'REVOCADA' : g.redeemed_at ? 'CANJEADA' : 'PENDIENTE',
@@ -267,23 +285,20 @@ export class AccessGrantsService {
     return { ok: true };
   }
 
-  async canjear(usuarioId: number, claveToken: string) {
-    let claims;
-    try {
-      claims = verifyClave(claveToken.trim());
-    } catch {
-      throw new BadRequestException('Clave inválida o vencida.');
+  async canjear(usuarioId: number, codigo: string) {
+    const limpio = codigo.trim();
+    if (!/^\d{6,12}$/.test(limpio)) {
+      throw new BadRequestException('Clave inválida.');
     }
 
-    if (claims.sub !== usuarioId.toString()) {
-      // No es "no encontrada" — existe, pero es de otra persona. No se
-      // confirma ni se niega más detalle para no dar pistas.
-      throw new ForbiddenException('Esta clave no te pertenece.');
-    }
-
-    const grant = await this.prisma.accessGrant.findUnique({ where: { jwt_id: claims.jti } });
-    if (!grant || grant.revoked_at) {
-      throw new BadRequestException('Clave inválida o revocada.');
+    const grant = await this.prisma.accessGrant.findUnique({
+      where: { codigo: limpio },
+      include: { course: { select: { titulo: true, modo_moodle: true, modo_coursera: true } } },
+    });
+    // Mismo mensaje exista o no exista, sea de otra persona o esté revocada —
+    // no da pistas de cuáles códigos son reales.
+    if (!grant || grant.revoked_at || Number(grant.usuario_id) !== usuarioId) {
+      throw new BadRequestException('Clave inválida.');
     }
 
     const expiresAt = addMonths(new Date(), grant.duracion_meses);
@@ -299,11 +314,16 @@ export class AccessGrantsService {
       throw new BadRequestException('Esta clave ya fue utilizada.');
     }
 
-    this.logger.log(`Usuario ${usuarioId} canjeó la clave del curso ${claims.course_id}`);
+    this.logger.log(`Usuario ${usuarioId} canjeó la clave del curso ${grant.course_id}`);
 
     return {
       ok: true,
-      curso: { id: claims.course_id, titulo: claims.curso_titulo, modo_moodle: claims.modo_moodle, modo_coursera: claims.modo_coursera },
+      curso: {
+        id: grant.course_id,
+        titulo: grant.course.titulo,
+        modo_moodle: grant.course.modo_moodle,
+        modo_coursera: grant.course.modo_coursera,
+      },
       expires_at: expiresAt,
     };
   }

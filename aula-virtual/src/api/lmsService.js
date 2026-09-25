@@ -52,12 +52,13 @@ export const lmsService = {
     return data;
   },
 
-  // ── Añadir curso: canjear la clave que mandó el sistema interno ─────
-  // Reemplaza al viejo portón de un solo código para todo — ahora es una
-  // clave JWT por cada curso comprado, y se puede usar en cualquier momento
-  // (la primera vez, o cada vez que se quiera añadir un curso más).
-  async canjearClave(clave) {
-    const { data } = await apiClient.post('/lms/access-grants/canjear', { clave });
+  // ── Añadir curso: canjear el código que mandó el sistema interno ─────
+  // Reemplaza al viejo portón de un solo código para toda la cuenta — ahora
+  // es un código corto (10 dígitos) por cada curso comprado, y se puede usar
+  // en cualquier momento (la primera vez, o cada vez que se quiera añadir un
+  // curso más).
+  async canjearClave(codigo) {
+    const { data } = await apiClient.post('/lms/access-grants/canjear', { codigo });
     return data; // { ok, curso, expires_at }
   },
 

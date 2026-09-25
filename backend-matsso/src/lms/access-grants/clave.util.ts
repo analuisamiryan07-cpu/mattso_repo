@@ -1,11 +1,21 @@
-// La "clave" que el sistema interno genera y entrega a la persona (correo o
-// WhatsApp) es un JWT firmado con un secreto PROPIO (LMS_CLAVE_JWT_SECRET),
-// distinto del que firma el token de sesión (JWT_SECRET) — si uno se filtra,
-// el otro sigue siendo seguro. Nunca se guarda completo en la base de datos:
-// solo su `jti` (jwt_id), que es lo que permite invalidarla al canjearla sin
-// tener que decodificarla primero.
+// La "clave" que canjea el estudiante es un código numérico corto
+// (AccessGrant.codigo, 10 dígitos) — fácil de escribir a mano o dictar por
+// WhatsApp. Por dentro, cada clave también firma un JWT (jti = jwt_id) con un
+// secreto PROPIO (LMS_CLAVE_JWT_SECRET), como identificador interno/de
+// auditoría — pero ya NO es lo que el estudiante escribe ni lo que se
+// compara al canjear (ver AccessGrantsService.canjear, que busca por
+// `codigo` directo en la base, no verifica un JWT).
 
 import * as jwt from 'jsonwebtoken';
+import { randomInt } from 'crypto';
+
+const CODIGO_LENGTH = 10;
+
+/** Numérico de N dígitos, con ceros a la izquierda si hace falta — la unicidad se garantiza al insertar (columna @unique), con reintento si choca. */
+export function generarCodigoCorto(): string {
+  const max = 10 ** CODIGO_LENGTH;
+  return String(randomInt(0, max)).padStart(CODIGO_LENGTH, '0');
+}
 
 export interface ClaveClaims {
   jti: string; // = AccessGrant.jwt_id
