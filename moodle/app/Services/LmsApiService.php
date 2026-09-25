@@ -164,6 +164,16 @@ class LmsApiService
         return $r->json() ?? [];
     }
 
+    public function listarHistorialClaves(?string $correo, ?int $ordenId): array
+    {
+        $r = $this->client()->get("{$this->baseUrl}/api/lms/admin/access-grants/historial", array_filter([
+            'correo' => $correo,
+            'orden_id' => $ordenId,
+        ]));
+        throw_unless($r->successful(), RuntimeException::class, $this->mensajeError($r, 'No se pudo consultar el historial de claves.'));
+        return $r->json() ?? [];
+    }
+
     public function generarClave(int $ordenItemId): array
     {
         $r = $this->client()->post("{$this->baseUrl}/api/lms/admin/access-grants", ['orden_item_id' => $ordenItemId]);

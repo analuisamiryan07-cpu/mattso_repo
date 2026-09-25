@@ -101,10 +101,18 @@ export class AccessGrantsService {
 
     const yaVigente = await this.prisma.accessGrant.findFirst({
       where: { orden_item_id: ordenItem.id, revoked_at: null },
-      select: { id: true },
     });
     if (yaVigente) {
-      throw new ConflictException('Esta compra ya tiene una clave generada. Revócala primero si necesitas otra.');
+      // Ya canjeada: no se puede "recuperar" el token original (nunca se
+      // guarda completo), y regenerar invalidaría el acceso ya dado. Hay que
+      // revocar y generar una clave nueva a propósito, no en automático.
+      if (yaVigente.redeemed_at) {
+        throw new ConflictException('Esta compra ya tiene una clave y ya fue canjeada — no se puede reenviar.');
+      }
+      // Todavía no se canjeó: "generar" de nuevo es simplemente "reenviar" —
+      // mismo jti, se vuelve a firmar y a mandar por correo. Resuelve el caso
+      // real de "se generó pero se perdió el correo/la copié mal".
+      return this.reenviar(yaVigente, actor);
     }
 
     const usuario = await this.prisma.usuarioWeb.findUnique({
@@ -166,6 +174,83 @@ export class AccessGrantsService {
       course_id: course.id,
       clave,
     };
+  }
+
+  /** Vuelve a firmar el MISMO jti y lo reenvía por correo — no crea una fila nueva. */
+  private async reenviar(grant: { id: string; jwt_id: string; usuario_id: bigint; course_id: string }, actor: string) {
+    const usuario = await this.prisma.usuarioWeb.findUnique({
+      where: { id: grant.usuario_id },
+      select: { id: true, correo: true, cliente: { select: { nombre: true } } },
+    });
+    if (!usuario) throw new NotFoundException('El comprador de esta orden ya no existe.');
+
+    const course = await this.prisma.course.findUnique({ where: { id: grant.course_id } });
+    if (!course || course.duracion_meses == null) {
+      throw new BadRequestException('El curso de esta clave ya no está disponible o no tiene duración configurada.');
+    }
+
+    const clave = signClave({
+      jti: grant.jwt_id,
+      sub: usuario.id.toString(),
+      course_id: course.id,
+      curso_titulo: course.titulo,
+      duracion_meses: course.duracion_meses,
+      modo_moodle: course.modo_moodle,
+      modo_coursera: course.modo_coursera,
+    });
+
+    this.emailService
+      .sendAccessGrant({
+        to: usuario.correo,
+        nombre: usuario.cliente?.nombre ?? 'estudiante',
+        cursoTitulo: course.titulo,
+        duracionMeses: course.duracion_meses,
+        clave,
+      })
+      .catch((err) => this.logger.error('No se pudo reenviar el correo de la clave:', err?.message));
+
+    this.logger.log(`[${actor}] reenvió la clave de orden_item=${grant.id.slice(0, 8)}… (curso ${course.id}, usuario ${usuario.id})`);
+
+    return {
+      access_grant_id: grant.id,
+      usuario_id: Number(usuario.id),
+      course_id: course.id,
+      clave,
+      reenviada: true,
+    };
+  }
+
+  /** Historial completo (generadas/canjeadas/revocadas) — para que el sistema interno vea qué pasó con cada clave. */
+  async listarHistorial(correo?: string, ordenId?: number) {
+    if (!correo && !ordenId) {
+      throw new BadRequestException('Indica el correo del comprador o el número de orden.');
+    }
+
+    const usuario = correo
+      ? await this.prisma.usuarioWeb.findUnique({ where: { correo }, select: { id: true } })
+      : null;
+    if (correo && !usuario) throw new NotFoundException('No existe un usuario con ese correo.');
+
+    const grants = await this.prisma.accessGrant.findMany({
+      where: {
+        ...(usuario ? { usuario_id: usuario.id } : {}),
+        ...(ordenId ? { orden_item: { orden_id: BigInt(ordenId) } } : {}),
+      },
+      include: { course: { select: { titulo: true } }, orden_item: { select: { orden_id: true } } },
+      orderBy: { generado_at: 'desc' },
+    });
+
+    return grants.map((g) => ({
+      orden_item_id: Number(g.orden_item_id),
+      orden_id: Number(g.orden_item.orden_id),
+      curso_titulo: g.course.titulo,
+      generado_at: g.generado_at,
+      generado_por: g.generado_por,
+      estado: g.revoked_at ? 'REVOCADA' : g.redeemed_at ? 'CANJEADA' : 'PENDIENTE',
+      redeemed_at: g.redeemed_at,
+      expires_at: g.expires_at,
+      revoked_at: g.revoked_at,
+    }));
   }
 
   async revocar(ordenItemId: number, actor: string) {

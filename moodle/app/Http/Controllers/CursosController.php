@@ -421,7 +421,7 @@ class CursosController extends Controller
         ]);
 
         if (!$seEnvioElFormulario) {
-            return view('cursos.claves', ['disponibles' => null, 'busqueda' => []]);
+            return view('cursos.claves', ['disponibles' => null, 'historial' => null, 'busqueda' => []]);
         }
 
         if (blank($validated['correo'] ?? null) && blank($validated['orden_id'] ?? null)) {
@@ -434,7 +434,15 @@ class CursosController extends Controller
             return back()->with('error', $e->getMessage());
         }
 
-        return view('cursos.claves', ['disponibles' => $disponibles, 'busqueda' => $validated]);
+        // El historial es informativo — si falla, no debe tapar los
+        // resultados de "disponibles", que es lo que realmente importa aquí.
+        try {
+            $historial = $this->lms->listarHistorialClaves($validated['correo'] ?? null, $validated['orden_id'] ?? null);
+        } catch (Throwable $e) {
+            $historial = [];
+        }
+
+        return view('cursos.claves', ['disponibles' => $disponibles, 'historial' => $historial, 'busqueda' => $validated]);
     }
 
     public function generarClave(Request $request)
@@ -447,7 +455,11 @@ class CursosController extends Controller
             return back()->with('error', 'No se pudo generar la clave: '.$e->getMessage());
         }
 
-        return back()->with('status', 'Clave generada y enviada por correo. Curso: '.($resultado['course_id'] ?? '—'));
+        $mensaje = ($resultado['reenviada'] ?? false)
+            ? 'Esta compra ya tenía una clave sin usar — se volvió a enviar por correo.'
+            : 'Clave generada y enviada por correo.';
+
+        return back()->with('status', $mensaje);
     }
 
     public function revocarClave(Request $request)

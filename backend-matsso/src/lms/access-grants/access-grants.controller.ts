@@ -16,6 +16,14 @@ export class AccessGrantsController {
     return this.accessGrantsService.listarDisponibles(correo, ordenId ? Number(ordenId) : undefined);
   }
 
+  // Historial (generadas/canjeadas/revocadas) — para no "perder" una clave:
+  // si no se canjeó, generar() de nuevo la reenvía, no da error.
+  @UseGuards(LmsM2mGuard)
+  @Get('admin/access-grants/historial')
+  listarHistorial(@Query('correo') correo?: string, @Query('orden_id') ordenId?: string) {
+    return this.accessGrantsService.listarHistorial(correo, ordenId ? Number(ordenId) : undefined);
+  }
+
   @UseGuards(LmsM2mGuard)
   @Post('admin/access-grants')
   generar(@Body() dto: GenerarClaveDto, @Req() req: any) {
