@@ -130,7 +130,7 @@ const AñadirCursoForm = ({ onSuccess, onCancel, embebido }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!clave.trim()) { setError('Pega la clave que te enviamos por correo.'); return; }
+    if (!clave.trim()) { setError('Escribe el código que te enviamos por correo.'); return; }
     setLoading(true);
     setError('');
     setOk('');
@@ -148,14 +148,16 @@ const AñadirCursoForm = ({ onSuccess, onCancel, embebido }) => {
 
   return (
     <form className={`lms-añadir-form ${embebido ? 'lms-añadir-form--embebido' : ''}`} onSubmit={handleSubmit}>
-      <label htmlFor="clave-curso">Clave de acceso al curso</label>
+      <label htmlFor="clave-curso">Código de acceso al curso</label>
       <div className="lms-añadir-row">
         <input
           id="clave-curso"
           type="text"
+          inputMode="numeric"
           value={clave}
-          onChange={(e) => setClave(e.target.value)}
-          placeholder="Pega aquí la clave que te llegó por correo"
+          onChange={(e) => setClave(e.target.value.replace(/\D/g, '').slice(0, 12))}
+          placeholder="0000000000"
+          maxLength={12}
           autoComplete="off"
         />
         <button type="submit" disabled={loading}>{loading ? 'Validando…' : 'Añadir curso'}</button>

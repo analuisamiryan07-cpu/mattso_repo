@@ -40,6 +40,6 @@ export class AccessGrantsController {
   @UseGuards(JwtAuthGuard)
   @Post('access-grants/canjear')
   canjear(@Body() dto: CanjearClaveDto, @Req() req: any) {
-    return this.accessGrantsService.canjear(req.user.id, dto.clave);
+    return this.accessGrantsService.canjear(req.user.id, dto.codigo);
   }
 }

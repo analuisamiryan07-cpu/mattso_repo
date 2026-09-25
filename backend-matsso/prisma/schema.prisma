@@ -736,10 +736,18 @@ model AccessGrant {
   // Copiado de Course.duracion_meses en el momento de generar — si el curso
   // cambia su duración después, esta clave ya generada no se ve afectada.
   duracion_meses Int
-  // El `jti` (JWT ID) que va dentro del token firmado. Es lo que se compara
-  // al canjear — permite invalidar la clave sin tener que verificar la firma
-  // primero, y sin guardar el JWT completo (que podría filtrarse en un log).
+  // El `jti` (JWT ID) que va dentro del token firmado — se sigue generando y
+  // guardando como identificador interno único de esta clave (control /
+  // trazabilidad), pero ya NO es lo que canjea el estudiante.
   jwt_id       String    @unique @db.Uuid
+  // Lo que de verdad recibe y escribe el estudiante: un código numérico
+  // corto (10 dígitos), único. Se guarda en texto plano a propósito — el
+  // admin necesita poder mostrarlo de nuevo en el historial (§ pedido del
+  // negocio: "por si no le llegó, poder reenviarlo"). El candado de un solo
+  // uso sigue siendo redeemed_at, no el secreto del código.
+  // Nullable solo por la migración (claves generadas ANTES de este cambio
+  // no tienen código) — el service siempre lo rellena al crear una fila nueva.
+  codigo       String?   @unique @db.VarChar(12)
   generado_at  DateTime  @default(now()) @db.Timestamptz
   // Actor M2M que la generó (ej. "laravel-admin:12"), igual que en el resto
   // del LMS — nunca un id que mande el navegador.

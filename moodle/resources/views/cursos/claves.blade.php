@@ -80,13 +80,23 @@
     </p>
     <table>
         <thead>
-            <tr><th>Orden</th><th>Curso</th><th>Generada</th><th style="width:7rem">Estado</th></tr>
+            <tr><th>Orden</th><th>Curso</th><th style="width:11rem">Código</th><th>Generada</th><th style="width:7rem">Estado</th></tr>
         </thead>
         <tbody>
         @forelse($historial as $h)
             <tr>
                 <td>#{{ $h['orden_id'] }}</td>
                 <td>{{ $h['curso_titulo'] }}</td>
+                <td>
+                    @if($h['codigo'])
+                        <span class="clave-oculta" data-codigo="{{ $h['codigo'] }}" style="font-family:monospace;letter-spacing:.05em">••••••••••</span>
+                        <button type="button" class="btn-ojo" onclick="mostrarCodigo(this)" title="Mostrar" style="background:none;border:none;cursor:pointer;padding:0 4px">
+                            <i class="fa-solid fa-eye"></i>
+                        </button>
+                    @else
+                        <span class="muted">— (sin código)</span>
+                    @endif
+                </td>
                 <td class="muted">{{ \Illuminate\Support\Carbon::parse($h['generado_at'])->format('d/m/Y H:i') }}</td>
                 <td>
                     @if($h['estado'] === 'CANJEADA')
@@ -99,7 +109,7 @@
                 </td>
             </tr>
         @empty
-            <tr><td colspan="4" style="text-align:center;padding:1.5rem;color:var(--muted)">Sin claves generadas todavía para esta búsqueda.</td></tr>
+            <tr><td colspan="5" style="text-align:center;padding:1.5rem;color:var(--muted)">Sin claves generadas todavía para esta búsqueda.</td></tr>
         @endforelse
         </tbody>
     </table>
@@ -116,4 +126,13 @@
         <button type="submit" class="btn btn-danger btn-sm">Revocar</button>
     </form>
 </div>
+
+<script>
+function mostrarCodigo(boton) {
+    const span = boton.previousElementSibling;
+    const oculto = span.textContent.indexOf('•') !== -1;
+    span.textContent = oculto ? span.dataset.codigo : '••••••••••';
+    boton.querySelector('i').className = oculto ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye';
+}
+</script>
 @endsection
