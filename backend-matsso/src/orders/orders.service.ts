@@ -280,6 +280,20 @@ export class OrdersService {
       );
     }
 
+    // Esta aprobación manual existe solo para TRANSFERENCIA: un humano revisa
+    // el comprobante subido porque no hay otra forma de confirmar que el
+    // dinero llegó. PAYPAL (y cualquier otro método automático) se confirma
+    // únicamente vía OrdersService/PaypalService.capturePaypalOrder() o el
+    // webhook — ambos verifican el pago contra la API de PayPal. Si se
+    // permitiera aprobar aquí una orden PAYPAL que quedó PENDIENTE (el
+    // comprador abrió el checkout y nunca completó el pago), un admin podría
+    // marcarla como pagada sin que el dinero haya llegado nunca.
+    if (order.metodo_pago !== 'TRANSFERENCIA') {
+      throw new BadRequestException(
+        `La orden ${id} usa el método de pago ${order.metodo_pago}, que se confirma automáticamente. No se puede aprobar/rechazar manualmente.`,
+      );
+    }
+
     const updated = await this.prisma.orden.update({
       where: { id: BigInt(id) },
       data: { estado },

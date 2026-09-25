@@ -37,7 +37,13 @@
   </div>
 
   @forelse($orders as $order)
-    @php $isPendiente = ($order['estado'] ?? '') === 'PENDIENTE'; @endphp
+    @php
+      $isPendiente = ($order['estado'] ?? '') === 'PENDIENTE';
+      // Solo TRANSFERENCIA se aprueba a mano (revisando el comprobante). PAYPAL
+      // y demás métodos automáticos se confirman solos vía la API de PayPal —
+      // el backend además rechaza el update manual para esos casos.
+      $esTransferencia = ($order['metodo_pago'] ?? '') === 'TRANSFERENCIA';
+    @endphp
 
     <div style="background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:20px;margin-bottom:20px;box-shadow:0 1px 4px rgba(0,0,0,0.06);">
 
@@ -100,8 +106,13 @@
         <p style="font-size:13px;color:#9ca3af;margin:10px 0;">Sin comprobante adjunto.</p>
       @endif
 
-      {{-- Botones de acción (solo para PENDIENTE) --}}
-      @if($isPendiente)
+      {{-- Botones de acción (solo para PENDIENTE + TRANSFERENCIA) --}}
+      @if($isPendiente && !$esTransferencia)
+        <p style="font-size:13px;color:#854d0e;background:#fef9c3;border-radius:6px;padding:10px 14px;margin-top:16px;">
+          ⏳ Pago pendiente vía {{ $order['metodo_pago'] ?? 'método automático' }}. Se confirma solo cuando el cliente completa el pago — no requiere aprobación manual.
+        </p>
+      @endif
+      @if($isPendiente && $esTransferencia)
         <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:16px;padding-top:16px;border-top:1px solid #f3f4f6;">
 
           {{-- Aprobar --}}
