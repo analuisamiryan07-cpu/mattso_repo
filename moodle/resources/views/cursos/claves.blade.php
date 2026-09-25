@@ -72,6 +72,40 @@
 </div>
 @endisset
 
+@isset($historial)
+<div class="card table-card" style="margin-top:1.25rem">
+    <h3 style="margin:1rem 1rem 0">Historial de claves</h3>
+    <p class="muted" style="margin:.25rem 1rem 1rem;font-size:.82rem">
+        Si una clave sigue "Pendiente", presiona "Generar" arriba para esa misma compra y se reenvía por correo — no hace falta revocarla.
+    </p>
+    <table>
+        <thead>
+            <tr><th>Orden</th><th>Curso</th><th>Generada</th><th style="width:7rem">Estado</th></tr>
+        </thead>
+        <tbody>
+        @forelse($historial as $h)
+            <tr>
+                <td>#{{ $h['orden_id'] }}</td>
+                <td>{{ $h['curso_titulo'] }}</td>
+                <td class="muted">{{ \Illuminate\Support\Carbon::parse($h['generado_at'])->format('d/m/Y H:i') }}</td>
+                <td>
+                    @if($h['estado'] === 'CANJEADA')
+                        <span class="badge badge-green">Canjeada</span>
+                    @elseif($h['estado'] === 'REVOCADA')
+                        <span class="badge badge-red">Revocada</span>
+                    @else
+                        <span class="badge">Pendiente</span>
+                    @endif
+                </td>
+            </tr>
+        @empty
+            <tr><td colspan="4" style="text-align:center;padding:1.5rem;color:var(--muted)">Sin claves generadas todavía para esta búsqueda.</td></tr>
+        @endforelse
+        </tbody>
+    </table>
+</div>
+@endisset
+
 <div class="card" style="max-width:480px;margin-top:1.25rem">
     <h3 style="margin:0 0 .5rem;font-size:1rem">Revocar una clave sin usar</h3>
     <p class="muted" style="font-size:.82rem">Solo funciona si el estudiante todavía no la canjeó. Pide el número de compra (orden_item_id) — aparece en los logs si la generaste desde aquí.</p>
