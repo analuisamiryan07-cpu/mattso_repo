@@ -408,10 +408,22 @@ class CursosController extends Controller
     // ── Claves de acceso ────────────────────────────────────────────────
     public function buscarClaves(Request $request)
     {
+        // Al entrar por primera vez (desde el botón "Generar clave") no hay
+        // ni correo ni orden en la URL todavía — eso es normal, se muestra
+        // el formulario vacío, sin buscar nada y sin error. El error de
+        // "indica el correo o la orden" es solo para cuando SÍ se envía el
+        // formulario con los dos campos en blanco.
+        $seEnvioElFormulario = $request->has('correo') || $request->has('orden_id');
+
         $validated = $request->validate([
             'correo' => ['nullable', 'email'],
             'orden_id' => ['nullable', 'integer', 'min:1'],
         ]);
+
+        if (!$seEnvioElFormulario) {
+            return view('cursos.claves', ['disponibles' => null, 'busqueda' => []]);
+        }
+
         if (blank($validated['correo'] ?? null) && blank($validated['orden_id'] ?? null)) {
             return back()->withErrors(['correo' => 'Indica el correo del comprador o el número de orden.']);
         }
