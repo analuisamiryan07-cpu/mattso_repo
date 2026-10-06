@@ -11,7 +11,7 @@ export const normalizeCartItem = (item) => ({
   titulo: item.titulo ?? item.title ?? 'Sin título',
   precio: item.precio ?? item.price ?? 0,
   imagen: item.imagen ?? item.image ?? item.img ?? '',
-  modalidad: item.modalidad ?? 'Virtual',
+  modalidad: item.modalidad ?? null,
   tipo: item.tipo ?? 'capacitacion',
   cantidad: 1,
   cloudinaryNum: item.cloudinaryNum ?? null,

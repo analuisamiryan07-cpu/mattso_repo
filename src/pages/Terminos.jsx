@@ -116,7 +116,7 @@ const Terminos = () => {
           </p>
         </section>
 
-        <section className="terminos-section">
+        <section className="terminos-section" id="proteccion-datos">
           <h2>7. Protección de datos personales</h2>
           <p>
             Sapper Industries recoge y trata los datos personales de los usuarios de conformidad con

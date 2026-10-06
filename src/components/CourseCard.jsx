@@ -64,13 +64,15 @@ const CourseCard = ({ course }) => {
         )}
 
         <div className="ccm__metrics">
-          <div className="ccm__metric-block">
-            <div className="ccm__metric-row">
-              <i className={course.modalidad === 'Presencial' ? 'fa-solid fa-users' : 'fa-solid fa-laptop'} />
-              <span className="ccm__metric-label">Modalidad:</span>
+          {course.modalidad && (
+            <div className="ccm__metric-block">
+              <div className="ccm__metric-row">
+                <i className={course.modalidad === 'Presencial' ? 'fa-solid fa-users' : 'fa-solid fa-laptop'} />
+                <span className="ccm__metric-label">Modalidad:</span>
+              </div>
+              <span className="ccm__metric-value">{course.modalidad}</span>
             </div>
-            <span className="ccm__metric-value">{course.modalidad}</span>
-          </div>
+          )}
           {course.vigencia && (
             <div className="ccm__metric-block">
               <div className="ccm__metric-row">

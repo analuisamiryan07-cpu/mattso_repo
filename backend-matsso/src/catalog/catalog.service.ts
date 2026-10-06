@@ -201,11 +201,17 @@ export class CatalogService {
             ...(p.fecha    ? [{ icon: 'fa-regular fa-calendar', title: 'Fecha',    desc: p.fecha }]    : []),
             ...(p.horario  ? [{ icon: 'fa-regular fa-clock',    title: 'Horario',  desc: p.horario }]  : []),
             { icon: 'fa-solid fa-dollar-sign',        title: 'Precio',    desc: `$${Number(p.precio).toFixed(2)} (dólares)` },
-            { icon: 'fa-solid fa-screwdriver-wrench', title: 'Modalidad', desc: p.modalidad || 'Presencial' },
+            ...(p.modalidad ? [{ icon: 'fa-solid fa-screwdriver-wrench', title: 'Modalidad', desc: p.modalidad }] : []),
           ]
         : [
-            { icon: 'fa-regular fa-clock',            title: 'Vigencia',            desc: cert?.vigencia?.etiqueta || '2 años' },
-            { icon: 'fa-solid fa-screwdriver-wrench', title: 'Modalidad',           desc: evalSede?.descripcion || p.modalidad || 'Virtual' },
+            // Vigencia y modalidad solo si hay dato real; sin dato no se incluyen (antes "2 años" / "Virtual").
+            ...(cert?.vigencia?.etiqueta
+              ? [{ icon: 'fa-regular fa-clock', title: 'Vigencia', desc: cert.vigencia.etiqueta }]
+              : []),
+            ...(evalSede?.descripcion || p.modalidad
+              ? [{ icon: 'fa-solid fa-screwdriver-wrench', title: 'Modalidad', desc: evalSede?.descripcion || p.modalidad }]
+              : []),
+            // Los textos por defecto de las evaluaciones coinciden con los formatos oficiales (C10).
             { icon: 'fa-regular fa-file-lines',       title: 'Evaluación Teórica',  desc: evalTeorico?.descripcion  || 'Banco de preguntas (mínimo 70%).' },
             { icon: 'fa-solid fa-chart-line',         title: 'Evaluación Práctica', desc: evalPractico?.descripcion || 'Casos prácticos (100%).' },
           ];
@@ -217,18 +223,14 @@ export class CatalogService {
         OTRO:         'Requisito General',
       };
 
-      const requirements = cert && cert.requisitos.length > 0
+      // Sin requisitos cargados → lista vacía (no se inventan requisitos genéricos).
+      const requirements = cert
         ? cert.requisitos.map((r: any, index: number) => ({
             number: String(index + 1).padStart(2, '0'),
             title: tipoLabel[r.tipo] ?? r.tipo,
             desc: r.descripcion
           }))
-        : [
-            { number: '01', title: 'Documentos Personales', desc: 'Cédula de Identidad y Papeleta de Votación.' },
-            { number: '02', title: 'Educación', desc: 'Educación general básica.' },
-            { number: '03', title: 'Experiencia', desc: '6 meses en actividades relacionadas.' },
-            { number: '04', title: 'Capacitación', desc: '60 horas en temas relacionados al perfil.' }
-          ];
+        : [];
 
       const categoria = cert?.familia?.nombre
         || cert?.sector?.nombre
@@ -254,10 +256,11 @@ export class CatalogService {
         imagen: cloudinaryNum || cursoCloudinaryFolder ? FALLBACK_IMG : (p.imagen_url || FALLBACK_IMG),
         cursoCloudinaryFolder,
         categoria,
-        modalidad: p.modalidad || 'Virtual',
-        horas: p.horas ? `${p.horas} horas` : '40 horas',
-        vigencia: cert?.vigencia?.anos || 2,
-        inicia: 'Inscripciones Abiertas',
+        // null = dato no cargado; la web y CertiBot deciden qué mostrar en vez de recibir un relleno.
+        modalidad: p.modalidad || null,
+        horas: p.horas ? `${p.horas} horas` : null,
+        vigencia: cert?.vigencia?.anos || null,
+        inicia: null,
         slug: p.tipo === 'CAPACITACION' || p.tipo === 'CURSO' || !cert?.codigo
           ? p.titulo.toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, '')
           : cert.codigo.toLowerCase(),

@@ -127,6 +127,20 @@
   font-size: 14px;
   line-height: 1.4;
   word-wrap: break-word;
+  white-space: pre-line;
+}
+
+.chat-privacy-note {
+  margin: 6px 0 0;
+  max-width: 92%;
+  font-size: 11px;
+  line-height: 1.35;
+  color: #6b7280;
+}
+
+.chat-privacy-note a {
+  color: inherit;
+  text-decoration: underline;
 }
 
 .chat-bubble.bot {

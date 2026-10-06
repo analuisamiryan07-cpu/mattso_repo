@@ -16,7 +16,6 @@ import ResetPassword from '@pages/ResetPassword';
 import Contacto from '@pages/Contacto';
 import Nosotros from '@pages/Nosotros';
 import Terminos from '@pages/Terminos';
-import MisCertificados from '@pages/MisCertificados';
 import VerificarCertificado from '@pages/VerificarCertificado';
 import PaymentSuccess from '@pages/PaymentSuccess';
 import PaymentCancelled from '@pages/PaymentCancelled';
@@ -46,7 +45,6 @@ function App() {
               <Route path="/reset-password"      element={<ResetPassword />} />
               <Route path="/contacto"             element={<Contacto />} />
               <Route path="/terminos"             element={<Terminos />} />
-              <Route path="/mis-certificados"    element={<MisCertificados />} />
               <Route path="/verificar/:codigo"   element={<VerificarCertificado />} />
               <Route path="/pago-exitoso"        element={<PaymentSuccess />} />
               <Route path="/pago-cancelado"      element={<PaymentCancelled />} />

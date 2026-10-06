@@ -1,14 +1,10 @@
 import { useState, useRef, useEffect } from 'react';
+import { PRIVACY_URL } from '@utils/privacy';
 import './Chatbot.css';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
 
-const SALUDOS = ['hola', 'buenos', 'buenas', 'hey', 'hi', 'saludos', 'como estas', 'buen dia'];
-
-function esSaludo(msg) {
-  const lower = msg.toLowerCase();
-  return SALUDOS.some((s) => lower.includes(s));
-}
+const MAX_LENGTH = 500;
 
 export default function Chatbot() {
   const [isOpen, setIsOpen]   = useState(false);
@@ -34,20 +30,20 @@ export default function Chatbot() {
     setInput('');
     setMessages((prev) => [...prev, { text: '...', sender: 'bot', isTyping: true, buttons: [] }]);
 
-    // Saludo simple → responder localmente sin tocar el backend
-    if (esSaludo(userMessage)) {
-      pushBot('¡Hola! 😊 Estoy bien, gracias. ¿En qué certificación o servicio puedo ayudarte?');
-      return;
-    }
-
     try {
       const res = await fetch(`${API_URL}/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message: userMessage }),
       });
+      const data = await res.json().catch(() => ({}));
+      // 400 = el backend rechazó el mensaje (vacío o muy largo): mostrar su motivo, no "no disponible"
+      if (res.status === 400) {
+        const motivo = Array.isArray(data.message) ? data.message[0] : data.message;
+        pushBot(motivo || `Escribe un mensaje de hasta ${MAX_LENGTH} caracteres.`);
+        return;
+      }
       if (!res.ok) throw new Error('error');
-      const data = await res.json();
       pushBot(data.response || '¿Podrías repetir tu consulta?', data.buttons || []);
     } catch {
       pushBot('El asistente no está disponible en este momento. Puedes contactarnos directamente.', [
@@ -93,7 +89,7 @@ export default function Chatbot() {
                             <span className="chat-item-name">{item.label}</span>
                             <div className="chat-item-meta">
                               <span className="chat-item-price">${item.precio}</span>
-                              <span className="chat-item-badge">{item.modalidad}</span>
+                              {item.modalidad && <span className="chat-item-badge">{item.modalidad}</span>}
                             </div>
                           </a>
                         ))}
@@ -116,6 +112,13 @@ export default function Chatbot() {
                       })}
                     </div>
                   )}
+                  {idx === 0 && (
+                    <p className="chat-privacy-note">
+                      Este asistente es automático. Para mejorarlo guardamos hasta 90 días algunas preguntas
+                      que no entiende, sin tus datos personales. No escribas tu cédula ni datos bancarios.{' '}
+                      <a href={PRIVACY_URL} target="_blank" rel="noopener noreferrer">Política de privacidad</a>
+                    </p>
+                  )}
                 </div>
               );
             })}
@@ -126,6 +129,7 @@ export default function Chatbot() {
             <input
               type="text"
               placeholder="Escribe tu pregunta..."
+              maxLength={MAX_LENGTH}
               value={input}
               onChange={(e) => setInput(e.target.value)}
             />
