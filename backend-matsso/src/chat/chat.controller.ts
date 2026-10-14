@@ -8,7 +8,7 @@ export class ChatController {
 
   @Post()
   async sendMessage(@Body() dto: SendMessageDto) {
-    const botResponse = await this.chatService.processMessage(dto.message);
+    const botResponse = await this.chatService.processMessage(dto.message, dto.sesion);
     return botResponse;
   }
 }

@@ -13,6 +13,9 @@ export default function Chatbot() {
   ]);
   const [input, setInput]     = useState('');
   const messagesEndRef         = useRef(null);
+  // Id anónimo de esta ventana de chat para que CertiBot recuerde la conversación.
+  // Solo en memoria: al recargar empieza una conversación nueva (sin cookies ni localStorage).
+  const sesionRef              = useRef(crypto.randomUUID());
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -34,7 +37,7 @@ export default function Chatbot() {
       const res = await fetch(`${API_URL}/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: userMessage }),
+        body: JSON.stringify({ message: userMessage, sesion: sesionRef.current }),
       });
       const data = await res.json().catch(() => ({}));
       // 400 = el backend rechazó el mensaje (vacío o muy largo): mostrar su motivo, no "no disponible"

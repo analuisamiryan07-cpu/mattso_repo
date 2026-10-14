@@ -10,7 +10,8 @@ export class ChatService {
   private readonly certibotUrl = process.env.CERTIBOT_URL?.replace(/\/$/, '');
   private readonly certibotKey = process.env.CERTIBOT_API_KEY ?? '';
 
-  async processMessage(userMessage: string): Promise<ChatResponse> {
+  // `sesion` solo se reenvía a CertiBot; no se guarda ni se escribe en los registros.
+  async processMessage(userMessage: string, sesion?: string): Promise<ChatResponse> {
     if (!this.certibotUrl) {
       this.logger.error('CERTIBOT_URL no definida');
       return { response: 'El servicio de chat no está disponible en este momento.', buttons: [] };
@@ -19,7 +20,7 @@ export class ChatService {
     try {
       const { data } = await axios.post<{ respuesta: string; buttons?: { label: string; url: string }[] }>(
         `${this.certibotUrl}/chat`,
-        { texto: userMessage },
+        { texto: userMessage, ...(sesion && { sesion }) },
         {
           headers: { 'x-api-key': this.certibotKey },
           timeout: 10_000,
