@@ -14,6 +14,15 @@ const VerificarCertificado = () => {
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
 
+  // Página con datos personales: que los buscadores no la indexen aunque se comparta el enlace.
+  useEffect(() => {
+    const meta = document.createElement('meta');
+    meta.name = 'robots';
+    meta.content = 'noindex, nofollow';
+    document.head.appendChild(meta);
+    return () => meta.remove();
+  }, []);
+
   useEffect(() => {
     cursosService.verificarCertificado(codigo)
       .then(data => { setCert(data); setLoading(false); })
@@ -118,7 +127,7 @@ const VerificarCertificado = () => {
 
         <div style={{ padding: '16px 24px', background: '#f8faff', borderTop: '1px solid #e5e7eb' }}>
           <p style={{ margin: 0, fontSize: '.78rem', color: '#9ca3af', textAlign: 'center' }}>
-            Código de verificación: <strong style={{ color: '#6b7280', fontFamily: 'monospace' }}>{cert.codigo}</strong>
+            Código de verificación: <strong style={{ color: '#6b7280', fontFamily: 'monospace' }}>{codigo}</strong>
             {' · '}Sapper Industries
           </p>
         </div>

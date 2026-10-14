@@ -24,6 +24,18 @@ export class QrCertsService {
     };
   }
 
+  // Respuesta de la ruta pública /api/verificar: solo lo que muestra la página
+  // (sin id correlativo ni created_at).
+  private formatPublico(r: any) {
+    return {
+      nombres:          r.nombres,
+      certificado:      r.certificado,
+      fecha_emision:    r.fecha_emision,
+      fecha_expiracion: r.fecha_expiracion,
+      estado:           r.estado,
+    };
+  }
+
   async create(data: {
     nombres: string;
     certificado: string;
@@ -62,7 +74,7 @@ export class QrCertsService {
       where: { codigo },
     });
     if (!record) throw new NotFoundException('Certificado no encontrado');
-    return this.format(record);
+    return this.formatPublico(record);
   }
 
   async remove(id: bigint) {
