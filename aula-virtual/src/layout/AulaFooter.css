@@ -1,52 +1,62 @@
 .af-footer {
   margin-top: auto;
-  background: #fff;
-  border-top: 1px solid var(--border-color);
+  width: 100%;
 }
 
 .af-top {
-  max-width: 1100px;
+  background-color: #ffffff;
+  padding: 40px 20px;
+  border-bottom: 6px solid var(--primary-yellow);
+}
+
+.af-container {
+  max-width: 1200px;
   margin: 0 auto;
-  padding: 28px 24px;
   display: flex;
-  align-items: center;
   justify-content: space-between;
+  align-items: center;
   flex-wrap: wrap;
-  gap: 16px;
+  gap: 30px;
 }
 
-.af-logo { height: 36px; }
+.af-logo-section { display: flex; flex-direction: column; align-items: flex-start; max-width: 300px; }
+.af-logo { height: 90px; width: auto; }
 
-.af-social span {
-  display: block;
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  margin-bottom: 8px;
-}
+.af-info-section { display: flex; flex-direction: column; gap: 15px; color: #333; font-size: 0.95rem; }
+.af-info-section p { display: flex; align-items: center; gap: 8px; margin: 0; }
+.af-info-section i { color: var(--primary-yellow); width: 20px; font-size: 1.05rem; flex-shrink: 0; }
+
+.af-link { color: #333; text-decoration: none; transition: color 0.2s; }
+.af-link:hover { color: var(--primary-yellow); }
+
+.af-social-section { display: flex; flex-direction: column; align-items: flex-start; }
+.af-social-section h3 { color: var(--primary-blue); font-size: 1.1rem; font-weight: 700; margin-bottom: 14px; }
 
 .af-social-icons { display: flex; gap: 10px; }
 .af-social-icons a {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background: var(--primary-blue);
+  background-color: var(--primary-blue);
   color: #fff;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 13px;
   text-decoration: none;
-  transition: background var(--transition);
+  font-size: 0.95rem;
+  transition: all 0.3s ease;
 }
-.af-social-icons a:hover { background: var(--primary-yellow); color: var(--primary-blue); }
+.af-social-icons a:hover { background-color: var(--primary-yellow); transform: translateY(-3px); }
 
 .af-bottom {
-  background: var(--primary-blue);
-  color: #c7d3e0;
+  background-color: #1b2341;
+  padding: 12px 20px;
   text-align: center;
-  font-size: 12px;
-  padding: 12px;
+  color: #fff;
+  font-size: 0.9rem;
+}
+
+@media (max-width: 900px) {
+  .af-container { flex-direction: column; align-items: center; text-align: center; }
+  .af-logo-section, .af-social-section, .af-info-section { align-items: center; }
 }
