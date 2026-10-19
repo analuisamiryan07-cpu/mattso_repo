@@ -20,6 +20,17 @@ export class CoursesController {
     return this.coursesService.listMyCourses(req.user.id);
   }
 
+  // Resumen para el dashboard de 4 tarjetas de "Área Personal" — debe ir
+  // ANTES de ':courseId' (Nest resuelve rutas en orden de declaración, si no
+  // "resumen" se interpretaría como un courseId).
+  @Get('resumen')
+  getResumenModalidad(@Query('mode') mode: string, @Req() req: any) {
+    if (!VALID_MODES.includes(mode as DeliveryModeValue)) {
+      throw new BadRequestException('mode debe ser TRADICIONAL o ASINCRONO_VOD.');
+    }
+    return this.coursesService.getResumenModalidad(req.user.id, mode as DeliveryModeValue);
+  }
+
   // ?mode=TRADICIONAL (Moodle) | ASINCRONO_VOD (Coursera) — un curso "ambos"
   // necesita saber cuál de sus dos árboles de contenido se está pidiendo.
   @Get(':courseId')

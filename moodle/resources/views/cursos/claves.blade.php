@@ -102,8 +102,9 @@
                 <td>
                     @if($h['codigo'])
                         <span class="clave-oculta" data-codigo="{{ $h['codigo'] }}" style="font-family:monospace;letter-spacing:.05em">••••••••••</span>
-                        <button type="button" class="btn-ojo" onclick="mostrarCodigo(this)" title="Mostrar código" style="background:none;border:none;cursor:pointer;padding:0 4px;font-size:1rem">👁️</button>
-                        <button type="button" class="btn-copiar" onclick="copiarCodigo(this)" title="Copiar código" style="background:none;border:none;cursor:pointer;padding:0 4px;font-size:1rem">📋</button>
+                        <button type="button" class="btn-copiar" onclick="copiarCodigo(this)" title="Copiar código" style="background:none;border:none;cursor:pointer;padding:2px 4px;vertical-align:middle;color:var(--text)">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+                        </button>
                     @else
                         <span class="muted">— (sin código)</span>
                     @endif
@@ -138,18 +139,14 @@
 @endisset
 
 <script>
-function mostrarCodigo(boton) {
-    const span = boton.parentElement.querySelector('.clave-oculta');
-    const oculto = span.textContent.indexOf('•') !== -1;
-    span.textContent = oculto ? span.dataset.codigo : '••••••••••';
-    boton.textContent = oculto ? '🙈' : '👁️';
-}
+const ICONO_COPIAR = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>';
+const ICONO_COPIADO = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>';
 
 function copiarCodigo(boton) {
     const span = boton.parentElement.querySelector('.clave-oculta');
     navigator.clipboard.writeText(span.dataset.codigo).then(() => {
-        boton.textContent = '✅';
-        setTimeout(() => { boton.textContent = '📋'; }, 1200);
+        boton.innerHTML = ICONO_COPIADO;
+        setTimeout(() => { boton.innerHTML = ICONO_COPIAR; }, 1200);
     });
 }
 </script>

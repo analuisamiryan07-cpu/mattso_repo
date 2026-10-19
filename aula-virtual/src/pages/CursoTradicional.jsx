@@ -10,6 +10,9 @@ import { lmsService } from '@api/lmsService';
 import VideoPlayer from '@components/VideoPlayer';
 import QuizRunner from '@components/QuizRunner';
 import EntregaTarea from '@components/EntregaTarea';
+import AulaHeader from '@layout/AulaHeader';
+import AulaFooter from '@layout/AulaFooter';
+import BackButton from '@layout/BackButton';
 import './CursoTradicional.css';
 
 const ESTADO_LABEL = { NOT_STARTED: 'Por hacer', IN_PROGRESS: 'En curso', COMPLETED: 'Completado' };
@@ -30,8 +33,24 @@ const CursoTradicional = () => {
 
   useEffect(() => { cargar(); }, [cargar]);
 
-  if (error) return <div className="lms-page"><p className="lms-error">{error}</p></div>;
-  if (!detalle) return <div className="lms-page"><p>Cargando…</p></div>;
+  if (error) {
+    return (
+      <div className="lms-shell">
+        <AulaHeader variant="area" />
+        <div className="lms-page"><p className="lms-error">{error}</p></div>
+        <AulaFooter />
+      </div>
+    );
+  }
+  if (!detalle) {
+    return (
+      <div className="lms-shell">
+        <AulaHeader variant="area" />
+        <div className="lms-page"><p>Cargando…</p></div>
+        <AulaFooter />
+      </div>
+    );
+  }
 
   const todosLosItems = detalle.modules.flatMap((m) => m.content_items.map((i) => ({ ...i, modulo: m.titulo })));
   const recursos = todosLosItems.filter((i) => i.item_type === 'VIDEO' || i.item_type === 'DOCUMENT');
@@ -41,7 +60,10 @@ const CursoTradicional = () => {
   const abrir = (item) => { setActiveItemId(item.id); setTab(item.item_type === 'VIDEO' || item.item_type === 'DOCUMENT' ? 'recursos' : 'tareas'); };
 
   return (
-    <div className="lms-page">
+    <div className="lms-shell">
+      <AulaHeader variant="area" />
+      <div className="lms-page">
+      <BackButton to="/moodle" label="Volver a Moodle" />
       <h1 className="lms-page-title">{detalle.course.titulo}</h1>
 
       <div className="ct-subtabs">
@@ -125,6 +147,8 @@ const CursoTradicional = () => {
           </table>
         </div>
       )}
+      </div>
+      <AulaFooter />
     </div>
   );
 };

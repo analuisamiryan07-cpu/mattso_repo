@@ -1,0 +1,92 @@
+.pg-shell {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-color);
+}
+
+.pg-main {
+  flex: 1;
+  max-width: 900px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 40px 24px 80px;
+}
+
+.pg-welcome {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 36px;
+}
+.pg-welcome h1 { font-size: 1.5rem; color: var(--primary-blue); margin: 0; }
+
+.pg-welcome-right { display: flex; align-items: center; gap: 14px; }
+.pg-welcome-correo { font-size: 0.85rem; color: var(--text-muted); }
+
+.pg-logout {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #fff;
+  border: 1.5px solid var(--border-color);
+  color: var(--text-dark);
+  padding: 9px 16px;
+  border-radius: var(--radius-sm);
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition);
+}
+.pg-logout:hover { border-color: #b3261e; color: #b3261e; }
+
+.pg-cargando { color: var(--text-muted); font-size: 0.9rem; }
+
+.pg-bloques { display: flex; flex-direction: column; gap: 20px; }
+
+.pg-bloque {
+  background: #fff;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  padding: 28px 32px;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.pg-bloque-icono {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: rgba(0,33,71,0.08);
+  color: var(--primary-blue);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  flex: none;
+}
+
+.pg-bloque-info { flex: 1; }
+.pg-bloque-info h2 { font-size: 1.1rem; color: var(--primary-blue); margin: 0 0 4px; }
+.pg-bloque-info p { font-size: 0.85rem; color: var(--text-muted); margin: 0; }
+
+.pg-bloque-btn {
+  flex: none;
+  background: var(--primary-yellow);
+  color: var(--primary-blue);
+  border: none;
+  padding: 12px 24px;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 0.88rem;
+  cursor: pointer;
+  transition: all var(--transition);
+}
+.pg-bloque-btn:hover { background: var(--primary-yellow-dark); transform: translateY(-1px); }
+
+@media (max-width: 560px) {
+  .pg-bloque { flex-direction: column; text-align: center; }
+}

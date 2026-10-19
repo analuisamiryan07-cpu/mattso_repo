@@ -1,0 +1,11 @@
+.bb-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--primary-blue);
+  font-weight: 600;
+  font-size: 13.5px;
+  text-decoration: none;
+  margin-bottom: 16px;
+}
+.bb-link:hover { color: var(--primary-yellow-dark); }

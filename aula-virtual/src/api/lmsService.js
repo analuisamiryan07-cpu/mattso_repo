@@ -6,6 +6,13 @@ export const lmsService = {
     return data;
   },
 
+  // Las 4 tarjetas del dashboard de Área Personal — cursos inscritos,
+  // completados, % actividades pendientes/completadas, de esa modalidad.
+  async getResumenModalidad(mode) {
+    const { data } = await apiClient.get('/lms/courses/resumen', { params: { mode } });
+    return data;
+  },
+
   // mode: 'TRADICIONAL' (Moodle) | 'ASINCRONO_VOD' (Coursera) — un curso
   // puede tener las dos, así que hay que decir cuál se quiere ver.
   async getCursoDetalle(courseId, mode) {
