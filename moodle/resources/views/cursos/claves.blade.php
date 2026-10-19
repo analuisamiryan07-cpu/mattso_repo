@@ -72,6 +72,17 @@
 </div>
 @endisset
 
+<div class="card" style="max-width:480px;margin-top:1.25rem">
+    <h3 style="margin:0 0 .5rem;font-size:1rem">Revocar una clave sin usar</h3>
+    <p class="muted" style="font-size:.82rem">Solo funciona si el estudiante todavía no la canjeó. Pide el número de compra (orden_item_id) — aparece en los logs si la generaste desde aquí.</p>
+    <form method="POST" action="{{ route('cursos.claves.revocar') }}" style="display:flex;gap:.5rem"
+        onsubmit="return confirm('¿Revocar esta clave?')">
+        @csrf
+        <input type="number" name="orden_item_id" min="1" required placeholder="N.º de compra">
+        <button type="submit" class="btn btn-danger btn-sm">Revocar</button>
+    </form>
+</div>
+
 @isset($historial)
 <div class="card table-card" style="margin-top:1.25rem">
     <h3 style="margin:1rem 1rem 0">Historial de claves</h3>
@@ -80,19 +91,19 @@
     </p>
     <table>
         <thead>
-            <tr><th>Orden</th><th>Curso</th><th style="width:11rem">Código</th><th>Generada</th><th style="width:7rem">Estado</th><th style="width:9rem"></th></tr>
+            <tr><th>Orden</th><th>Curso</th><th>Correo</th><th style="width:12rem">Código</th><th>Generada</th><th style="width:7rem">Estado</th><th style="width:9rem"></th></tr>
         </thead>
         <tbody>
         @forelse($historial as $h)
             <tr>
                 <td>#{{ $h['orden_id'] }}</td>
                 <td>{{ $h['curso_titulo'] }}</td>
+                <td class="muted">{{ $h['correo'] }}</td>
                 <td>
                     @if($h['codigo'])
                         <span class="clave-oculta" data-codigo="{{ $h['codigo'] }}" style="font-family:monospace;letter-spacing:.05em">••••••••••</span>
-                        <button type="button" class="btn-ojo" onclick="mostrarCodigo(this)" title="Mostrar" style="background:none;border:none;cursor:pointer;padding:0 4px">
-                            <i class="fa-solid fa-eye"></i>
-                        </button>
+                        <button type="button" class="btn-ojo" onclick="mostrarCodigo(this)" title="Mostrar código" style="background:none;border:none;cursor:pointer;padding:0 4px;font-size:1rem">👁️</button>
+                        <button type="button" class="btn-copiar" onclick="copiarCodigo(this)" title="Copiar código" style="background:none;border:none;cursor:pointer;padding:0 4px;font-size:1rem">📋</button>
                     @else
                         <span class="muted">— (sin código)</span>
                     @endif
@@ -119,30 +130,27 @@
                 </td>
             </tr>
         @empty
-            <tr><td colspan="6" style="text-align:center;padding:1.5rem;color:var(--muted)">Sin claves generadas todavía para esta búsqueda.</td></tr>
+            <tr><td colspan="7" style="text-align:center;padding:1.5rem;color:var(--muted)">Sin claves generadas todavía para esta búsqueda.</td></tr>
         @endforelse
         </tbody>
     </table>
 </div>
 @endisset
 
-<div class="card" style="max-width:480px;margin-top:1.25rem">
-    <h3 style="margin:0 0 .5rem;font-size:1rem">Revocar una clave sin usar</h3>
-    <p class="muted" style="font-size:.82rem">Solo funciona si el estudiante todavía no la canjeó. Pide el número de compra (orden_item_id) — aparece en los logs si la generaste desde aquí.</p>
-    <form method="POST" action="{{ route('cursos.claves.revocar') }}" style="display:flex;gap:.5rem"
-        onsubmit="return confirm('¿Revocar esta clave?')">
-        @csrf
-        <input type="number" name="orden_item_id" min="1" required placeholder="N.º de compra">
-        <button type="submit" class="btn btn-danger btn-sm">Revocar</button>
-    </form>
-</div>
-
 <script>
 function mostrarCodigo(boton) {
-    const span = boton.previousElementSibling;
+    const span = boton.parentElement.querySelector('.clave-oculta');
     const oculto = span.textContent.indexOf('•') !== -1;
     span.textContent = oculto ? span.dataset.codigo : '••••••••••';
-    boton.querySelector('i').className = oculto ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye';
+    boton.textContent = oculto ? '🙈' : '👁️';
+}
+
+function copiarCodigo(boton) {
+    const span = boton.parentElement.querySelector('.clave-oculta');
+    navigator.clipboard.writeText(span.dataset.codigo).then(() => {
+        boton.textContent = '✅';
+        setTimeout(() => { boton.textContent = '📋'; }, 1200);
+    });
 }
 </script>
 @endsection
