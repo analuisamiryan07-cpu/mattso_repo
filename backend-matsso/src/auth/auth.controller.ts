@@ -83,4 +83,15 @@ export class AuthController {
   async getProfile(@Req() req: any) {
     return { user: req.user };
   }
+
+  // Sesión deslizante del Aula Virtual: mientras haya actividad, el
+  // frontend llama esto antes de que el token actual venza, y recibe uno
+  // nuevo — si no hay actividad, el frontend deja de llamarlo y la sesión
+  // se cierra sola (no hay nada que "revocar" aquí, es solo no renovar).
+  @UseGuards(AuthGuard('jwt'))
+  @Post('refresh')
+  @HttpCode(HttpStatus.OK)
+  async refresh(@Req() req: any) {
+    return this.authService.refresh(req.user.id);
+  }
 }

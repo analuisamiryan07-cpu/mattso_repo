@@ -210,8 +210,11 @@ export class EmailService {
                 ${data.codigo}
               </span>
             </div>
+            <p style="font-size:13px;color:#b45309;background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:10px 14px;">
+              Tienes <strong>2 días</strong> para usar esta clave — si no la usas a tiempo, se invalida sola y hay que pedir que te generen una nueva.
+            </p>
             <p style="font-size:13px;color:#6b7280;">
-              Tienes <strong>${data.duracionMeses} ${data.duracionMeses === 1 ? 'mes' : 'meses'}</strong> de acceso a partir del momento en que uses esta clave — no desde hoy. Es de un solo uso. Si no la solicitaste, ignora este correo.
+              Una vez que la uses, tendrás <strong>${data.duracionMeses} ${data.duracionMeses === 1 ? 'mes' : 'meses'}</strong> de acceso al curso a partir de ese momento — no desde hoy. Es de un solo uso. Si no la solicitaste, ignora este correo.
             </p>
           </div>
         </div>`,

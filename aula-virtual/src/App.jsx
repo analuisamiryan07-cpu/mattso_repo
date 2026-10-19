@@ -12,6 +12,7 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { authService } from '@api/authService';
+import { useSlidingSession } from '@hooks/useSlidingSession';
 import Login from '@pages/Login';
 import AulaLayout from '@layout/AulaLayout';
 import MisCursos from '@pages/MisCursos';
@@ -34,6 +35,10 @@ function Portal() {
     window.addEventListener('auth:logout', onLogout);
     return () => window.removeEventListener('auth:logout', onLogout);
   }, []);
+
+  // Sesión deslizante: se mantiene abierta con actividad, se cierra sola a
+  // los 30 min de inactividad — solo corre una vez que ya está adentro.
+  useSlidingSession(paso === 'listo');
 
   if (paso === 'cargando') return null;
   if (paso === 'login') return <Login onSuccess={revisarEstado} />;
