@@ -60,6 +60,32 @@ export class AuthService {
     };
   }
 
+  /**
+   * Renueva el token sin pedir contraseña de nuevo — lo usa el Aula Virtual
+   * para mantener la sesión abierta mientras la persona la está usando
+   * (sesión "deslizante": se extiende con actividad, no con un tiempo fijo).
+   * Requiere un token todavía válido (JwtAuthGuard ya lo exige antes de
+   * llegar aquí) — no sirve para resucitar uno vencido.
+   */
+  async refresh(userId: number) {
+    const user = await this.prisma.usuarioWeb.findUnique({
+      where: { id: BigInt(userId) },
+      include: { cliente: true },
+    });
+    if (!user || !user.activo) {
+      throw new UnauthorizedException('Cuenta no disponible.');
+    }
+
+    const payload = {
+      sub: Number(user.id),
+      correo: user.correo,
+      rol: user.rol,
+      nombre: user.cliente?.nombre || 'Usuario',
+    };
+
+    return { access_token: this.jwtService.sign(payload) };
+  }
+
   async listUsers(page: number, limit: number, search?: string) {
     const skip = (page - 1) * limit;
 

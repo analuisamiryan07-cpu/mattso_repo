@@ -4,7 +4,8 @@
 //
 // Candado de "esta compra ya se usó": se aparta al GENERAR (no al canjear) —
 // contrato acordado con el sistema interno. Revocar una clave sin canjear
-// libera el cupo para generar otra sobre la misma compra.
+// libera el cupo para generar otra sobre la misma compra (a mano, o sola —
+// ver revocarVencidas: el sistema la revoca si pasan 2 días sin canjearla).
 
 import {
   BadRequestException,
@@ -12,6 +13,8 @@ import {
   Injectable,
   Logger,
   NotFoundException,
+  OnModuleDestroy,
+  OnModuleInit,
 } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { randomUUID } from 'crypto';
@@ -23,14 +26,47 @@ function esViolacionUnicidad(e: unknown): boolean {
   return e instanceof Prisma.PrismaClientKnownRequestError && e.code === 'P2002';
 }
 
+// Mismo patrón que PaypalService (expiración de órdenes abandonadas): un
+// setInterval simple, sin @nestjs/schedule (no está instalado, y no hay
+// forma de agregar dependencias nuevas aquí).
+const CLAVE_VENCE_DIAS = 2;
+const REVISAR_VENCIDAS_INTERVAL_MS = 30 * 60 * 1000; // cada 30 min
+
 @Injectable()
-export class AccessGrantsService {
+export class AccessGrantsService implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(AccessGrantsService.name);
+  private revisarInterval?: NodeJS.Timeout;
 
   constructor(
     private readonly prisma: PrismaService,
     private readonly emailService: EmailService,
   ) {}
+
+  onModuleInit() {
+    this.revocarVencidas().catch((err) => this.logger.error('Error revocando claves vencidas:', err));
+    this.revisarInterval = setInterval(() => {
+      this.revocarVencidas().catch((err) => this.logger.error('Error revocando claves vencidas:', err));
+    }, REVISAR_VENCIDAS_INTERVAL_MS);
+  }
+
+  onModuleDestroy() {
+    if (this.revisarInterval) clearInterval(this.revisarInterval);
+  }
+
+  // ── Revoca sola cualquier clave generada hace más de 2 días que nadie
+  // canjeó todavía — así no queda "viva" para siempre esperando que alguien
+  // la use, y la compra queda libre para generar una clave nueva.
+  private async revocarVencidas() {
+    const cutoff = new Date(Date.now() - CLAVE_VENCE_DIAS * 24 * 60 * 60 * 1000);
+
+    const { count } = await this.prisma.accessGrant.updateMany({
+      where: { redeemed_at: null, revoked_at: null, generado_at: { lt: cutoff } },
+      data: { revoked_at: new Date() },
+    });
+    if (count > 0) {
+      this.logger.log(`Revocadas ${count} clave(s) vencidas (${CLAVE_VENCE_DIAS} días sin canjear).`);
+    }
+  }
 
   /** Compras de curso, pagadas, de este correo, sin una clave vigente — para el buscador del panel. */
   async listarDisponibles(correo?: string, ordenId?: number) {
@@ -299,6 +335,18 @@ export class AccessGrantsService {
     // no da pistas de cuáles códigos son reales.
     if (!grant || grant.revoked_at || Number(grant.usuario_id) !== usuarioId) {
       throw new BadRequestException('Clave inválida.');
+    }
+
+    // Defensa en profundidad: si pasaron los 2 días y el revisor en segundo
+    // plano todavía no llegó a marcarla, no se deja canjear de todas formas
+    // — y se revoca aquí mismo para que quede consistente ya.
+    const vencimiento = new Date(grant.generado_at.getTime() + CLAVE_VENCE_DIAS * 24 * 60 * 60 * 1000);
+    if (vencimiento < new Date()) {
+      await this.prisma.accessGrant.updateMany({
+        where: { id: grant.id, redeemed_at: null, revoked_at: null },
+        data: { revoked_at: new Date() },
+      });
+      throw new BadRequestException('Esta clave ya venció — pide que te generen una nueva.');
     }
 
     const expiresAt = addMonths(new Date(), grant.duracion_meses);

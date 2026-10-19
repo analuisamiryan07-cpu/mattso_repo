@@ -80,6 +80,15 @@
 .lf-terms-link { color: var(--primary-blue); font-weight: 600; text-decoration: underline; }
 .lf-terms-link:hover { color: var(--primary-yellow); }
 
+/* Cuentas que ya aceptaron antes: solo texto discreto, sin casilla */
+.lf-terms-link--standalone {
+  display: inline-block;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: #6b7280;
+  text-align: left;
+}
+
 /* Ventanilla de bloqueo — "necesitas inscribirte en un curso" */
 .av-modal-backdrop {
   display: flex;

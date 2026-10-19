@@ -80,7 +80,7 @@
     </p>
     <table>
         <thead>
-            <tr><th>Orden</th><th>Curso</th><th style="width:11rem">Código</th><th>Generada</th><th style="width:7rem">Estado</th></tr>
+            <tr><th>Orden</th><th>Curso</th><th style="width:11rem">Código</th><th>Generada</th><th style="width:7rem">Estado</th><th style="width:9rem"></th></tr>
         </thead>
         <tbody>
         @forelse($historial as $h)
@@ -107,9 +107,19 @@
                         <span class="badge">Pendiente</span>
                     @endif
                 </td>
+                <td>
+                    @if($h['estado'] === 'REVOCADA')
+                        <form method="POST" action="{{ route('cursos.claves.generar') }}"
+                            onsubmit="return confirm('¿Generar una clave nueva para esta compra?')">
+                            @csrf
+                            <input type="hidden" name="orden_item_id" value="{{ $h['orden_item_id'] }}">
+                            <button type="submit" class="btn btn-sm btn-secondary">Generar de nuevo</button>
+                        </form>
+                    @endif
+                </td>
             </tr>
         @empty
-            <tr><td colspan="5" style="text-align:center;padding:1.5rem;color:var(--muted)">Sin claves generadas todavía para esta búsqueda.</td></tr>
+            <tr><td colspan="6" style="text-align:center;padding:1.5rem;color:var(--muted)">Sin claves generadas todavía para esta búsqueda.</td></tr>
         @endforelse
         </tbody>
     </table>
