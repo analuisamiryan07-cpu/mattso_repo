@@ -9,22 +9,14 @@ import apiClient from './client';
  * lms-gate.service.ts en el backend.
  */
 export const authService = {
-  async gateLogin(email, password, aceptaTerminos) {
+  async gateLogin(email, password) {
     const { data } = await apiClient.post('/lms/gate/login', {
       correo: email,
       password,
-      acepta_terminos: aceptaTerminos,
     });
     localStorage.setItem('matsso_token', data.access_token);
     localStorage.setItem('matsso_user', JSON.stringify(data.user));
     return data;
-  },
-
-  // Para saber si mostrar la casilla de Términos o solo el enlace — no
-  // revela si la cuenta existe, solo si falta aceptar.
-  async necesitaTerminos(email) {
-    const { data } = await apiClient.get('/lms/gate/necesita-terminos', { params: { correo: email } });
-    return data.necesita;
   },
 
   logout() {
