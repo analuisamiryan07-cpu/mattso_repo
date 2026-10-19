@@ -1,0 +1,70 @@
+.ic-shell {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-color);
+}
+
+.ic-main {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 20px;
+}
+
+.ic-card {
+  background: #fff;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+  padding: 44px 40px;
+  max-width: 440px;
+  width: 100%;
+  text-align: center;
+}
+
+.ic-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: rgba(0,33,71,0.08);
+  color: var(--primary-blue);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  margin: 0 auto 18px;
+}
+
+.ic-card h1 { font-size: 1.3rem; color: var(--primary-blue); margin-bottom: 8px; }
+.ic-card p { font-size: 0.88rem; color: var(--text-muted); margin-bottom: 24px; }
+
+.ic-card form { display: flex; flex-direction: column; gap: 14px; }
+
+.ic-card input {
+  padding: 13px 16px;
+  border: 1.5px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  font-size: 1.1rem;
+  text-align: center;
+  letter-spacing: 0.12em;
+  font-family: monospace;
+}
+.ic-card input:focus { outline: none; border-color: var(--primary-blue); }
+
+.ic-card button {
+  padding: 13px;
+  background: var(--primary-yellow);
+  color: var(--primary-blue);
+  border: none;
+  border-radius: var(--radius-sm);
+  font-weight: 700;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all var(--transition);
+}
+.ic-card button:hover { background: var(--primary-yellow-dark); }
+.ic-card button:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.ic-error { color: #dc2626; font-size: 0.85rem; margin-top: 14px; }
+.ic-ok { color: #16a34a; font-size: 0.85rem; margin-top: 14px; font-weight: 600; }

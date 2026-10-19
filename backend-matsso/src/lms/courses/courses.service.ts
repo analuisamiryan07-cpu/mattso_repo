@@ -62,27 +62,66 @@ export class CoursesService {
       };
 
       if (course.modo_moodle) {
-        moodle.push({ ...base, progreso_pct: await this.progresoPct(course.id, usuarioId, 'TRADICIONAL') });
+        const { totalItems, completedItems } = await this.progresoRaw(course.id, usuarioId, 'TRADICIONAL');
+        moodle.push({ ...base, progreso_pct: this.pct(completedItems, totalItems) });
       }
       if (course.modo_coursera) {
-        coursera.push({ ...base, progreso_pct: await this.progresoPct(course.id, usuarioId, 'ASINCRONO_VOD') });
+        const { totalItems, completedItems } = await this.progresoRaw(course.id, usuarioId, 'ASINCRONO_VOD');
+        coursera.push({ ...base, progreso_pct: this.pct(completedItems, totalItems) });
       }
     }
 
     return { moodle, coursera };
   }
 
-  private async progresoPct(courseId: string, usuarioId: number, mode: DeliveryModeValue): Promise<number> {
+  /**
+   * Resumen de una modalidad para el dashboard de "Área Personal" (4
+   * tarjetas: cursos inscritos, cursos completados, % actividades
+   * pendientes, % actividades completadas). Los porcentajes se calculan
+   * sobre la suma de items de TODOS los cursos vigentes de esa modalidad,
+   * no como un promedio de porcentajes por curso.
+   */
+  async getResumenModalidad(usuarioId: number, mode: DeliveryModeValue) {
+    const campoModo = mode === 'TRADICIONAL' ? 'modo_moodle' : 'modo_coursera';
+    const grants = await this.prisma.accessGrant.findMany({
+      where: { ...this.vigenteWhere(usuarioId), course: { [campoModo]: true } },
+      include: { course: { select: { id: true } } },
+    });
+
+    let cursosCompletados = 0;
+    let totalItemsSuma = 0;
+    let completedItemsSuma = 0;
+
+    for (const grant of grants) {
+      const { totalItems, completedItems } = await this.progresoRaw(grant.course.id, usuarioId, mode);
+      if (totalItems > 0 && completedItems === totalItems) cursosCompletados += 1;
+      totalItemsSuma += totalItems;
+      completedItemsSuma += completedItems;
+    }
+
+    return {
+      cursos_inscritos: grants.length,
+      cursos_completados: cursosCompletados,
+      actividades_completadas_pct: this.pct(completedItemsSuma, totalItemsSuma),
+      actividades_pendientes_pct: this.pct(totalItemsSuma - completedItemsSuma, totalItemsSuma),
+    };
+  }
+
+  private pct(parte: number, total: number): number {
+    return total === 0 ? 0 : Math.round((parte / total) * 100);
+  }
+
+  private async progresoRaw(courseId: string, usuarioId: number, mode: DeliveryModeValue): Promise<{ totalItems: number; completedItems: number }> {
     const enrollment = await this.prisma.enrollment.findUnique({
       where: { usuario_id_course_id: { usuario_id: BigInt(usuarioId), course_id: courseId } },
       select: { id: true },
     });
-    if (!enrollment) return 0;
+    if (!enrollment) return { totalItems: 0, completedItems: 0 };
 
     const totalItems = await this.prisma.contentItem.count({
       where: { module: { course_id: courseId, delivery_mode: mode }, is_active: true },
     });
-    if (totalItems === 0) return 0;
+    if (totalItems === 0) return { totalItems: 0, completedItems: 0 };
 
     const completedItems = await this.prisma.studentProgress.count({
       where: {
@@ -91,7 +130,7 @@ export class CoursesService {
         content_item: { module: { course_id: courseId, delivery_mode: mode } },
       },
     });
-    return Math.round((completedItems / totalItems) * 100);
+    return { totalItems, completedItems };
   }
 
   /** Lanza ForbiddenException si el usuario no tiene una clave vigente para este curso. */

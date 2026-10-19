@@ -1,25 +1,46 @@
 // Raíz del proyecto Aula Virtual — deploy y dominio aparte del sitio público
 // (ver aula-virtual/README.md). Portón de 1 solo paso: correo + contraseña,
 // validado contra el backend (authService.gateLogin exige además una orden
-// pagada — ver lms-gate.service.ts). Ya no hay un segundo paso de "clave"
-// que bloquee toda la app: cada curso tiene su propia clave, y se canjea
-// como una acción dentro de "Mis cursos" (botón "Añadir curso"), no como un
-// portón previo. Una vez logueado, enruta por rol:
-//   - ESTUDIANTE: Mis cursos -> CursoVOD (look Coursera) o CursoTradicional
-//     (look Moodle), según qué modalidad tenga cada curso.
-//   - PROFESOR: sus cursos + entregas pendientes por calificar.
+// pagada — ver lms-gate.service.ts). Una vez logueado, enruta por rol:
+//   - ESTUDIANTE: Landing decide entre IngresarClave (sin ningún curso
+//     vigente todavía) o PanelGeneral (bloques Moodle/Coursera) -> al
+//     presionar "Periodo 2026" de cada bloque va a AreaPersonal (dashboard
+//     de 4 tarjetas + mis cursos de esa modalidad) -> CursoVOD (look
+//     Coursera) o CursoTradicional (look Moodle) al abrir un curso.
+//   - PROFESOR: sus cursos + entregas pendientes por calificar (sin cambios
+//     en esta fase).
 
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { authService } from '@api/authService';
+import { lmsService } from '@api/lmsService';
 import { useSlidingSession } from '@hooks/useSlidingSession';
 import Login from '@pages/Login';
 import AulaLayout from '@layout/AulaLayout';
-import MisCursos from '@pages/MisCursos';
+import IngresarClave from '@pages/IngresarClave';
+import PanelGeneral from '@pages/PanelGeneral';
+import AreaPersonal from '@pages/AreaPersonal';
 import CursoVOD from '@pages/CursoVOD';
 import CursoTradicional from '@pages/CursoTradicional';
 import MisCursosProfesor from '@pages/profesor/MisCursosProfesor';
 import CursoProfesor from '@pages/profesor/CursoProfesor';
+
+// Decide entre "Ingresa tu clave" (sin ningún curso vigente todavía) y el
+// Panel General (al menos un curso) — se resuelve una sola vez al entrar.
+const Landing = () => {
+  const [sinCursos, setSinCursos] = useState(null); // null = cargando
+
+  const revisar = () => {
+    lmsService.getMisCursos()
+      .then((data) => setSinCursos(data.moodle.length === 0 && data.coursera.length === 0))
+      .catch(() => setSinCursos(false));
+  };
+
+  useEffect(revisar, []);
+
+  if (sinCursos === null) return null;
+  return sinCursos ? <IngresarClave onCanjeada={revisar} /> : <PanelGeneral />;
+};
 
 function Portal() {
   // 'cargando' | 'login' | 'listo'
@@ -46,25 +67,31 @@ function Portal() {
   const user = authService.getCurrentUser();
   const esProfesor = user?.rol === 'PROFESOR';
 
+  // El lado profesor sigue con el topbar simple de AulaLayout (sin cambios,
+  // fuera de alcance de esta fase). El lado estudiante ya no se envuelve en
+  // AulaLayout: cada pantalla trae su propio header+footer completos
+  // (Panel General / Ingresar clave / Área Personal / visores de curso).
+  if (esProfesor) {
+    return (
+      <AulaLayout>
+        <Routes>
+          <Route path="/" element={<MisCursosProfesor />} />
+          <Route path="/curso/:courseId" element={<CursoProfesor />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </AulaLayout>
+    );
+  }
+
   return (
-    <AulaLayout>
-      <Routes>
-        {esProfesor ? (
-          <>
-            <Route path="/" element={<MisCursosProfesor />} />
-            <Route path="/curso/:courseId" element={<CursoProfesor />} />
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </>
-        ) : (
-          <>
-            <Route path="/" element={<MisCursos />} />
-            <Route path="/curso/vod/:courseId" element={<CursoVOD />} />
-            <Route path="/curso/tradicional/:courseId" element={<CursoTradicional />} />
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </>
-        )}
-      </Routes>
-    </AulaLayout>
+    <Routes>
+      <Route path="/" element={<Landing />} />
+      <Route path="/moodle" element={<AreaPersonal modalidad="moodle" />} />
+      <Route path="/coursera" element={<AreaPersonal modalidad="coursera" />} />
+      <Route path="/curso/vod/:courseId" element={<CursoVOD />} />
+      <Route path="/curso/tradicional/:courseId" element={<CursoTradicional />} />
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
   );
 }
 

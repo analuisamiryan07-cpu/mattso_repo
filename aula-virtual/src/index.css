@@ -46,3 +46,12 @@ select::placeholder {
   color: #9ca3af;
   opacity: 1;
 }
+
+/* Envoltorio de página completa (header arriba, contenido, footer abajo) —
+   lo usan los visores de curso (CursoVOD/CursoTradicional), que ya no están
+   envueltos por AulaLayout. */
+.lms-shell {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}

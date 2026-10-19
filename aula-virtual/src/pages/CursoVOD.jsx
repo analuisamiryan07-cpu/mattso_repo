@@ -10,6 +10,9 @@ import { lmsService } from '@api/lmsService';
 import VideoPlayer from '@components/VideoPlayer';
 import QuizRunner from '@components/QuizRunner';
 import EntregaTarea from '@components/EntregaTarea';
+import AulaHeader from '@layout/AulaHeader';
+import AulaFooter from '@layout/AulaFooter';
+import BackButton from '@layout/BackButton';
 import './CursoVOD.css';
 
 const ICONS = { VIDEO: 'fa-circle-play', ASSIGNMENT: 'fa-file-pen', QUIZ: 'fa-list-check', DOCUMENT: 'fa-file-lines' };
@@ -36,13 +39,32 @@ const CursoVOD = () => {
 
   useEffect(() => { cargar(); }, [cargar]);
 
-  if (error) return <div className="lms-page"><p className="lms-error">{error}</p></div>;
-  if (!detalle) return <div className="lms-page"><p>Cargando…</p></div>;
+  if (error) {
+    return (
+      <div className="lms-shell">
+        <AulaHeader variant="area" />
+        <div className="lms-page"><p className="lms-error">{error}</p></div>
+        <AulaFooter />
+      </div>
+    );
+  }
+  if (!detalle) {
+    return (
+      <div className="lms-shell">
+        <AulaHeader variant="area" />
+        <div className="lms-page"><p>Cargando…</p></div>
+        <AulaFooter />
+      </div>
+    );
+  }
 
   const activeItem = detalle.modules.flatMap((m) => m.content_items).find((i) => i.id === activeItemId);
 
   return (
-    <div className="lms-page lms-curso-detalle">
+    <div className="lms-shell">
+      <AulaHeader variant="area" />
+      <div className="lms-page lms-curso-detalle">
+      <BackButton to="/coursera" label="Volver a Coursera" />
       <h1 className="lms-page-title">{detalle.course.titulo}</h1>
       <div className="lms-curso-layout">
         <aside className="lms-curso-nav">
@@ -100,6 +122,8 @@ const CursoVOD = () => {
           )}
         </main>
       </div>
+      </div>
+      <AulaFooter />
     </div>
   );
 };
