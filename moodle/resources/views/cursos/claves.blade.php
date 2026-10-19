@@ -102,7 +102,6 @@
                 <td>
                     @if($h['codigo'])
                         <span class="clave-oculta" data-codigo="{{ $h['codigo'] }}" style="font-family:monospace;letter-spacing:.05em">••••••••••</span>
-                        <button type="button" class="btn-ojo" onclick="mostrarCodigo(this)" title="Mostrar código" style="background:none;border:none;cursor:pointer;padding:0 4px;font-size:1rem">👁️</button>
                         <button type="button" class="btn-copiar" onclick="copiarCodigo(this)" title="Copiar código" style="background:none;border:none;cursor:pointer;padding:0 4px;font-size:1rem">📋</button>
                     @else
                         <span class="muted">— (sin código)</span>
@@ -138,13 +137,6 @@
 @endisset
 
 <script>
-function mostrarCodigo(boton) {
-    const span = boton.parentElement.querySelector('.clave-oculta');
-    const oculto = span.textContent.indexOf('•') !== -1;
-    span.textContent = oculto ? span.dataset.codigo : '••••••••••';
-    boton.textContent = oculto ? '🙈' : '👁️';
-}
-
 function copiarCodigo(boton) {
     const span = boton.parentElement.querySelector('.clave-oculta');
     navigator.clipboard.writeText(span.dataset.codigo).then(() => {
