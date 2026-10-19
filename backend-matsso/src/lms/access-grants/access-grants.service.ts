@@ -288,7 +288,11 @@ export class AccessGrantsService implements OnModuleInit, OnModuleDestroy {
         ...(usuario ? { usuario_id: usuario.id } : {}),
         ...(ordenId ? { orden_item: { orden_id: BigInt(ordenId) } } : {}),
       },
-      include: { course: { select: { titulo: true } }, orden_item: { select: { orden_id: true } } },
+      include: {
+        course: { select: { titulo: true } },
+        orden_item: { select: { orden_id: true } },
+        usuario: { select: { correo: true } },
+      },
       orderBy: { generado_at: 'desc' },
     });
 
@@ -296,6 +300,7 @@ export class AccessGrantsService implements OnModuleInit, OnModuleDestroy {
       orden_item_id: Number(g.orden_item_id),
       orden_id: Number(g.orden_item.orden_id),
       curso_titulo: g.course.titulo,
+      correo: g.usuario.correo,
       codigo: g.codigo,
       generado_at: g.generado_at,
       generado_por: g.generado_por,
