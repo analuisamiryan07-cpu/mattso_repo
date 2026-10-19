@@ -410,9 +410,9 @@ class CursosController extends Controller
     {
         // Al entrar por primera vez (desde el botón "Generar clave") no hay
         // ni correo ni orden en la URL todavía — eso es normal, se muestra
-        // el formulario vacío, sin buscar nada y sin error. El error de
-        // "indica el correo o la orden" es solo para cuando SÍ se envía el
-        // formulario con los dos campos en blanco.
+        // el formulario de búsqueda vacío. El error de "indica el correo o
+        // la orden" es solo para cuando SÍ se envía el formulario con los
+        // dos campos en blanco.
         $seEnvioElFormulario = $request->has('correo') || $request->has('orden_id');
 
         $validated = $request->validate([
@@ -420,22 +420,25 @@ class CursosController extends Controller
             'orden_id' => ['nullable', 'integer', 'min:1'],
         ]);
 
-        if (!$seEnvioElFormulario) {
-            return view('cursos.claves', ['disponibles' => null, 'historial' => null, 'busqueda' => []]);
-        }
-
-        if (blank($validated['correo'] ?? null) && blank($validated['orden_id'] ?? null)) {
+        if ($seEnvioElFormulario && blank($validated['correo'] ?? null) && blank($validated['orden_id'] ?? null)) {
             return back()->withErrors(['correo' => 'Indica el correo del comprador o el número de orden.']);
         }
 
-        try {
-            $disponibles = $this->lms->listarClavesDisponibles($validated['correo'] ?? null, $validated['orden_id'] ?? null);
-        } catch (Throwable $e) {
-            return back()->with('error', $e->getMessage());
+        // "Disponibles" (compras pagadas sin clave) solo tiene sentido
+        // filtrado por una búsqueda — sin eso, no se muestra esa tabla.
+        $disponibles = null;
+        if ($seEnvioElFormulario) {
+            try {
+                $disponibles = $this->lms->listarClavesDisponibles($validated['correo'] ?? null, $validated['orden_id'] ?? null);
+            } catch (Throwable $e) {
+                return back()->with('error', $e->getMessage());
+            }
         }
 
-        // El historial es informativo — si falla, no debe tapar los
-        // resultados de "disponibles", que es lo que realmente importa aquí.
+        // El historial sale siempre, con o sin búsqueda: sin filtros muestra
+        // TODAS las claves generadas hasta ahora, para poder revocar/volver a
+        // generar sin tener que buscar nada primero. Es informativo — si
+        // falla, no debe tapar "disponibles", que es lo que importa al generar.
         try {
             $historial = $this->lms->listarHistorialClaves($validated['correo'] ?? null, $validated['orden_id'] ?? null);
         } catch (Throwable $e) {

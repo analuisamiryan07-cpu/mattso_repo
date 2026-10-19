@@ -274,11 +274,10 @@ export class AccessGrantsService implements OnModuleInit, OnModuleDestroy {
   }
 
   /** Historial completo (generadas/canjeadas/revocadas) — incluye el código para poder mostrarlo/reenviarlo desde el panel. */
+  // Sin correo ni orden_id devuelve TODO el historial (lo más reciente
+  // primero) — así la pantalla de "Generar clave" puede mostrarlo apenas se
+  // abre, sin obligar a buscar antes de poder revocar o volver a generar.
   async listarHistorial(correo?: string, ordenId?: number) {
-    if (!correo && !ordenId) {
-      throw new BadRequestException('Indica el correo del comprador o el número de orden.');
-    }
-
     const usuario = correo
       ? await this.prisma.usuarioWeb.findUnique({ where: { correo }, select: { id: true } })
       : null;
