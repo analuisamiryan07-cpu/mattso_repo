@@ -2,6 +2,9 @@
 // General, Ingresar clave, Área Personal). El logo SIEMPRE lleva de vuelta
 // al Panel General (/) — nunca al sitio público, a propósito (así lo pidió
 // la usuaria: "cuando se presione el logo te redirija al panel general").
+// Excepción: la pantalla "Ingresa tu clave" todavía no tiene ningún curso,
+// así que ahí "/" volvería a la misma pantalla — se le pasa `onBrandClick`
+// para que el logo cierre sesión y mande a login en vez de navegar a "/".
 //
 // variant="panel" (Panel General / Ingresar clave): logo + buscador rápido
 //   de los cursos propios (filtra en memoria lo que ya trajo /lms/courses,
@@ -18,13 +21,20 @@ import './AulaHeader.css';
 
 const logoImg = 'https://res.cloudinary.com/ehglt8h8/image/upload/v1784925646/Logo_1.png';
 
-const AulaHeader = ({ variant = 'panel' }) => {
+const AulaHeader = ({ variant = 'panel', onBrandClick }) => {
   return (
     <header className="ah-header">
-      <Link to="/" className="ah-brand">
-        <img src={logoImg} alt="Sapper Industries" className="ah-brand-logo" />
-        <span className="ah-brand-text">Aula Virtual</span>
-      </Link>
+      {onBrandClick ? (
+        <button type="button" onClick={onBrandClick} className="ah-brand ah-brand--button">
+          <img src={logoImg} alt="Sapper Industries" className="ah-brand-logo" />
+          <span className="ah-brand-text">Aula Virtual</span>
+        </button>
+      ) : (
+        <Link to="/" className="ah-brand">
+          <img src={logoImg} alt="Sapper Industries" className="ah-brand-logo" />
+          <span className="ah-brand-text">Aula Virtual</span>
+        </Link>
+      )}
       {variant === 'panel' ? <BuscadorCursos /> : <MenuPerfil />}
     </header>
   );
