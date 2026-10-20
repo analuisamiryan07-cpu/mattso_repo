@@ -107,6 +107,75 @@ export class CoursesService {
     };
   }
 
+  /**
+   * Línea de tiempo + calendario de Moodle: todo ContentItem con
+   * `fecha_limite` de los cursos Moodle vigentes del estudiante, con su
+   * estado (ATRASADO/PENDIENTE/COMPLETADO) ya resuelto en el backend — el
+   * frontend solo lo pinta, misma regla que el resto de este archivo.
+   */
+  async getLineaDeTiempo(usuarioId: number) {
+    const grants = await this.prisma.accessGrant.findMany({
+      where: { ...this.vigenteWhere(usuarioId), course: { modo_moodle: true } },
+      include: { course: { select: { id: true, titulo: true } } },
+    });
+
+    const items: Array<{
+      content_item_id: string;
+      titulo: string;
+      modulo_titulo: string;
+      course_id: string;
+      course_titulo: string;
+      item_type: string;
+      fecha_limite: Date;
+      estado: 'ATRASADO' | 'PENDIENTE' | 'COMPLETADO';
+    }> = [];
+
+    for (const grant of grants) {
+      const enrollment = await this.prisma.enrollment.findUnique({
+        where: { usuario_id_course_id: { usuario_id: BigInt(usuarioId), course_id: grant.course.id } },
+        select: { id: true },
+      });
+      if (!enrollment) continue;
+
+      const contentItems = await this.prisma.contentItem.findMany({
+        where: {
+          fecha_limite: { not: null },
+          is_active: true,
+          module: { course_id: grant.course.id, delivery_mode: 'TRADICIONAL' },
+        },
+        include: { module: { select: { titulo: true } } },
+      });
+      if (contentItems.length === 0) continue;
+
+      const progressRows = await this.prisma.studentProgress.findMany({
+        where: { enrollment_id: enrollment.id, content_item_id: { in: contentItems.map((c) => c.id) } },
+      });
+      const completedIds = new Set(progressRows.filter((p) => p.status === 'COMPLETED').map((p) => p.content_item_id));
+
+      for (const item of contentItems) {
+        const completado = completedIds.has(item.id);
+        const estado: 'ATRASADO' | 'PENDIENTE' | 'COMPLETADO' = completado
+          ? 'COMPLETADO'
+          : item.fecha_limite! < new Date()
+            ? 'ATRASADO'
+            : 'PENDIENTE';
+        items.push({
+          content_item_id: item.id,
+          titulo: item.titulo,
+          modulo_titulo: item.module.titulo,
+          course_id: grant.course.id,
+          course_titulo: grant.course.titulo,
+          item_type: item.item_type,
+          fecha_limite: item.fecha_limite!,
+          estado,
+        });
+      }
+    }
+
+    items.sort((a, b) => a.fecha_limite.getTime() - b.fecha_limite.getTime());
+    return items;
+  }
+
   private pct(parte: number, total: number): number {
     return total === 0 ? 0 : Math.round((parte / total) * 100);
   }

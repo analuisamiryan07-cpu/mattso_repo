@@ -20,6 +20,13 @@ export const lmsService = {
     return data;
   },
 
+  // Línea de tiempo / calendario de Moodle — actividades con fecha límite de
+  // todos los cursos Moodle vigentes, con el estado ya resuelto en el backend.
+  async getLineaDeTiempo() {
+    const { data } = await apiClient.get('/lms/courses/linea-de-tiempo');
+    return data;
+  },
+
   async enviarVideoPing(contentItemId, currentTime, totalDuration) {
     const { data } = await apiClient.post('/lms/progress/video-ping', {
       content_item_id: contentItemId,
@@ -109,6 +116,33 @@ export const lmsService = {
 
   async calificarEntregaProfesor(submissionId, score, feedback) {
     const { data } = await apiClient.post(`/lms/professor/submissions/${submissionId}/grade`, { score, feedback });
+    return data;
+  },
+
+  // ── Mensajería (solo Moodle) ───────────────────────────────────────────
+  async getProfesoresParaMensajear() {
+    const { data } = await apiClient.get('/lms/messaging/profesores');
+    return data;
+  },
+
+  async getConversacion(courseId) {
+    const { data } = await apiClient.get(`/lms/messaging/conversaciones/${courseId}`);
+    return data;
+  },
+
+  async enviarMensaje(courseId, cuerpo) {
+    const { data } = await apiClient.post(`/lms/messaging/conversaciones/${courseId}/mensajes`, { cuerpo });
+    return data;
+  },
+
+  // ── Notificaciones ──────────────────────────────────────────────────────
+  async getNotificaciones() {
+    const { data } = await apiClient.get('/lms/notifications');
+    return data; // { items, no_leidas }
+  },
+
+  async marcarNotificacionLeida(id) {
+    const { data } = await apiClient.post(`/lms/notifications/${id}/leido`);
     return data;
   },
 };

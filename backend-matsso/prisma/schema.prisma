@@ -244,6 +244,10 @@ model UsuarioWeb {
   submissions_gradas  ManualGrade[] @relation("SubmissionsGradedBy")
   cursos_dictados     Course[]      @relation("CoursesTaught")
   access_grants       AccessGrant[]
+  conversaciones_estudiante Conversation[]  @relation("ConversacionesComoEstudiante")
+  conversaciones_profesor  Conversation[]  @relation("ConversacionesComoProfesor")
+  mensajes_enviados        Message[]
+  notificaciones           Notification[]
 
   @@schema("public")
   @@map("usuarios_web")
@@ -487,6 +491,7 @@ model Course {
   modules       Module[]
   enrollments   Enrollment[]
   access_grants AccessGrant[]
+  conversaciones Conversation[]
 
   @@map("courses")
   @@schema("lms")
@@ -529,6 +534,10 @@ model ContentItem {
   // Contenido de texto directo (item_type=DOCUMENT) — el profesor o el
   // admin lo escribe aquí, no es un archivo subido.
   body_text                String?         @db.Text
+  // Fecha límite (ASSIGNMENT/QUIZ, principalmente) — alimenta la línea de
+  // tiempo y el calendario de Moodle en el Aula Virtual. Nula = sin fecha,
+  // no aparece en ninguno de los dos.
+  fecha_limite            DateTime?       @db.Timestamptz
   is_active               Boolean         @default(true)
   created_at              DateTime        @default(now()) @db.Timestamptz
   updated_at              DateTime        @default(now()) @updatedAt @db.Timestamptz
@@ -775,5 +784,64 @@ model AccessGrant {
   @@index([usuario_id])
   @@index([orden_item_id])
   @@map("access_grants")
+  @@schema("lms")
+}
+
+// ── Mensajería y notificaciones (solo Moodle) ──────────────────────────
+// Una conversación por (curso, estudiante, profesor) — todo el intercambio
+// de ese estudiante con el profesor de ESE curso vive en una sola fila, no
+// una por mensaje. El lado de bandeja/respuesta del profesor queda para una
+// fase posterior (ya acordado); por ahora solo el estudiante escribe.
+model Conversation {
+  id                    String   @id @default(uuid()) @db.Uuid
+  course_id             String   @db.Uuid
+  estudiante_usuario_id BigInt
+  profesor_usuario_id   BigInt
+  created_at            DateTime @default(now()) @db.Timestamptz
+
+  course     Course     @relation(fields: [course_id], references: [id])
+  estudiante UsuarioWeb @relation("ConversacionesComoEstudiante", fields: [estudiante_usuario_id], references: [id])
+  profesor   UsuarioWeb @relation("ConversacionesComoProfesor", fields: [profesor_usuario_id], references: [id])
+  mensajes   Message[]
+
+  @@unique([course_id, estudiante_usuario_id, profesor_usuario_id])
+  @@map("conversations")
+  @@schema("lms")
+}
+
+model Message {
+  id                    String    @id @default(uuid()) @db.Uuid
+  conversation_id       String    @db.Uuid
+  remitente_usuario_id  BigInt
+  cuerpo                String    @db.Text
+  leido_at              DateTime? @db.Timestamptz
+  created_at            DateTime  @default(now()) @db.Timestamptz
+
+  conversation Conversation @relation(fields: [conversation_id], references: [id], onDelete: Cascade)
+  remitente    UsuarioWeb   @relation(fields: [remitente_usuario_id], references: [id])
+
+  @@index([conversation_id])
+  @@map("messages")
+  @@schema("lms")
+}
+
+// Genérica — hoy la alimentan "mensaje nuevo" y "tarea calificada", pero el
+// campo `tipo` deja abierto agregar más disparadores sin tocar el schema.
+model Notification {
+  id         String    @id @default(uuid()) @db.Uuid
+  usuario_id BigInt
+  tipo       String    @db.VarChar(40)
+  titulo     String    @db.VarChar(200)
+  cuerpo     String?   @db.Text
+  // Ruta del frontend del Aula Virtual a la que lleva al hacer clic (ej.
+  // "/moodle/mis-cursos") — opcional, no todas las notificaciones navegan.
+  enlace     String?   @db.VarChar(300)
+  leido_at   DateTime? @db.Timestamptz
+  created_at DateTime  @default(now()) @db.Timestamptz
+
+  usuario UsuarioWeb @relation(fields: [usuario_id], references: [id], onDelete: Cascade)
+
+  @@index([usuario_id])
+  @@map("notifications")
   @@schema("lms")
 }

@@ -8,6 +8,7 @@ import { BadRequestException, ConflictException, Injectable, NotFoundException }
 import { PrismaService } from '../../prisma/prisma.service';
 import { StorageService } from '../../storage/storage.service';
 import { CoursesService } from '../courses/courses.service';
+import { NotificationsService } from '../notifications/notifications.service';
 import { sanitizePlainText } from '../../common/sanitize.util';
 import { GradeSubmissionDto } from './dto/grade-submission.dto';
 
@@ -19,6 +20,7 @@ export class SubmissionsService {
     private readonly prisma: PrismaService,
     private readonly storageService: StorageService,
     private readonly coursesService: CoursesService,
+    private readonly notificationsService: NotificationsService,
   ) {}
 
   async createSubmission(
@@ -79,7 +81,11 @@ export class SubmissionsService {
   async gradeSubmission(submissionId: string, dto: GradeSubmissionDto) {
     const submission = await this.prisma.studentSubmission.findUnique({
       where: { id: submissionId },
-      include: { grade: true },
+      include: {
+        grade: true,
+        enrollment: { select: { usuario_id: true } },
+        content_item: { select: { titulo: true } },
+      },
     });
     if (!submission) throw new NotFoundException('Entrega no encontrada.');
     if (submission.grade) throw new ConflictException('Esta entrega ya fue calificada.');
@@ -115,6 +121,14 @@ export class SubmissionsService {
         },
       }),
     ]);
+
+    await this.notificationsService.crear({
+      usuarioId: Number(submission.enrollment.usuario_id),
+      tipo: 'TAREA_CALIFICADA',
+      titulo: `Calificaron "${submission.content_item.titulo}"`,
+      cuerpo: `Nota: ${dto.score}`,
+      enlace: '/moodle/mis-cursos',
+    });
 
     return grade;
   }

@@ -37,6 +37,12 @@ import { AdminProfessorsController } from './professor/admin-professors.controll
 import { LmsGateService } from './gate/lms-gate.service';
 import { LmsGateController } from './gate/lms-gate.controller';
 
+import { NotificationsService } from './notifications/notifications.service';
+import { NotificationsController } from './notifications/notifications.controller';
+
+import { MessagingService } from './messaging/messaging.service';
+import { MessagingController } from './messaging/messaging.controller';
+
 // PrismaModule es @Global() — no requiere import. StorageModule, EmailModule
 // y AuthModule NO son globales (se importan explícitamente donde se usan,
 // igual que en OrdersModule), por eso se importan aquí.
@@ -54,6 +60,8 @@ import { LmsGateController } from './gate/lms-gate.controller';
     ProfessorCoursesController,
     AdminProfessorsController,
     LmsGateController,
+    NotificationsController,
+    MessagingController,
   ],
   providers: [
     EnrollmentService,
@@ -66,6 +74,8 @@ import { LmsGateController } from './gate/lms-gate.controller';
     ProfessorCoursesService,
     AdminProfessorsService,
     LmsGateService,
+    NotificationsService,
+    MessagingService,
   ],
   // EnrollmentService se exporta a propósito — OrdersModule y PaymentsModule
   // lo necesitan para inscribir al comprador en cuanto una orden se marca

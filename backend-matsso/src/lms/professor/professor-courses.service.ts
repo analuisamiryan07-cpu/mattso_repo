@@ -19,12 +19,16 @@ import { CreateContentItemDto } from '../courses/dto/create-content-item.dto';
 import { CreateQuizDto } from '../courses/dto/create-quiz.dto';
 import { ProfessorGradeSubmissionDto } from './dto/professor-grade-submission.dto';
 import { buildCloudinaryFolder } from '../courses/course-cloudinary.util';
+import { NotificationsService } from '../notifications/notifications.service';
 
 @Injectable()
 export class ProfessorCoursesService {
   private readonly logger = new Logger(ProfessorCoursesService.name);
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly notificationsService: NotificationsService,
+  ) {}
 
   async listarMisCursos(usuarioId: number) {
     return this.prisma.course.findMany({
@@ -148,6 +152,7 @@ export class ProfessorCoursesService {
         cloudinary_url: dto.cloudinary_url ?? null,
         video_duration_seconds: dto.video_duration_seconds ?? null,
         assignment_instructions: sanitizePlainText(dto.assignment_instructions) ?? null,
+        fecha_limite: dto.fecha_limite ? new Date(dto.fecha_limite) : null,
       },
     });
   }
@@ -220,7 +225,11 @@ export class ProfessorCoursesService {
   async calificar(usuarioId: number, submissionId: string, dto: ProfessorGradeSubmissionDto) {
     const submission = await this.prisma.studentSubmission.findUnique({
       where: { id: submissionId },
-      include: { grade: true, content_item: { include: { module: { include: { course: true } } } } },
+      include: {
+        grade: true,
+        enrollment: { select: { usuario_id: true } },
+        content_item: { include: { module: { include: { course: true } } } },
+      },
     });
     if (!submission) throw new NotFoundException('Entrega no encontrada.');
     if (submission.content_item.module.course.profesor_usuario_id === null
@@ -254,6 +263,14 @@ export class ProfessorCoursesService {
         },
       }),
     ]);
+
+    await this.notificationsService.crear({
+      usuarioId: Number(submission.enrollment.usuario_id),
+      tipo: 'TAREA_CALIFICADA',
+      titulo: `Calificaron "${submission.content_item.titulo}"`,
+      cuerpo: `Nota: ${dto.score}`,
+      enlace: '/moodle/mis-cursos',
+    });
 
     return grade;
   }

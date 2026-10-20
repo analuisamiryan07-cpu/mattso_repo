@@ -15,11 +15,14 @@ import { useEffect, useState } from 'react';
 import { authService } from '@api/authService';
 import { lmsService } from '@api/lmsService';
 import { useSlidingSession } from '@hooks/useSlidingSession';
+import { IdiomaProvider } from '@context/IdiomaContext';
 import Login from '@pages/Login';
 import AulaLayout from '@layout/AulaLayout';
 import IngresarClave from '@pages/IngresarClave';
 import PanelGeneral from '@pages/PanelGeneral';
 import AreaPersonal from '@pages/AreaPersonal';
+import AreaPersonalMoodle from '@pages/moodle/AreaPersonalMoodle';
+import MisCursosMoodle from '@pages/moodle/MisCursosMoodle';
 import CursoVOD from '@pages/CursoVOD';
 import CursoTradicional from '@pages/CursoTradicional';
 import MisCursosProfesor from '@pages/profesor/MisCursosProfesor';
@@ -92,14 +95,17 @@ function Portal() {
   }
 
   return (
-    <Routes>
-      <Route path="/" element={<Landing />} />
-      <Route path="/moodle" element={<AreaPersonal modalidad="moodle" />} />
-      <Route path="/coursera" element={<AreaPersonal modalidad="coursera" />} />
-      <Route path="/curso/vod/:courseId" element={<CursoVOD />} />
-      <Route path="/curso/tradicional/:courseId" element={<CursoTradicional />} />
-      <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
+    <IdiomaProvider>
+      <Routes>
+        <Route path="/" element={<Landing />} />
+        <Route path="/moodle" element={<AreaPersonalMoodle />} />
+        <Route path="/moodle/mis-cursos" element={<MisCursosMoodle />} />
+        <Route path="/coursera" element={<AreaPersonal />} />
+        <Route path="/curso/vod/:courseId" element={<CursoVOD />} />
+        <Route path="/curso/tradicional/:courseId" element={<CursoTradicional />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </IdiomaProvider>
   );
 }
 
