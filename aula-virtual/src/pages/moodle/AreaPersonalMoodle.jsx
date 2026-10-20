@@ -229,15 +229,24 @@ const Calendario = ({ actividades }) => {
         {celdas.map((dia, i) => {
           if (!dia) return <div key={`vacio-${i}`} className="apm-cal-cell apm-cal-cell--vacia" />;
           const key = new Date(mesBase.getFullYear(), mesBase.getMonth(), dia).toISOString().slice(0, 10);
-          const items = diasConAlgo.get(key);
+          const items = diasConAlgo.get(key) || [];
+          const visibles = items.slice(0, 2);
+          const restantes = items.length - visibles.length;
           return (
             <button
               key={dia}
-              className={`apm-cal-cell ${items ? 'apm-cal-cell--con-actividad' : ''} ${diaSeleccionado === key ? 'apm-cal-cell--seleccionada' : ''}`}
+              className={`apm-cal-cell ${items.length ? 'apm-cal-cell--con-actividad' : ''} ${diaSeleccionado === key ? 'apm-cal-cell--seleccionada' : ''}`}
               onClick={() => seleccionarDia(key)}
             >
               <span className="apm-cal-numero">{dia}</span>
-              {items && <i className="fa-solid fa-circle apm-cal-dot" title={items.map((x) => x.titulo).join(', ')} />}
+              <span className="apm-cal-chips">
+                {visibles.map((item) => (
+                  <span key={`${item.origen}-${item.id || item.content_item_id}`} className={`apm-cal-chip apm-cal-chip--${item.origen}`}>
+                    {item.titulo}
+                  </span>
+                ))}
+                {restantes > 0 && <span className="apm-cal-chip-mas">+{restantes} más</span>}
+              </span>
             </button>
           );
         })}
