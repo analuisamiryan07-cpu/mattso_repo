@@ -1,0 +1,47 @@
+.nm-shell { min-height: 100vh; display: flex; flex-direction: column; background: var(--bg-color); }
+.nm-main { flex: 1; max-width: 1100px; width: 100%; margin: 0 auto; padding: 24px 24px 80px; }
+
+.nm-perfil-row { display: flex; align-items: center; gap: 14px; margin-bottom: 20px; }
+.nm-avatar {
+  width: 48px; height: 48px; border-radius: 50%;
+  background: var(--primary-yellow); color: var(--primary-blue);
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 800; font-size: 15px;
+}
+.nm-perfil-row strong { font-size: 1.05rem; color: var(--primary-blue); }
+.nm-link-mensaje { margin-left: auto; font-size: 0.82rem; color: var(--text-muted); display: flex; align-items: center; gap: 6px; }
+
+.nm-card { background: #fff; border-radius: var(--radius-md); box-shadow: var(--shadow-sm); padding: 24px; }
+.nm-card h1 { font-size: 1.2rem; color: var(--text-dark); margin: 0 0 16px; }
+
+.nm-layout { display: grid; grid-template-columns: 320px 1fr; gap: 0; border: 1px solid var(--border-color); border-radius: var(--radius-sm); overflow: hidden; min-height: 320px; }
+
+.nm-lista { list-style: none; margin: 0; padding: 0; border-right: 1px solid var(--border-color); overflow-y: auto; max-height: 420px; }
+.nm-vacio { padding: 16px; font-size: 0.85rem; color: var(--text-muted); list-style: none; }
+
+.nm-item {
+  width: 100%;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  text-align: left;
+  background: none;
+  border: none;
+  border-bottom: 1px solid var(--border-color);
+  padding: 14px 16px;
+  cursor: pointer;
+}
+.nm-item:hover,
+.nm-item.is-active { background: var(--bg-light); }
+.nm-item i { color: var(--text-muted); font-size: 12px; margin-top: 3px; }
+.nm-item strong { display: block; font-size: 0.85rem; color: var(--text-dark); }
+.nm-item small { display: block; font-size: 0.75rem; color: var(--text-muted); margin-top: 4px; }
+.nm-item--no-leida strong { color: var(--primary-blue); }
+.nm-item--no-leida i { color: var(--primary-yellow-dark); }
+
+.nm-detalle { display: flex; align-items: center; justify-content: center; padding: 24px; color: var(--text-muted); font-size: 0.85rem; text-align: center; }
+.nm-detalle-contenido { width: 100%; text-align: left; }
+.nm-detalle-contenido h2 { font-size: 1rem; color: var(--primary-blue); margin: 0 0 10px; }
+.nm-detalle-contenido p { font-size: 0.88rem; color: var(--text-dark); margin: 0 0 10px; }
+.nm-detalle-contenido time { font-size: 0.78rem; color: var(--text-muted); }
+.nm-ir { display: inline-block; margin-top: 12px; color: var(--primary-blue); font-weight: 700; font-size: 0.85rem; }

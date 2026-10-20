@@ -23,6 +23,8 @@ import PanelGeneral from '@pages/PanelGeneral';
 import AreaPersonal from '@pages/AreaPersonal';
 import AreaPersonalMoodle from '@pages/moodle/AreaPersonalMoodle';
 import MisCursosMoodle from '@pages/moodle/MisCursosMoodle';
+import NotificacionesMoodle from '@pages/moodle/NotificacionesMoodle';
+import MensajesMoodle from '@pages/moodle/MensajesMoodle';
 import CursoVOD from '@pages/CursoVOD';
 import CursoTradicional from '@pages/CursoTradicional';
 import MisCursosProfesor from '@pages/profesor/MisCursosProfesor';
@@ -100,6 +102,8 @@ function Portal() {
         <Route path="/" element={<Landing />} />
         <Route path="/moodle" element={<AreaPersonalMoodle />} />
         <Route path="/moodle/mis-cursos" element={<MisCursosMoodle />} />
+        <Route path="/moodle/notificaciones" element={<NotificacionesMoodle />} />
+        <Route path="/moodle/mensajes" element={<MensajesMoodle />} />
         <Route path="/coursera" element={<AreaPersonal />} />
         <Route path="/curso/vod/:courseId" element={<CursoVOD />} />
         <Route path="/curso/tradicional/:courseId" element={<CursoTradicional />} />

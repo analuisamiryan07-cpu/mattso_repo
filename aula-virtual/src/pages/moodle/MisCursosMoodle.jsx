@@ -5,7 +5,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { lmsService } from '@api/lmsService';
 import MoodleHeader from '@layout/MoodleHeader';
 import MoodleSubnav from '@layout/MoodleSubnav';
-import AulaFooter from '@layout/AulaFooter';
+import MoodleFooter from '@layout/MoodleFooter';
 import CursosGrid from '@components/CursosGrid';
 import AñadirCursoForm from '@components/AñadirCursoForm';
 import { useIdioma } from '@context/IdiomaContext';
@@ -17,7 +17,6 @@ const MisCursosMoodle = () => {
   const [cursos, setCursos] = useState(null);
   const [error, setError] = useState(null);
   const [busqueda, setBusqueda] = useState('');
-  const [mostrarAñadir, setMostrarAñadir] = useState(false);
 
   const cargar = () => {
     lmsService.getMisCursos()
@@ -42,11 +41,6 @@ const MisCursosMoodle = () => {
       <main className="mcm-main">
         <div className="lms-page-header">
           <h1 className="lms-page-title" style={{ marginBottom: 0 }}>{t('misCursos')}</h1>
-          {cursos && cursos.length > 0 && (
-            <button className="lms-btn-añadir" onClick={() => setMostrarAñadir((v) => !v)}>
-              <i className="fa-solid fa-plus" /> {t('anadirMasCursos')}
-            </button>
-          )}
         </div>
 
         {cursos && cursos.length > 0 && (
@@ -61,13 +55,9 @@ const MisCursosMoodle = () => {
           </div>
         )}
 
-        {mostrarAñadir && (
-          <AñadirCursoForm onSuccess={() => { setMostrarAñadir(false); cargar(); }} onCancel={() => setMostrarAñadir(false)} />
-        )}
-
         {error && <p className="lms-error">{error}</p>}
 
-        {cursos && cursos.length === 0 && !mostrarAñadir && (
+        {cursos && cursos.length === 0 && (
           <div className="mcm-vacio">
             <p>Todavía no tienes cursos de Moodle vigentes.</p>
             <AñadirCursoForm onSuccess={cargar} embebido />
@@ -82,7 +72,7 @@ const MisCursosMoodle = () => {
         )}
       </main>
 
-      <AulaFooter />
+      <MoodleFooter />
     </div>
   );
 };

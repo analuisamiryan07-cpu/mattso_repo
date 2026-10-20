@@ -43,6 +43,9 @@ import { NotificationsController } from './notifications/notifications.controlle
 import { MessagingService } from './messaging/messaging.service';
 import { MessagingController } from './messaging/messaging.controller';
 
+import { CalendarService } from './calendar/calendar.service';
+import { CalendarController } from './calendar/calendar.controller';
+
 // PrismaModule es @Global() — no requiere import. StorageModule, EmailModule
 // y AuthModule NO son globales (se importan explícitamente donde se usan,
 // igual que en OrdersModule), por eso se importan aquí.
@@ -62,6 +65,7 @@ import { MessagingController } from './messaging/messaging.controller';
     LmsGateController,
     NotificationsController,
     MessagingController,
+    CalendarController,
   ],
   providers: [
     EnrollmentService,
@@ -76,6 +80,7 @@ import { MessagingController } from './messaging/messaging.controller';
     LmsGateService,
     NotificationsService,
     MessagingService,
+    CalendarService,
   ],
   // EnrollmentService se exporta a propósito — OrdersModule y PaymentsModule
   // lo necesitan para inscribir al comprador en cuanto una orden se marca

@@ -6,7 +6,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { lmsService } from '@api/lmsService';
 import MoodleHeader from '@layout/MoodleHeader';
 import MoodleSubnav from '@layout/MoodleSubnav';
-import AulaFooter from '@layout/AulaFooter';
+import MoodleFooter from '@layout/MoodleFooter';
 import TileResumen from '@components/TileResumen';
 import { useIdioma } from '@context/IdiomaContext';
 import '@components/TileResumen.css';
@@ -50,7 +50,7 @@ const AreaPersonalMoodle = () => {
         <Calendario actividades={actividades} />
       </main>
 
-      <AulaFooter />
+      <MoodleFooter />
     </div>
   );
 };
@@ -125,16 +125,28 @@ const DIAS_SEMANA = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
 const Calendario = ({ actividades }) => {
   const { t } = useIdioma();
   const [mesBase, setMesBase] = useState(() => { const d = new Date(); d.setDate(1); return d; });
+  const [eventos, setEventos] = useState(null);
+  const [diaSeleccionado, setDiaSeleccionado] = useState(null); // 'YYYY-MM-DD'
+  const [mostrarForm, setMostrarForm] = useState(false);
 
-  const diasConActividad = useMemo(() => {
+  const cargarEventos = () => {
+    lmsService.getEventosPersonales().then(setEventos).catch(() => setEventos([]));
+  };
+  useEffect(cargarEventos, []);
+
+  // Un solo mapa clave=día con ambos tipos, para pintar los puntos y el
+  // detalle del día — las actividades (tareas/exámenes) son de solo
+  // lectura, los eventos personales se pueden borrar.
+  const diasConAlgo = useMemo(() => {
     const map = new Map();
-    (actividades || []).forEach((a) => {
-      const key = new Date(a.fecha_limite).toISOString().slice(0, 10);
+    const push = (key, item) => {
       if (!map.has(key)) map.set(key, []);
-      map.get(key).push(a);
-    });
+      map.get(key).push(item);
+    };
+    (actividades || []).forEach((a) => push(new Date(a.fecha_limite).toISOString().slice(0, 10), { ...a, origen: 'actividad' }));
+    (eventos || []).forEach((e) => push(new Date(e.fecha).toISOString().slice(0, 10), { ...e, origen: 'evento' }));
     return map;
-  }, [actividades]);
+  }, [actividades, eventos]);
 
   const primerDiaSemana = (mesBase.getDay() + 6) % 7; // lunes = 0
   const diasEnMes = new Date(mesBase.getFullYear(), mesBase.getMonth() + 1, 0).getDate();
@@ -145,20 +157,35 @@ const Calendario = ({ actividades }) => {
 
   const cambiarMes = (delta) => {
     setMesBase((d) => { const n = new Date(d); n.setMonth(n.getMonth() + delta); return n; });
+    setDiaSeleccionado(null);
+  };
+
+  const eliminarEvento = async (id) => {
+    await lmsService.eliminarEventoPersonal(id).catch(() => {});
+    cargarEventos();
   };
 
   const descargarIcs = () => {
     const lineas = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Sapper Industries//Aula Virtual//ES'];
+    const stampDe = (fecha) => `${new Date(fecha).toISOString().replace(/[-:]/g, '').split('.')[0]}Z`;
     (actividades || []).forEach((a) => {
-      const dt = new Date(a.fecha_limite);
-      const stamp = `${dt.toISOString().replace(/[-:]/g, '').split('.')[0]}Z`;
       lineas.push(
         'BEGIN:VEVENT',
         `UID:${a.content_item_id}@aula.sapper-industries.com`,
-        `DTSTAMP:${stamp}`,
-        `DTSTART:${stamp}`,
+        `DTSTAMP:${stampDe(a.fecha_limite)}`,
+        `DTSTART:${stampDe(a.fecha_limite)}`,
         `SUMMARY:${a.titulo.replace(/\r?\n/g, ' ')}`,
         `DESCRIPTION:${a.course_titulo} - ${a.modulo_titulo}`,
+        'END:VEVENT',
+      );
+    });
+    (eventos || []).forEach((e) => {
+      lineas.push(
+        'BEGIN:VEVENT',
+        `UID:${e.id}@aula.sapper-industries.com`,
+        `DTSTAMP:${stampDe(e.fecha)}`,
+        `DTSTART:${stampDe(e.fecha)}`,
+        `SUMMARY:${e.titulo.replace(/\r?\n/g, ' ')}`,
         'END:VEVENT',
       );
     });
@@ -173,15 +200,28 @@ const Calendario = ({ actividades }) => {
   };
 
   const nombreMes = mesBase.toLocaleDateString('es-EC', { month: 'long', year: 'numeric' });
+  const itemsDelDia = diaSeleccionado ? (diasConAlgo.get(diaSeleccionado) || []) : [];
 
   return (
     <section id="calendario" className="apm-seccion">
       <div className="apm-cal-header">
         <h2>{t('calendario')}</h2>
-        <button className="apm-descargar" onClick={descargarIcs}>
-          <i className="fa-solid fa-download" /> {t('descargar')}
-        </button>
+        <div className="apm-cal-header-btns">
+          <button className="apm-nuevo-evento" onClick={() => setMostrarForm((v) => !v)}>
+            <i className="fa-solid fa-plus" /> Nuevo evento
+          </button>
+          <button className="apm-descargar" onClick={descargarIcs}>
+            <i className="fa-solid fa-download" /> {t('descargar')}
+          </button>
+        </div>
       </div>
+
+      {mostrarForm && (
+        <NuevoEventoForm
+          onCreado={() => { setMostrarForm(false); cargarEventos(); }}
+          onCancel={() => setMostrarForm(false)}
+        />
+      )}
 
       <div className="apm-cal-nav">
         <button onClick={() => cambiarMes(-1)}><i className="fa-solid fa-chevron-left" /></button>
@@ -194,16 +234,71 @@ const Calendario = ({ actividades }) => {
         {celdas.map((dia, i) => {
           if (!dia) return <div key={`vacio-${i}`} className="apm-cal-cell apm-cal-cell--vacia" />;
           const key = new Date(mesBase.getFullYear(), mesBase.getMonth(), dia).toISOString().slice(0, 10);
-          const items = diasConActividad.get(key);
+          const items = diasConAlgo.get(key);
           return (
-            <div key={dia} className={`apm-cal-cell ${items ? 'apm-cal-cell--con-actividad' : ''}`}>
+            <button
+              key={dia}
+              className={`apm-cal-cell ${items ? 'apm-cal-cell--con-actividad' : ''} ${diaSeleccionado === key ? 'apm-cal-cell--seleccionada' : ''}`}
+              onClick={() => setDiaSeleccionado(key === diaSeleccionado ? null : key)}
+            >
               <span>{dia}</span>
               {items && <i className="fa-solid fa-circle apm-cal-dot" title={items.map((x) => x.titulo).join(', ')} />}
-            </div>
+            </button>
           );
         })}
       </div>
+
+      {diaSeleccionado && (
+        <div className="apm-dia-detalle">
+          <h3>{new Date(`${diaSeleccionado}T00:00:00`).toLocaleDateString('es-EC', { dateStyle: 'full' })}</h3>
+          {itemsDelDia.length === 0 && <p className="apm-vacio">Nada para este día.</p>}
+          <ul>
+            {itemsDelDia.map((item) => (
+              <li key={`${item.origen}-${item.id || item.content_item_id}`}>
+                <span>{item.titulo}</span>
+                {item.origen === 'evento' && (
+                  <button className="apm-borrar-evento" onClick={() => eliminarEvento(item.id)} title="Eliminar">
+                    <i className="fa-solid fa-trash" />
+                  </button>
+                )}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
     </section>
+  );
+};
+
+const NuevoEventoForm = ({ onCreado, onCancel }) => {
+  const [titulo, setTitulo] = useState('');
+  const [fecha, setFecha] = useState('');
+  const [error, setError] = useState('');
+  const [guardando, setGuardando] = useState(false);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!titulo.trim() || !fecha) { setError('Completa el título y la fecha.'); return; }
+    setGuardando(true);
+    setError('');
+    try {
+      await lmsService.crearEventoPersonal(titulo.trim(), new Date(fecha).toISOString());
+      onCreado();
+    } catch (err) {
+      setError(err.response?.data?.message || 'No se pudo crear el evento.');
+    } finally {
+      setGuardando(false);
+    }
+  };
+
+  return (
+    <form className="apm-evento-form" onSubmit={handleSubmit}>
+      <input type="text" placeholder="Título del evento" value={titulo} onChange={(e) => setTitulo(e.target.value)} />
+      <input type="datetime-local" value={fecha} onChange={(e) => setFecha(e.target.value)} />
+      <button type="submit" disabled={guardando}>{guardando ? 'Guardando…' : 'Guardar'}</button>
+      <button type="button" onClick={onCancel}>Cancelar</button>
+      {error && <p className="apm-error">{error}</p>}
+    </form>
   );
 };
 

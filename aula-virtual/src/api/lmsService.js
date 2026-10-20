@@ -145,4 +145,20 @@ export const lmsService = {
     const { data } = await apiClient.post(`/lms/notifications/${id}/leido`);
     return data;
   },
+
+  // ── Calendario (eventos personales, solo Moodle) ───────────────────────
+  async getEventosPersonales() {
+    const { data } = await apiClient.get('/lms/calendar/eventos');
+    return data;
+  },
+
+  async crearEventoPersonal(titulo, fecha) {
+    const { data } = await apiClient.post('/lms/calendar/eventos', { titulo, fecha });
+    return data;
+  },
+
+  async eliminarEventoPersonal(id) {
+    const { data } = await apiClient.delete(`/lms/calendar/eventos/${id}`);
+    return data;
+  },
 };

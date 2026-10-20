@@ -248,6 +248,7 @@ model UsuarioWeb {
   conversaciones_profesor  Conversation[]  @relation("ConversacionesComoProfesor")
   mensajes_enviados        Message[]
   notificaciones           Notification[]
+  eventos_personales       PersonalEvent[]
 
   @@schema("public")
   @@map("usuarios_web")
@@ -843,5 +844,23 @@ model Notification {
 
   @@index([usuario_id])
   @@map("notifications")
+  @@schema("lms")
+}
+
+// Eventos que el propio estudiante agrega al calendario de Moodle ("Nuevo
+// evento") — no están ligados a ningún curso ni content_item, a diferencia
+// de las fechas límite de tareas/exámenes (esas ya vienen de
+// ContentItem.fecha_limite, ver CoursesService.getLineaDeTiempo).
+model PersonalEvent {
+  id         String   @id @default(uuid()) @db.Uuid
+  usuario_id BigInt
+  titulo     String   @db.VarChar(200)
+  fecha      DateTime @db.Timestamptz
+  created_at DateTime @default(now()) @db.Timestamptz
+
+  usuario UsuarioWeb @relation(fields: [usuario_id], references: [id], onDelete: Cascade)
+
+  @@index([usuario_id])
+  @@map("personal_events")
   @@schema("lms")
 }

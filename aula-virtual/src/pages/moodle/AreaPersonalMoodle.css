@@ -60,14 +60,14 @@
 .apm-tag--pendiente { background: #fef9c3; color: #854d0e; }
 
 /* Calendario */
-.apm-cal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+.apm-cal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; flex-wrap: wrap; gap: 10px; }
 .apm-cal-header h2 { margin: 0; }
-.apm-descargar {
+.apm-cal-header-btns { display: flex; gap: 10px; }
+.apm-descargar,
+.apm-nuevo-evento {
   display: flex;
   align-items: center;
   gap: 8px;
-  background: var(--primary-blue);
-  color: #fff;
   border: none;
   border-radius: 999px;
   padding: 9px 16px;
@@ -75,6 +75,30 @@
   font-weight: 700;
   cursor: pointer;
 }
+.apm-descargar { background: var(--primary-blue); color: #fff; }
+.apm-nuevo-evento { background: var(--primary-yellow); color: var(--primary-blue); }
+
+.apm-evento-form {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+  background: #fff;
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-sm);
+  padding: 14px 16px;
+  margin-bottom: 16px;
+}
+.apm-evento-form input {
+  padding: 8px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  font-size: 0.82rem;
+}
+.apm-evento-form input[type="text"] { flex: 1; min-width: 180px; }
+.apm-evento-form button[type="submit"] { background: var(--primary-blue); color: #fff; border: none; border-radius: var(--radius-sm); padding: 8px 16px; font-size: 0.8rem; font-weight: 700; cursor: pointer; }
+.apm-evento-form button[type="button"] { background: none; border: none; color: var(--text-muted); font-size: 0.8rem; cursor: pointer; }
+.apm-error { color: #dc2626; font-size: 0.78rem; width: 100%; margin: 0; }
 
 .apm-cal-nav {
   display: flex;
@@ -106,7 +130,33 @@
   border-radius: var(--radius-sm);
   font-size: 0.8rem;
   color: var(--text-dark);
+  background: none;
+  border: none;
+  font-family: inherit;
+  cursor: pointer;
 }
-.apm-cal-cell--vacia { visibility: hidden; }
+.apm-cal-cell--vacia { visibility: hidden; cursor: default; }
 .apm-cal-cell--con-actividad { background: var(--bg-light); font-weight: 700; }
+.apm-cal-cell--seleccionada { outline: 2px solid var(--primary-blue); }
 .apm-cal-dot { font-size: 6px; color: var(--primary-yellow-dark); }
+
+.apm-dia-detalle {
+  background: #fff;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  padding: 16px 18px;
+  margin-top: 10px;
+}
+.apm-dia-detalle h3 { font-size: 0.88rem; color: var(--primary-blue); margin: 0 0 10px; text-transform: capitalize; }
+.apm-dia-detalle ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.apm-dia-detalle li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.82rem;
+  color: var(--text-dark);
+  background: var(--bg-light);
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+}
+.apm-borrar-evento { background: none; border: none; color: #dc2626; cursor: pointer; font-size: 0.8rem; }
