@@ -120,7 +120,7 @@ const LineaDeTiempo = ({ actividades }) => {
   );
 };
 
-const DIAS_SEMANA = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
+const DIAS_SEMANA = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
 
 const Calendario = ({ actividades }) => {
   const { t } = useIdioma();
@@ -158,6 +158,12 @@ const Calendario = ({ actividades }) => {
   const cambiarMes = (delta) => {
     setMesBase((d) => { const n = new Date(d); n.setMonth(n.getMonth() + delta); return n; });
     setDiaSeleccionado(null);
+    setMostrarForm(false);
+  };
+
+  const seleccionarDia = (key) => {
+    setDiaSeleccionado(key === diaSeleccionado ? null : key);
+    setMostrarForm(false);
   };
 
   const eliminarEvento = async (id) => {
@@ -206,22 +212,11 @@ const Calendario = ({ actividades }) => {
     <section id="calendario" className="apm-seccion">
       <div className="apm-cal-header">
         <h2>{t('calendario')}</h2>
-        <div className="apm-cal-header-btns">
-          <button className="apm-nuevo-evento" onClick={() => setMostrarForm((v) => !v)}>
-            <i className="fa-solid fa-plus" /> Nuevo evento
-          </button>
-          <button className="apm-descargar" onClick={descargarIcs}>
-            <i className="fa-solid fa-download" /> {t('descargar')}
-          </button>
-        </div>
+        <button className="apm-descargar" onClick={descargarIcs}>
+          <i className="fa-solid fa-download" /> {t('descargar')}
+        </button>
       </div>
-
-      {mostrarForm && (
-        <NuevoEventoForm
-          onCreado={() => { setMostrarForm(false); cargarEventos(); }}
-          onCancel={() => setMostrarForm(false)}
-        />
-      )}
+      <p className="apm-cal-ayuda">Haz clic en un día del calendario para ver o agregar un evento ese día.</p>
 
       <div className="apm-cal-nav">
         <button onClick={() => cambiarMes(-1)}><i className="fa-solid fa-chevron-left" /></button>
@@ -239,9 +234,9 @@ const Calendario = ({ actividades }) => {
             <button
               key={dia}
               className={`apm-cal-cell ${items ? 'apm-cal-cell--con-actividad' : ''} ${diaSeleccionado === key ? 'apm-cal-cell--seleccionada' : ''}`}
-              onClick={() => setDiaSeleccionado(key === diaSeleccionado ? null : key)}
+              onClick={() => seleccionarDia(key)}
             >
-              <span>{dia}</span>
+              <span className="apm-cal-numero">{dia}</span>
               {items && <i className="fa-solid fa-circle apm-cal-dot" title={items.map((x) => x.titulo).join(', ')} />}
             </button>
           );
@@ -250,8 +245,22 @@ const Calendario = ({ actividades }) => {
 
       {diaSeleccionado && (
         <div className="apm-dia-detalle">
-          <h3>{new Date(`${diaSeleccionado}T00:00:00`).toLocaleDateString('es-EC', { dateStyle: 'full' })}</h3>
-          {itemsDelDia.length === 0 && <p className="apm-vacio">Nada para este día.</p>}
+          <div className="apm-dia-detalle-header">
+            <h3>{new Date(`${diaSeleccionado}T00:00:00`).toLocaleDateString('es-EC', { dateStyle: 'full' })}</h3>
+            <button className="apm-nuevo-evento" onClick={() => setMostrarForm((v) => !v)}>
+              <i className="fa-solid fa-plus" /> Agregar evento
+            </button>
+          </div>
+
+          {mostrarForm && (
+            <NuevoEventoForm
+              fechaBase={diaSeleccionado}
+              onCreado={() => { setMostrarForm(false); cargarEventos(); }}
+              onCancel={() => setMostrarForm(false)}
+            />
+          )}
+
+          {itemsDelDia.length === 0 && !mostrarForm && <p className="apm-vacio">Nada para este día.</p>}
           <ul>
             {itemsDelDia.map((item) => (
               <li key={`${item.origen}-${item.id || item.content_item_id}`}>
@@ -270,19 +279,21 @@ const Calendario = ({ actividades }) => {
   );
 };
 
-const NuevoEventoForm = ({ onCreado, onCancel }) => {
+// La fecha ya viene fija (el día que se presionó en el calendario) — solo
+// se pide el título y la hora, tal como lo pidió la usuaria.
+const NuevoEventoForm = ({ fechaBase, onCreado, onCancel }) => {
   const [titulo, setTitulo] = useState('');
-  const [fecha, setFecha] = useState('');
+  const [hora, setHora] = useState('12:00');
   const [error, setError] = useState('');
   const [guardando, setGuardando] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!titulo.trim() || !fecha) { setError('Completa el título y la fecha.'); return; }
+    if (!titulo.trim()) { setError('Escribe un título para el evento.'); return; }
     setGuardando(true);
     setError('');
     try {
-      await lmsService.crearEventoPersonal(titulo.trim(), new Date(fecha).toISOString());
+      await lmsService.crearEventoPersonal(titulo.trim(), new Date(`${fechaBase}T${hora}:00`).toISOString());
       onCreado();
     } catch (err) {
       setError(err.response?.data?.message || 'No se pudo crear el evento.');
@@ -293,8 +304,8 @@ const NuevoEventoForm = ({ onCreado, onCancel }) => {
 
   return (
     <form className="apm-evento-form" onSubmit={handleSubmit}>
-      <input type="text" placeholder="Título del evento" value={titulo} onChange={(e) => setTitulo(e.target.value)} />
-      <input type="datetime-local" value={fecha} onChange={(e) => setFecha(e.target.value)} />
+      <input type="text" placeholder="Título del evento" value={titulo} onChange={(e) => setTitulo(e.target.value)} autoFocus />
+      <input type="time" value={hora} onChange={(e) => setHora(e.target.value)} />
       <button type="submit" disabled={guardando}>{guardando ? 'Guardando…' : 'Guardar'}</button>
       <button type="button" onClick={onCancel}>Cancelar</button>
       {error && <p className="apm-error">{error}</p>}
