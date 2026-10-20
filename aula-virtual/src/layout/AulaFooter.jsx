@@ -1,6 +1,7 @@
-// Pie de página compartido del Aula Virtual — mismo logo y redes sociales
-// que el footer del sitio público (ver src/components/layout/Footer.jsx en
-// la raíz del proyecto), para no inventar enlaces nuevos.
+// Pie de página compartido del Aula Virtual — copia fiel del footer del
+// sitio público (src/components/layout/Footer.jsx en la raíz), con las
+// mismas 3 columnas (logo, contacto, redes), para que sea el mismo en
+// todas las pantallas de estudiante.
 
 import './AulaFooter.css';
 
@@ -19,25 +20,43 @@ const SOCIAL_LINKS = [
 const AulaFooter = () => (
   <footer className="af-footer">
     <div className="af-top">
-      <img src={logoImg} alt="Sapper Industries" className="af-logo" />
-      <div className="af-social">
-        <span>Síguenos</span>
-        <div className="af-social-icons">
-          {SOCIAL_LINKS.map((s) => (
-            <a
-              key={s.label}
-              href={s.href}
-              target={s.href.startsWith('mailto') ? undefined : '_blank'}
-              rel="noopener noreferrer"
-              aria-label={s.label}
-              title={s.label}
-            >
-              <i className={s.icon} />
-            </a>
-          ))}
+      <div className="af-container">
+        <div className="af-logo-section">
+          <img src={logoImg} alt="Sapper Industries Logo" className="af-logo" />
+        </div>
+
+        <div className="af-info-section">
+          <p><i className="fa-solid fa-location-dot" /> Dirección: Av. 10 de Agosto N32-140 entre Mariana de Jesús y Las Guayanas.</p>
+          <p>
+            <i className="fa-regular fa-envelope" />
+            <a href="mailto:matssoecuador@gmail.com" className="af-link">matssoecuador@gmail.com</a>
+          </p>
+          <p>
+            <i className="fa-brands fa-whatsapp" />
+            <a href="https://wa.me/593983555081" target="_blank" rel="noopener noreferrer" className="af-link">+593 98 355 5081</a>
+          </p>
+        </div>
+
+        <div className="af-social-section">
+          <h3>Síguenos</h3>
+          <div className="af-social-icons">
+            {SOCIAL_LINKS.map((s) => (
+              <a
+                key={s.label}
+                href={s.href}
+                target={s.href.startsWith('mailto') ? undefined : '_blank'}
+                rel="noopener noreferrer"
+                aria-label={s.label}
+                title={s.label}
+              >
+                <i className={s.icon} />
+              </a>
+            ))}
+          </div>
         </div>
       </div>
     </div>
+
     <div className="af-bottom">© 2026 Sapper Industries. Todos los derechos reservados.</div>
   </footer>
 );

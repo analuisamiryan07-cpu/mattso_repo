@@ -27,13 +27,21 @@ import CursoProfesor from '@pages/profesor/CursoProfesor';
 
 // Decide entre "Ingresa tu clave" (sin ningún curso vigente todavía) y el
 // Panel General (al menos un curso) — se resuelve una sola vez al entrar.
+// Si la verificación falla (token vencido, red, lo que sea), NUNCA se debe
+// asumir que sí tiene cursos para dejarlo pasar al Panel General — se cierra
+// la sesión y se manda a login, igual que hace el interceptor de 401 en
+// client.js. "Sin verificar que sí tiene un curso vigente, no entra" por
+// ningún motivo.
 const Landing = () => {
   const [sinCursos, setSinCursos] = useState(null); // null = cargando
 
   const revisar = () => {
     lmsService.getMisCursos()
       .then((data) => setSinCursos(data.moodle.length === 0 && data.coursera.length === 0))
-      .catch(() => setSinCursos(false));
+      .catch(() => {
+        authService.logout();
+        window.dispatchEvent(new Event('auth:logout'));
+      });
   };
 
   useEffect(revisar, []);
