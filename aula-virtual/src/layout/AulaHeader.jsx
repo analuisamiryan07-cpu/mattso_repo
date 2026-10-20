@@ -14,9 +14,9 @@
 //   nombre/correo ("ver perfil") y cerrar sesión.
 
 import { useEffect, useRef, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { authService } from '@api/authService';
+import { Link } from 'react-router-dom';
 import { lmsService } from '@api/lmsService';
+import MenuPerfil from './MenuPerfil';
 import './AulaHeader.css';
 
 const logoImg = 'https://res.cloudinary.com/ehglt8h8/image/upload/v1784925646/Logo_1.png';
@@ -91,47 +91,6 @@ const BuscadorCursos = () => {
               </Link>
             ))
           )}
-        </div>
-      )}
-    </div>
-  );
-};
-
-const MenuPerfil = () => {
-  const [abierto, setAbierto] = useState(false);
-  const cajaRef = useRef(null);
-  const navigate = useNavigate();
-  const user = authService.getCurrentUser();
-
-  useEffect(() => {
-    const cerrarSiFueraDeLaCaja = (e) => {
-      if (cajaRef.current && !cajaRef.current.contains(e.target)) setAbierto(false);
-    };
-    document.addEventListener('mousedown', cerrarSiFueraDeLaCaja);
-    return () => document.removeEventListener('mousedown', cerrarSiFueraDeLaCaja);
-  }, []);
-
-  const handleLogout = () => {
-    authService.logout();
-    navigate('/');
-    window.location.reload();
-  };
-
-  const iniciales = (user?.nombre || '?').trim().split(/\s+/).slice(0, 2).map((p) => p[0]).join('').toUpperCase();
-
-  return (
-    <div className="ah-profile" ref={cajaRef}>
-      <button className="ah-avatar" onClick={() => setAbierto((v) => !v)} title="Ver perfil">
-        {iniciales}
-      </button>
-      {abierto && (
-        <div className="ah-profile-menu">
-          <p className="ah-profile-nombre">{user?.nombre}</p>
-          <p className="ah-profile-correo">{user?.correo}</p>
-          <hr />
-          <button className="ah-profile-logout" onClick={handleLogout}>
-            <i className="fa-solid fa-right-from-bracket" /> Cerrar sesión
-          </button>
         </div>
       )}
     </div>

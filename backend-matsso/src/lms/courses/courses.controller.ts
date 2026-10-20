@@ -31,6 +31,13 @@ export class CoursesController {
     return this.coursesService.getResumenModalidad(req.user.id, mode as DeliveryModeValue);
   }
 
+  // Línea de tiempo / calendario de Moodle — mismo motivo que 'resumen', debe
+  // ir ANTES de ':courseId'.
+  @Get('linea-de-tiempo')
+  getLineaDeTiempo(@Req() req: any) {
+    return this.coursesService.getLineaDeTiempo(req.user.id);
+  }
+
   // ?mode=TRADICIONAL (Moodle) | ASINCRONO_VOD (Coursera) — un curso "ambos"
   // necesita saber cuál de sus dos árboles de contenido se está pidiendo.
   @Get(':courseId')

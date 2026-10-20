@@ -24,7 +24,7 @@ const CursoProfesor = () => {
   const [moduloActivo, setModuloActivo] = useState(null);
   const [nuevoModulo, setNuevoModulo] = useState('');
   const [nuevoModuloModo, setNuevoModuloModo] = useState('TRADICIONAL');
-  const [nuevoContenido, setNuevoContenido] = useState({ titulo: '', item_type: 'DOCUMENT', cloudinary_url: '', video_duration_seconds: '', assignment_instructions: '' });
+  const [nuevoContenido, setNuevoContenido] = useState({ titulo: '', item_type: 'DOCUMENT', cloudinary_url: '', video_duration_seconds: '', assignment_instructions: '', fecha_limite: '' });
   const [guardando, setGuardando] = useState(false);
 
   const cargar = () => {
@@ -76,9 +76,10 @@ const CursoProfesor = () => {
         cloudinary_public_id: nuevoContenido.cloudinary_url ? nuevoContenido.titulo : undefined,
         video_duration_seconds: nuevoContenido.video_duration_seconds ? Number(nuevoContenido.video_duration_seconds) : undefined,
         assignment_instructions: nuevoContenido.assignment_instructions || undefined,
+        fecha_limite: nuevoContenido.fecha_limite ? new Date(nuevoContenido.fecha_limite).toISOString() : undefined,
       });
       addToast('Contenido agregado.', 'success');
-      setNuevoContenido({ titulo: '', item_type: 'DOCUMENT', cloudinary_url: '', video_duration_seconds: '', assignment_instructions: '' });
+      setNuevoContenido({ titulo: '', item_type: 'DOCUMENT', cloudinary_url: '', video_duration_seconds: '', assignment_instructions: '', fecha_limite: '' });
       cargar();
     } catch (err) {
       addToast(err.response?.data?.message || 'No se pudo agregar el contenido.', 'error');
@@ -173,6 +174,17 @@ const CursoProfesor = () => {
             )}
             {nuevoContenido.item_type === 'QUIZ' && (
               <p className="cp-hint">El contenido QUIZ se crea vacío — las preguntas se agregan después (todavía no tiene formulario aquí).</p>
+            )}
+
+            {(nuevoContenido.item_type === 'ASSIGNMENT' || nuevoContenido.item_type === 'QUIZ') && (
+              <label className="cp-fecha-limite">
+                Fecha límite (opcional — aparece en la línea de tiempo y el calendario del estudiante)
+                <input
+                  type="datetime-local"
+                  value={nuevoContenido.fecha_limite}
+                  onChange={(e) => setNuevoContenido((p) => ({ ...p, fecha_limite: e.target.value }))}
+                />
+              </label>
             )}
 
             <div className="cp-form-actions">

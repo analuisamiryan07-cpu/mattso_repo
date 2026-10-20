@@ -197,6 +197,7 @@ export class AdminCoursesService {
         video_duration_seconds: dto.video_duration_seconds ?? null,
         assignment_instructions: sanitizePlainText(dto.assignment_instructions) ?? null,
         body_text: sanitizePlainText(dto.body_text) ?? null,
+        fecha_limite: dto.fecha_limite ? new Date(dto.fecha_limite) : null,
       },
     });
     this.logger.log(`[${actor}] creó contenido ${item.id} (${item.item_type}) en módulo ${moduleId}`);

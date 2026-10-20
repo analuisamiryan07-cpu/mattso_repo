@@ -1,0 +1,37 @@
+.mcm-shell {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-color);
+}
+
+.mcm-main {
+  flex: 1;
+  max-width: 1100px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 32px 24px 80px;
+}
+
+.mcm-buscador {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #fff;
+  border: 1px solid var(--border-color);
+  border-radius: 999px;
+  padding: 10px 18px;
+  max-width: 420px;
+  margin-bottom: 24px;
+}
+.mcm-buscador i { color: var(--text-muted); font-size: 13px; }
+.mcm-buscador input { flex: 1; border: none; outline: none; font-size: 0.85rem; }
+
+.mcm-vacio {
+  background: #fff8e6;
+  border: 1px solid #ffe3a0;
+  border-radius: var(--radius-md);
+  padding: 28px 20px;
+  text-align: center;
+}
+.mcm-vacio p { margin: 0 0 4px; color: var(--text-muted); }

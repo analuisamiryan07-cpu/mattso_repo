@@ -10,7 +10,7 @@ import { lmsService } from '@api/lmsService';
 import VideoPlayer from '@components/VideoPlayer';
 import QuizRunner from '@components/QuizRunner';
 import EntregaTarea from '@components/EntregaTarea';
-import AulaHeader from '@layout/AulaHeader';
+import MoodleHeader from '@layout/MoodleHeader';
 import AulaFooter from '@layout/AulaFooter';
 import BackButton from '@layout/BackButton';
 import './CursoTradicional.css';
@@ -36,7 +36,7 @@ const CursoTradicional = () => {
   if (error) {
     return (
       <div className="lms-shell">
-        <AulaHeader variant="area" />
+        <MoodleHeader />
         <div className="lms-page"><p className="lms-error">{error}</p></div>
         <AulaFooter />
       </div>
@@ -45,7 +45,7 @@ const CursoTradicional = () => {
   if (!detalle) {
     return (
       <div className="lms-shell">
-        <AulaHeader variant="area" />
+        <MoodleHeader />
         <div className="lms-page"><p>Cargando…</p></div>
         <AulaFooter />
       </div>
@@ -61,7 +61,7 @@ const CursoTradicional = () => {
 
   return (
     <div className="lms-shell">
-      <AulaHeader variant="area" />
+      <MoodleHeader />
       <div className="lms-page">
       <BackButton to="/moodle" label="Volver a Moodle" />
       <h1 className="lms-page-title">{detalle.course.titulo}</h1>

@@ -7,6 +7,7 @@
 import {
   IsIn,
   IsInt,
+  IsISO8601,
   IsNotEmpty,
   IsOptional,
   IsString,
@@ -61,4 +62,11 @@ export class CreateContentItemDto {
   @IsString()
   @IsNotEmpty({ message: 'body_text es obligatorio para contenido DOCUMENT.' })
   body_text?: string;
+
+  // Opcional, cualquier tipo (sobre todo ASSIGNMENT/QUIZ) — alimenta la línea
+  // de tiempo y el calendario de Moodle en el Aula Virtual. Sin fecha límite,
+  // el contenido simplemente no aparece en ninguno de los dos.
+  @IsOptional()
+  @IsISO8601()
+  fecha_limite?: string;
 }

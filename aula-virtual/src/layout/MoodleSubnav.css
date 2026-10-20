@@ -1,0 +1,21 @@
+.msn-bar {
+  background: #0a3566;
+  display: flex;
+  gap: 4px;
+  padding: 0 24px;
+}
+
+.msn-btn {
+  padding: 12px 20px;
+  color: #c7d3e0;
+  text-decoration: none;
+  font-size: 13.5px;
+  font-weight: 600;
+  border-bottom: 3px solid transparent;
+  transition: all var(--transition);
+}
+.msn-btn:hover { color: #fff; }
+.msn-btn.is-active {
+  color: #fff;
+  border-bottom-color: var(--primary-yellow);
+}

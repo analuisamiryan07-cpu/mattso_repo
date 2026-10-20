@@ -1,0 +1,19 @@
+.tr-tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+}
+
+.tr-tile {
+  background: #fff;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  padding: 22px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+}
+.tr-tile i { color: var(--primary-yellow-dark); font-size: 20px; margin-bottom: 4px; }
+.tr-tile strong { font-size: 1.6rem; color: var(--primary-blue); }
+.tr-tile span { font-size: 0.8rem; color: var(--text-muted); }
