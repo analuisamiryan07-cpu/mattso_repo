@@ -11,7 +11,7 @@ import VideoPlayer from '@components/VideoPlayer';
 import QuizRunner from '@components/QuizRunner';
 import EntregaTarea from '@components/EntregaTarea';
 import MoodleHeader from '@layout/MoodleHeader';
-import AulaFooter from '@layout/AulaFooter';
+import MoodleFooter from '@layout/MoodleFooter';
 import BackButton from '@layout/BackButton';
 import './CursoTradicional.css';
 
@@ -38,7 +38,7 @@ const CursoTradicional = () => {
       <div className="lms-shell">
         <MoodleHeader />
         <div className="lms-page"><p className="lms-error">{error}</p></div>
-        <AulaFooter />
+        <MoodleFooter />
       </div>
     );
   }
@@ -47,7 +47,7 @@ const CursoTradicional = () => {
       <div className="lms-shell">
         <MoodleHeader />
         <div className="lms-page"><p>Cargando…</p></div>
-        <AulaFooter />
+        <MoodleFooter />
       </div>
     );
   }
@@ -148,7 +148,7 @@ const CursoTradicional = () => {
         </div>
       )}
       </div>
-      <AulaFooter />
+      <MoodleFooter />
     </div>
   );
 };

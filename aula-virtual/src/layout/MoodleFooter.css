@@ -1,0 +1,30 @@
+.mf-footer { margin-top: auto; }
+
+.mf-logo-band {
+  background: var(--primary-blue);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+.mf-logo { height: 46px; filter: brightness(0) invert(1); }
+
+.mf-info-band {
+  background: #0a3566;
+  color: #c7d3e0;
+  padding: 16px 28px;
+  font-size: 0.82rem;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.mf-info-band a { color: #fff; text-decoration: underline; }
+.mf-info-band a:hover { color: var(--primary-yellow); }
+
+.mf-bottom {
+  background: #061f3f;
+  color: #8fa2bd;
+  text-align: center;
+  font-size: 0.75rem;
+  padding: 12px;
+}
