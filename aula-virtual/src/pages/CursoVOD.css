@@ -1,85 +1,7 @@
-
-.lms-curso-layout {
-  display: grid;
-  grid-template-columns: 280px 1fr;
-  gap: 28px;
-  align-items: start;
-}
-
-.lms-curso-nav {
-  background: #fff;
-  border: 1px solid #e2e9e6;
-  border-radius: 12px;
-  padding: 16px;
-  position: sticky;
-  top: 20px;
-}
-
-.lms-mod {
-  margin-bottom: 16px;
-}
-.lms-mod:last-child { margin-bottom: 0; }
-
-.lms-mod-title {
-  font-weight: 600;
-  font-size: 13.5px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin: 0 0 8px;
-  color: #16211f;
-}
-.lms-mod.is-locked .lms-mod-title {
-  color: #7c8c87;
-}
-
-.lms-mod-items {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.lms-item-btn {
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  width: 100%;
-  text-align: left;
-  background: none;
-  border: none;
-  border-radius: 8px;
-  padding: 8px 10px;
-  font-size: 13.5px;
-  cursor: pointer;
-  color: #4b5c57;
-}
-.lms-item-btn:hover:not(:disabled) {
-  background: #e2e9e6;
-}
-.lms-item-btn.is-active {
-  background: #dbeeee;
-  color: #0d4348;
-  font-weight: 600;
-}
-.lms-item-btn.is-completed i {
-  color: #2e9d63;
-}
-.lms-item-btn:disabled {
-  color: #b7c3be;
-  cursor: not-allowed;
-}
-
-.lms-curso-content {
-  background: #fff;
-  border: 1px solid #e2e9e6;
-  border-radius: 12px;
-  padding: 24px;
-  min-height: 400px;
-}
-
+/* Clases genéricas usadas también por otros componentes compartidos
+   (EntregaTarea.jsx, QuizRunner.jsx, CursoTradicional.jsx) — se quedan
+   definidas aquí aunque el layout de esta página ya no sea el que las
+   introdujo originalmente. */
 .lms-document {
   text-align: center;
   padding: 40px 20px;
@@ -88,12 +10,125 @@
   font-size: 16px;
   margin-bottom: 18px;
 }
+.lms-btn-primary {
+  background: var(--primary-yellow, #ffb800);
+  color: #0f2826;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 20px;
+  font-size: 13.5px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.lms-btn-primary:disabled { opacity: 0.6; cursor: default; }
 
-@media (max-width: 800px) {
-  .lms-curso-layout {
-    grid-template-columns: 1fr;
-  }
-  .lms-curso-nav {
-    position: static;
-  }
+/* Portada del curso */
+.cv-portada {
+  display: flex;
+  gap: 24px;
+  align-items: center;
+  background: #fff;
+  border: 1px solid #e2e9e6;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+.cv-portada-img {
+  width: 220px;
+  height: 140px;
+  object-fit: cover;
+  border-radius: 10px;
+  flex: none;
+}
+.cv-portada-texto { flex: 1; min-width: 220px; }
+.cv-portada-texto .lms-page-title { margin-bottom: 8px; }
+.cv-portada-texto p { font-size: 14px; color: #4b5c57; line-height: 1.5; }
+
+/* Tarjetas de módulo desplegables */
+.cv-modulos { display: flex; flex-direction: column; gap: 14px; }
+
+.cv-mod-card {
+  background: #fff;
+  border: 1px solid #e2e9e6;
+  border-radius: 12px;
+  overflow: hidden;
+}
+.cv-mod-card.is-locked { opacity: 0.75; }
+
+.cv-mod-header {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: none;
+  border: none;
+  padding: 18px 20px;
+  cursor: pointer;
+  text-align: left;
+}
+.cv-mod-numero {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--primary-blue);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 14px;
+  flex: none;
+}
+.cv-mod-card.is-locked .cv-mod-numero { background: #b7c3be; }
+.cv-mod-titulo { flex: 1; font-size: 15px; font-weight: 700; color: #16211f; }
+.cv-mod-caret { color: var(--text-muted); font-size: 13px; }
+
+.cv-mod-body { padding: 0 20px 20px; border-top: 1px solid #e2e9e6; }
+.cv-mod-intro { font-size: 13.5px; color: #4b5c57; line-height: 1.6; margin: 16px 0; }
+.cv-mod-bloqueado { font-size: 13px; color: #b8860b; background: #fff8e6; padding: 10px 14px; border-radius: 8px; margin: 16px 0; }
+
+.cv-mod-seccion { margin-top: 18px; }
+.cv-mod-seccion h3 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--text-muted);
+  margin: 0 0 8px;
+}
+.cv-mod-seccion ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+
+.cv-item-btn {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 13.5px;
+  cursor: pointer;
+  color: #4b5c57;
+}
+.cv-item-btn:hover:not(:disabled) { background: #e2e9e6; }
+.cv-item-btn.is-active { background: #dbeeee; color: #0d4348; font-weight: 600; }
+.cv-item-btn.is-completed i { color: #2e9d63; }
+.cv-item-btn:disabled { color: #b7c3be; cursor: not-allowed; }
+
+.cv-item-contenido {
+  background: var(--bg-light);
+  border-radius: 10px;
+  padding: 18px;
+  margin: 6px 0 10px;
+}
+.cv-lectura-texto { font-size: 14px; color: #16211f; line-height: 1.6; white-space: pre-wrap; margin-bottom: 16px; }
+
+@media (max-width: 700px) {
+  .cv-portada { flex-direction: column; }
+  .cv-portada-img { width: 100%; height: 180px; }
 }
