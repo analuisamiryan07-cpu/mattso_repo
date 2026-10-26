@@ -115,8 +115,7 @@
 .apm-cal-grid {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  gap: 1px;
-  background: var(--border-color);
+  background: #fff;
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-sm);
@@ -132,9 +131,12 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  border: 1px solid var(--border-color);
+  border-top: none;
 }
+.apm-cal-dow:first-child { border-left: none; }
 .apm-cal-cell {
-  min-height: 86px;
+  min-height: 92px;
   position: relative;
   display: flex;
   flex-direction: column;
@@ -145,15 +147,29 @@
   font-size: 0.8rem;
   color: var(--text-dark);
   background: #fff;
-  border: none;
+  border: 1px solid var(--border-color);
+  border-top: none;
+  border-left: none;
   font-family: inherit;
-  cursor: pointer;
   text-align: left;
 }
-.apm-cal-numero { line-height: 1; }
-.apm-cal-cell--vacia { background: var(--bg-light); visibility: hidden; cursor: default; }
+.apm-cal-grid > .apm-cal-cell:nth-child(7n+1),
+.apm-cal-grid > .apm-cal-dow:first-child { border-left: none; }
+.apm-cal-numero {
+  line-height: 1;
+  background: none;
+  border: none;
+  padding: 2px 4px;
+  font-size: 0.8rem;
+  font-family: inherit;
+  color: inherit;
+  cursor: pointer;
+  border-radius: 4px;
+}
+.apm-cal-numero:hover { background: var(--bg-light); }
+.apm-cal-cell--vacia { background: var(--bg-light); visibility: hidden; }
 .apm-cal-cell--con-actividad .apm-cal-numero { color: var(--primary-blue); font-weight: 800; }
-.apm-cal-cell--seleccionada { outline: 2px solid var(--primary-blue); outline-offset: -2px; }
+.apm-cal-cell--seleccionada { outline: 2px solid var(--primary-blue); outline-offset: -2px; z-index: 1; }
 
 .apm-cal-chips { display: flex; flex-direction: column; gap: 3px; width: 100%; }
 .apm-cal-chip {
@@ -166,10 +182,14 @@
   font-weight: 600;
   padding: 2px 6px;
   border-radius: 4px;
+  border: none;
+  font-family: inherit;
+  cursor: pointer;
+  text-align: left;
 }
 .apm-cal-chip--actividad { background: #e0ecff; color: #1d4ed8; }
 .apm-cal-chip--evento { background: #fef3c7; color: #92400e; }
-.apm-cal-chip-mas { font-size: 0.62rem; color: var(--text-muted); padding: 0 6px; }
+.apm-cal-chip:hover { filter: brightness(0.95); }
 
 .apm-dia-detalle {
   background: #fff;
@@ -190,4 +210,47 @@
   padding: 8px 12px;
   border-radius: var(--radius-sm);
 }
+.apm-dia-detalle-item { background: none; border: none; font: inherit; color: inherit; cursor: pointer; text-align: left; flex: 1; }
 .apm-borrar-evento { background: none; border: none; color: #dc2626; cursor: pointer; font-size: 0.8rem; }
+
+/* Modal de detalle (actividad o evento) */
+.apm-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(10, 20, 40, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  padding: 20px;
+}
+.apm-modal {
+  position: relative;
+  background: #fff;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  padding: 28px;
+  max-width: 480px;
+  width: 100%;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+.apm-modal--chico { max-width: 360px; }
+.apm-modal-cerrar { position: absolute; top: 14px; right: 14px; background: none; border: none; color: var(--text-muted); font-size: 16px; cursor: pointer; }
+.apm-modal h2 { font-size: 1.05rem; color: var(--primary-blue); margin: 0 0 10px; padding-right: 24px; }
+.apm-modal-meta { font-size: 0.8rem; color: var(--text-muted); margin: 0 0 6px; display: flex; align-items: center; gap: 6px; }
+.apm-modal-detalle { font-size: 0.85rem; color: var(--text-dark); white-space: pre-wrap; margin-top: 14px; line-height: 1.5; }
+.apm-modal-ir { display: inline-block; margin-top: 18px; color: var(--primary-blue); font-weight: 700; font-size: 0.88rem; }
+.apm-modal-acciones { display: flex; gap: 10px; margin-top: 20px; }
+.apm-modal-borrar,
+.apm-modal-editar {
+  flex: 1;
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 10px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+.apm-modal-borrar { background: #16a34a; color: #fff; }
+.apm-modal-editar { background: var(--primary-blue); color: #fff; }
