@@ -103,3 +103,60 @@
   color: var(--text-muted);
 }
 .ct-pill.is-ok { background: #e3f5ea; color: #1f8a4c; }
+
+/* Área personal (del curso) */
+.ct-progreso-card {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  background: #fff;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 20px 24px;
+  margin-bottom: 28px;
+}
+.ct-progreso-card strong { font-size: 1rem; color: var(--text-dark); display: block; }
+.ct-progreso-card p { font-size: 0.82rem; color: var(--text-muted); margin: 2px 0 0; }
+
+.ct-progreso-aro {
+  --pct: 0;
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: conic-gradient(var(--primary-yellow) calc(var(--pct) * 1%), var(--bg-light) 0);
+}
+.ct-progreso-aro span {
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 0.85rem;
+  color: var(--primary-blue);
+}
+
+.ct-area-personal-subtitulo { font-size: 0.95rem; color: var(--primary-blue); margin: 0 0 12px; }
+.ct-pendientes-lista { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.ct-pendientes-lista button {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-align: left;
+  background: #fff;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  font-size: 13.5px;
+  color: var(--text-dark);
+  cursor: pointer;
+}
+.ct-pendientes-lista button:hover { background: var(--bg-light); }
+.ct-pendientes-lista small { margin-left: auto; color: var(--text-muted); font-size: 11px; }
