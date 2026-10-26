@@ -157,6 +157,11 @@ export const lmsService = {
     return data;
   },
 
+  async actualizarEventoPersonal(id, titulo, fecha) {
+    const { data } = await apiClient.patch(`/lms/calendar/eventos/${id}`, { titulo, fecha });
+    return data;
+  },
+
   async eliminarEventoPersonal(id) {
     const { data } = await apiClient.delete(`/lms/calendar/eventos/${id}`);
     return data;

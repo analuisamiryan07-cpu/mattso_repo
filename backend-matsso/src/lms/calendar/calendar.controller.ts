@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Post, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Req, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '../../auth/jwt-auth.guard';
 import { CalendarService } from './calendar.service';
 import { CrearEventoPersonalDto } from './dto/crear-evento-personal.dto';
@@ -16,6 +16,11 @@ export class CalendarController {
   @Post()
   crear(@Body() dto: CrearEventoPersonalDto, @Req() req: any) {
     return this.calendarService.crearEvento(req.user.id, dto.titulo, dto.fecha);
+  }
+
+  @Patch(':id')
+  actualizar(@Param('id') id: string, @Body() dto: CrearEventoPersonalDto, @Req() req: any) {
+    return this.calendarService.actualizarEvento(req.user.id, id, dto.titulo, dto.fecha);
   }
 
   @Delete(':id')

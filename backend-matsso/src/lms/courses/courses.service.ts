@@ -128,6 +128,7 @@ export class CoursesService {
       item_type: string;
       fecha_limite: Date;
       estado: 'ATRASADO' | 'PENDIENTE' | 'COMPLETADO';
+      detalle: string | null;
     }> = [];
 
     for (const grant of grants) {
@@ -168,6 +169,7 @@ export class CoursesService {
           item_type: item.item_type,
           fecha_limite: item.fecha_limite!,
           estado,
+          detalle: item.assignment_instructions || item.body_text || null,
         });
       }
     }

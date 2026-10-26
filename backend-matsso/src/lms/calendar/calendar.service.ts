@@ -27,6 +27,16 @@ export class CalendarService {
     });
   }
 
+  async actualizarEvento(usuarioId: number, eventoId: string, titulo: string, fecha: string) {
+    const evento = await this.prisma.personalEvent.findUnique({ where: { id: eventoId } });
+    if (!evento) throw new NotFoundException('Evento no encontrado.');
+    if (Number(evento.usuario_id) !== usuarioId) throw new ForbiddenException('No es tu evento.');
+    return this.prisma.personalEvent.update({
+      where: { id: eventoId },
+      data: { titulo: sanitizePlainText(titulo) || titulo, fecha: new Date(fecha) },
+    });
+  }
+
   async eliminarEvento(usuarioId: number, eventoId: string) {
     const evento = await this.prisma.personalEvent.findUnique({ where: { id: eventoId } });
     if (!evento) throw new NotFoundException('Evento no encontrado.');

@@ -5,7 +5,7 @@
 // Tareas (entregar/rendir), Mis calificaciones.
 
 import { useCallback, useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useSearchParams } from 'react-router-dom';
 import { lmsService } from '@api/lmsService';
 import VideoPlayer from '@components/VideoPlayer';
 import QuizRunner from '@components/QuizRunner';
@@ -19,10 +19,12 @@ const ESTADO_LABEL = { NOT_STARTED: 'Por hacer', IN_PROGRESS: 'En curso', COMPLE
 
 const CursoTradicional = () => {
   const { courseId } = useParams();
+  const [searchParams] = useSearchParams();
+  const itemDesdeUrl = searchParams.get('item');
   const [detalle, setDetalle] = useState(null);
   const [error, setError] = useState(null);
   const [tab, setTab] = useState('recursos');
-  const [activeItemId, setActiveItemId] = useState(null);
+  const [activeItemId, setActiveItemId] = useState(itemDesdeUrl);
 
   const cargar = useCallback(() => {
     lmsService.getCursoDetalle(courseId, 'TRADICIONAL')
@@ -32,6 +34,18 @@ const CursoTradicional = () => {
   }, [courseId]);
 
   useEffect(() => { cargar(); }, [cargar]);
+
+  // Si se entró con ?item=... (ej. desde el calendario o la línea de tiempo),
+  // abre directo ese contenido en la pestaña que le corresponde.
+  useEffect(() => {
+    if (!itemDesdeUrl || !detalle) return;
+    const item = detalle.modules.flatMap((m) => m.content_items).find((i) => i.id === itemDesdeUrl);
+    if (item) {
+      setActiveItemId(item.id);
+      setTab(item.item_type === 'VIDEO' || item.item_type === 'DOCUMENT' ? 'recursos' : 'tareas');
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [detalle]);
 
   if (error) {
     return (

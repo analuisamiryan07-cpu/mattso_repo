@@ -3,6 +3,7 @@
 // por la barra MoodleSubnav, tal como lo aclaró la usuaria.
 
 import { useEffect, useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { lmsService } from '@api/lmsService';
 import MoodleHeader from '@layout/MoodleHeader';
 import MoodleSubnav from '@layout/MoodleSubnav';
@@ -120,7 +121,7 @@ const LineaDeTiempo = ({ actividades }) => {
   );
 };
 
-const DIAS_SEMANA = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
+const DIAS_SEMANA = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
 
 const Calendario = ({ actividades }) => {
   const { t } = useIdioma();
@@ -128,6 +129,7 @@ const Calendario = ({ actividades }) => {
   const [eventos, setEventos] = useState(null);
   const [diaSeleccionado, setDiaSeleccionado] = useState(null); // 'YYYY-MM-DD'
   const [mostrarForm, setMostrarForm] = useState(false);
+  const [itemModal, setItemModal] = useState(null); // item (actividad o evento) abierto en el modal de detalle
 
   const cargarEventos = () => {
     lmsService.getEventosPersonales().then(setEventos).catch(() => setEventos([]));
@@ -158,10 +160,17 @@ const Calendario = ({ actividades }) => {
   const cambiarMes = (delta) => {
     setMesBase((d) => { const n = new Date(d); n.setMonth(n.getMonth() + delta); return n; });
     setDiaSeleccionado(null);
+    setMostrarForm(false);
+  };
+
+  const seleccionarDia = (key) => {
+    setDiaSeleccionado(key === diaSeleccionado ? null : key);
+    setMostrarForm(false);
   };
 
   const eliminarEvento = async (id) => {
     await lmsService.eliminarEventoPersonal(id).catch(() => {});
+    setItemModal(null);
     cargarEventos();
   };
 
@@ -206,22 +215,11 @@ const Calendario = ({ actividades }) => {
     <section id="calendario" className="apm-seccion">
       <div className="apm-cal-header">
         <h2>{t('calendario')}</h2>
-        <div className="apm-cal-header-btns">
-          <button className="apm-nuevo-evento" onClick={() => setMostrarForm((v) => !v)}>
-            <i className="fa-solid fa-plus" /> Nuevo evento
-          </button>
-          <button className="apm-descargar" onClick={descargarIcs}>
-            <i className="fa-solid fa-download" /> {t('descargar')}
-          </button>
-        </div>
+        <button className="apm-descargar" onClick={descargarIcs}>
+          <i className="fa-solid fa-download" /> {t('descargar')}
+        </button>
       </div>
-
-      {mostrarForm && (
-        <NuevoEventoForm
-          onCreado={() => { setMostrarForm(false); cargarEventos(); }}
-          onCancel={() => setMostrarForm(false)}
-        />
-      )}
+      <p className="apm-cal-ayuda">Haz clic en un día del calendario para ver o agregar un evento ese día.</p>
 
       <div className="apm-cal-nav">
         <button onClick={() => cambiarMes(-1)}><i className="fa-solid fa-chevron-left" /></button>
@@ -234,28 +232,52 @@ const Calendario = ({ actividades }) => {
         {celdas.map((dia, i) => {
           if (!dia) return <div key={`vacio-${i}`} className="apm-cal-cell apm-cal-cell--vacia" />;
           const key = new Date(mesBase.getFullYear(), mesBase.getMonth(), dia).toISOString().slice(0, 10);
-          const items = diasConAlgo.get(key);
+          const items = diasConAlgo.get(key) || [];
           return (
-            <button
+            <div
               key={dia}
-              className={`apm-cal-cell ${items ? 'apm-cal-cell--con-actividad' : ''} ${diaSeleccionado === key ? 'apm-cal-cell--seleccionada' : ''}`}
-              onClick={() => setDiaSeleccionado(key === diaSeleccionado ? null : key)}
+              className={`apm-cal-cell ${items.length ? 'apm-cal-cell--con-actividad' : ''} ${diaSeleccionado === key ? 'apm-cal-cell--seleccionada' : ''}`}
             >
-              <span>{dia}</span>
-              {items && <i className="fa-solid fa-circle apm-cal-dot" title={items.map((x) => x.titulo).join(', ')} />}
-            </button>
+              <button type="button" className="apm-cal-numero" onClick={() => seleccionarDia(key)}>{dia}</button>
+              <span className="apm-cal-chips">
+                {items.map((item) => (
+                  <button
+                    key={`${item.origen}-${item.id || item.content_item_id}`}
+                    type="button"
+                    className={`apm-cal-chip apm-cal-chip--${item.origen}`}
+                    onClick={() => setItemModal(item)}
+                  >
+                    {item.titulo}
+                  </button>
+                ))}
+              </span>
+            </div>
           );
         })}
       </div>
 
       {diaSeleccionado && (
         <div className="apm-dia-detalle">
-          <h3>{new Date(`${diaSeleccionado}T00:00:00`).toLocaleDateString('es-EC', { dateStyle: 'full' })}</h3>
-          {itemsDelDia.length === 0 && <p className="apm-vacio">Nada para este día.</p>}
+          <div className="apm-dia-detalle-header">
+            <h3>{new Date(`${diaSeleccionado}T00:00:00`).toLocaleDateString('es-EC', { dateStyle: 'full' })}</h3>
+            <button className="apm-nuevo-evento" onClick={() => setMostrarForm((v) => !v)}>
+              <i className="fa-solid fa-plus" /> Agregar evento
+            </button>
+          </div>
+
+          {mostrarForm && (
+            <NuevoEventoForm
+              fechaBase={diaSeleccionado}
+              onCreado={() => { setMostrarForm(false); cargarEventos(); }}
+              onCancel={() => setMostrarForm(false)}
+            />
+          )}
+
+          {itemsDelDia.length === 0 && !mostrarForm && <p className="apm-vacio">Nada para este día.</p>}
           <ul>
             {itemsDelDia.map((item) => (
               <li key={`${item.origen}-${item.id || item.content_item_id}`}>
-                <span>{item.titulo}</span>
+                <button type="button" className="apm-dia-detalle-item" onClick={() => setItemModal(item)}>{item.titulo}</button>
                 {item.origen === 'evento' && (
                   <button className="apm-borrar-evento" onClick={() => eliminarEvento(item.id)} title="Eliminar">
                     <i className="fa-solid fa-trash" />
@@ -266,23 +288,125 @@ const Calendario = ({ actividades }) => {
           </ul>
         </div>
       )}
+
+      {itemModal && (
+        <DetalleItemModal
+          item={itemModal}
+          onClose={() => setItemModal(null)}
+          onEditado={() => { setItemModal(null); cargarEventos(); }}
+          onBorrado={() => eliminarEvento(itemModal.id)}
+        />
+      )}
     </section>
   );
 };
 
-const NuevoEventoForm = ({ onCreado, onCancel }) => {
-  const [titulo, setTitulo] = useState('');
-  const [fecha, setFecha] = useState('');
+// Modal de detalle al hacer clic en una actividad o evento, dentro de una
+// celda del calendario o en el detalle del día. Para actividades: todo el
+// contenido de la tarea/examen + enlace directo a ella dentro del curso.
+// Para eventos propios: fecha/hora + Editar/Borrar.
+const DetalleItemModal = ({ item, onClose, onEditado, onBorrado }) => {
+  const [editando, setEditando] = useState(false);
+
+  if (item.origen === 'actividad') {
+    return (
+      <div className="apm-modal-backdrop" onClick={onClose}>
+        <div className="apm-modal" onClick={(e) => e.stopPropagation()}>
+          <button className="apm-modal-cerrar" onClick={onClose}><i className="fa-solid fa-xmark" /></button>
+          <h2>{item.titulo}</h2>
+          <p className="apm-modal-meta">{item.course_titulo} · {item.modulo_titulo}</p>
+          <p className="apm-modal-meta">
+            Vence: {new Date(item.fecha_limite).toLocaleString('es-EC', { dateStyle: 'full', timeStyle: 'short' })}
+          </p>
+          {item.detalle && <div className="apm-modal-detalle">{item.detalle}</div>}
+          <Link to={`/curso/tradicional/${item.course_id}?item=${item.content_item_id}`} className="apm-modal-ir">
+            Ir a la actividad →
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  // origen === 'evento'
+  if (editando) {
+    return (
+      <div className="apm-modal-backdrop" onClick={onClose}>
+        <div className="apm-modal" onClick={(e) => e.stopPropagation()}>
+          <button className="apm-modal-cerrar" onClick={onClose}><i className="fa-solid fa-xmark" /></button>
+          <h2>Editar evento</h2>
+          <EditarEventoForm evento={item} onGuardado={onEditado} onCancel={() => setEditando(false)} />
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="apm-modal-backdrop" onClick={onClose}>
+      <div className="apm-modal apm-modal--chico" onClick={(e) => e.stopPropagation()}>
+        <button className="apm-modal-cerrar" onClick={onClose}><i className="fa-solid fa-xmark" /></button>
+        <h2>{item.titulo}</h2>
+        <p className="apm-modal-meta">
+          <i className="fa-regular fa-clock" /> {new Date(item.fecha).toLocaleString('es-EC', { dateStyle: 'full', timeStyle: 'short' })}
+        </p>
+        <p className="apm-modal-meta"><i className="fa-regular fa-calendar" /> Evento de usuario</p>
+        <div className="apm-modal-acciones">
+          <button className="apm-modal-borrar" onClick={onBorrado}>Borrar</button>
+          <button className="apm-modal-editar" onClick={() => setEditando(true)}>Editar</button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const EditarEventoForm = ({ evento, onGuardado, onCancel }) => {
+  const fechaObj = new Date(evento.fecha);
+  const [titulo, setTitulo] = useState(evento.titulo);
+  const [hora, setHora] = useState(fechaObj.toTimeString().slice(0, 5));
   const [error, setError] = useState('');
   const [guardando, setGuardando] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!titulo.trim() || !fecha) { setError('Completa el título y la fecha.'); return; }
+    if (!titulo.trim()) { setError('Escribe un título para el evento.'); return; }
     setGuardando(true);
     setError('');
     try {
-      await lmsService.crearEventoPersonal(titulo.trim(), new Date(fecha).toISOString());
+      const fechaBase = fechaObj.toISOString().slice(0, 10);
+      await lmsService.actualizarEventoPersonal(evento.id, titulo.trim(), new Date(`${fechaBase}T${hora}:00`).toISOString());
+      onGuardado();
+    } catch (err) {
+      setError(err.response?.data?.message || 'No se pudo guardar el evento.');
+    } finally {
+      setGuardando(false);
+    }
+  };
+
+  return (
+    <form className="apm-evento-form" onSubmit={handleSubmit}>
+      <input type="text" placeholder="Título del evento" value={titulo} onChange={(e) => setTitulo(e.target.value)} autoFocus />
+      <input type="time" value={hora} onChange={(e) => setHora(e.target.value)} />
+      <button type="submit" disabled={guardando}>{guardando ? 'Guardando…' : 'Guardar'}</button>
+      <button type="button" onClick={onCancel}>Cancelar</button>
+      {error && <p className="apm-error">{error}</p>}
+    </form>
+  );
+};
+
+// La fecha ya viene fija (el día que se presionó en el calendario) — solo
+// se pide el título y la hora, tal como lo pidió la usuaria.
+const NuevoEventoForm = ({ fechaBase, onCreado, onCancel }) => {
+  const [titulo, setTitulo] = useState('');
+  const [hora, setHora] = useState('12:00');
+  const [error, setError] = useState('');
+  const [guardando, setGuardando] = useState(false);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!titulo.trim()) { setError('Escribe un título para el evento.'); return; }
+    setGuardando(true);
+    setError('');
+    try {
+      await lmsService.crearEventoPersonal(titulo.trim(), new Date(`${fechaBase}T${hora}:00`).toISOString());
       onCreado();
     } catch (err) {
       setError(err.response?.data?.message || 'No se pudo crear el evento.');
@@ -293,8 +417,8 @@ const NuevoEventoForm = ({ onCreado, onCancel }) => {
 
   return (
     <form className="apm-evento-form" onSubmit={handleSubmit}>
-      <input type="text" placeholder="Título del evento" value={titulo} onChange={(e) => setTitulo(e.target.value)} />
-      <input type="datetime-local" value={fecha} onChange={(e) => setFecha(e.target.value)} />
+      <input type="text" placeholder="Título del evento" value={titulo} onChange={(e) => setTitulo(e.target.value)} autoFocus />
+      <input type="time" value={hora} onChange={(e) => setHora(e.target.value)} />
       <button type="submit" disabled={guardando}>{guardando ? 'Guardando…' : 'Guardar'}</button>
       <button type="button" onClick={onCancel}>Cancelar</button>
       {error && <p className="apm-error">{error}</p>}
