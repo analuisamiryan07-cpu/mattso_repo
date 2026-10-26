@@ -228,6 +228,7 @@ export class CoursesService {
     const course = await this.prisma.course.findUnique({
       where: { id: courseId },
       include: {
+        profesor: { select: { correo: true, cliente: { select: { nombre: true } } } },
         modules: {
           where: { is_active: true, delivery_mode: mode },
           orderBy: { sequence_order: 'asc' },
@@ -350,7 +351,11 @@ export class CoursesService {
         id: course.id,
         titulo: course.titulo,
         descripcion: course.descripcion,
+        cloudinary_folder: course.cloudinary_folder,
         mode,
+        profesor: course.profesor
+          ? { nombre: course.profesor.cliente?.nombre || 'Profesor', correo: course.profesor.correo }
+          : null,
       },
       modules,
     };
