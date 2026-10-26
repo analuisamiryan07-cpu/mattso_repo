@@ -3,11 +3,13 @@
 // este modo). Un curso puede tener también contenido ASINCRONO_VOD
 // (Coursera) por separado.
 //
-// Estructura de página completa (no una columna angosta): barra de
-// pestañas "Curso / Calificaciones" pegada al header, banner del curso con
-// tarjeta del profesor, y debajo pestañas horizontales por módulo (cada
-// módulo es su propia pestaña, no un acordeón como en Coursera). El botón
-// de regreso siempre vuelve a "Mis cursos" de Moodle, no al Área Personal.
+// Calcado de la referencia real que envió la usuaria: barra "Curso /
+// Participantes / Calificaciones" pegada al header, banner con textura +
+// tarjeta del profesor, pestañas "General + un módulo por pestaña", y
+// dentro de cada módulo secciones "Actividades" / "Recursos" con tarjetas.
+// Se deja fuera la pestaña "Competencias" y el nivel "Criterio" dentro de
+// cada módulo porque no hay ningún dato real detrás de esos dos — nuestro
+// modelo es Module -> ContentItem, sin una subdivisión más entre medio.
 
 import { useCallback, useEffect, useState } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
@@ -20,12 +22,8 @@ import MoodleFooter from '@layout/MoodleFooter';
 import './CursoTradicional.css';
 
 const ESTADO_LABEL = { NOT_STARTED: 'Por hacer', IN_PROGRESS: 'En curso', COMPLETED: 'Completado' };
-const SECCIONES = [
-  { tipo: 'VIDEO', titulo: 'Videos', icono: 'fa-circle-play' },
-  { tipo: 'DOCUMENT', titulo: 'Recursos', icono: 'fa-file-lines' },
-  { tipo: 'ASSIGNMENT', titulo: 'Actividades', icono: 'fa-file-pen' },
-  { tipo: 'QUIZ', titulo: 'Examen', icono: 'fa-list-check' },
-];
+const ICONOS = { VIDEO: 'fa-circle-play', DOCUMENT: 'fa-file-lines', ASSIGNMENT: 'fa-file-pen', QUIZ: 'fa-list-check' };
+const ETIQUETAS = { VIDEO: 'Video', DOCUMENT: 'Lectura', ASSIGNMENT: 'Tarea', QUIZ: 'Examen' };
 
 const CursoTradicional = () => {
   const { courseId } = useParams();
@@ -34,23 +32,18 @@ const CursoTradicional = () => {
   const [detalle, setDetalle] = useState(null);
   const [error, setError] = useState(null);
   const [tab, setTab] = useState('curso');
-  const [moduloActivo, setModuloActivo] = useState(null);
+  const [moduloActivo, setModuloActivo] = useState('general');
   const [activeItemId, setActiveItemId] = useState(itemDesdeUrl);
 
   const cargar = useCallback(() => {
     lmsService.getCursoDetalle(courseId, 'TRADICIONAL')
-      .then((data) => {
-        setDetalle(data);
-        setModuloActivo((actual) => actual ?? data.modules[0]?.id ?? null);
-      })
+      .then(setDetalle)
       .catch(() => setError('No se pudo cargar el curso, o no estás inscrito en él.'));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [courseId]);
 
   useEffect(() => { cargar(); }, [cargar]);
 
-  // Si se entró con ?item=... (ej. desde el calendario o la línea de tiempo),
-  // abre directo ese contenido en su módulo.
   useEffect(() => {
     if (!itemDesdeUrl || !detalle) return;
     const modulo = detalle.modules.find((m) => m.content_items.some((i) => i.id === itemDesdeUrl));
@@ -87,9 +80,14 @@ const CursoTradicional = () => {
   const completados = todosLosItems.filter((i) => i.status === 'COMPLETED').length;
   const pctCompletado = totalItems === 0 ? 0 : Math.round((completados / totalItems) * 100);
 
-  const moduloObj = detalle.modules.find((m) => m.id === moduloActivo);
+  const moduloObj = moduloActivo === 'general' ? null : detalle.modules.find((m) => m.id === moduloActivo);
   const profesor = detalle.course.profesor;
   const iniciales = profesor ? (profesor.nombre || '?').trim().split(/\s+/).slice(0, 2).map((p) => p[0]).join('').toUpperCase() : '';
+
+  const irAItem = (item, moduloId) => {
+    setModuloActivo(moduloId);
+    setActiveItemId(item.id);
+  };
 
   return (
     <div className="ctw-shell">
@@ -98,6 +96,7 @@ const CursoTradicional = () => {
       <nav className="ctw-tabbar">
         <Link to="/moodle/mis-cursos" className="ctw-tabbar-icon" title="Mis cursos"><i className="fa-solid fa-chalkboard-user" /></Link>
         <button className={`ctw-tab ${tab === 'curso' ? 'is-active' : ''}`} onClick={() => setTab('curso')}>Curso</button>
+        <button className={`ctw-tab ${tab === 'participantes' ? 'is-active' : ''}`} onClick={() => setTab('participantes')}>Participantes</button>
         <button className={`ctw-tab ${tab === 'notas' ? 'is-active' : ''}`} onClick={() => setTab('notas')}>Calificaciones</button>
       </nav>
 
@@ -114,10 +113,11 @@ const CursoTradicional = () => {
         )}
       </div>
 
-      <main className="ctw-main">
+      <main className={`ctw-main ${profesor ? 'ctw-main--con-profesor' : ''}`}>
         {tab === 'curso' && (
           <>
             <div className="ctw-modtabs">
+              <button className={`ctw-modtab ${moduloActivo === 'general' ? 'is-active' : ''}`} onClick={() => setModuloActivo('general')}>General</button>
               {detalle.modules.map((m, i) => (
                 <button
                   key={m.id}
@@ -127,63 +127,24 @@ const CursoTradicional = () => {
                   Módulo {i + 1}
                 </button>
               ))}
-              {detalle.modules.length === 0 && <p className="lms-empty">Todavía no hay módulos publicados.</p>}
             </div>
 
-            {moduloObj && (
-              <div className="ctw-mod-contenido">
-                <h2 className="ctw-mod-titulo">{moduloObj.titulo}</h2>
-                {moduloObj.descripcion && <p className="ctw-mod-intro">{moduloObj.descripcion}</p>}
-
-                {SECCIONES.map(({ tipo, titulo, icono }) => {
-                  const items = moduloObj.content_items.filter((i) => i.item_type === tipo);
-                  if (items.length === 0) return null;
-                  return (
-                    <div key={tipo} className="ctw-seccion">
-                      <h3><i className={`fa-solid ${icono}`} /> {titulo}</h3>
-                      <ul>
-                        {items.map((item) => (
-                          <li key={item.id}>
-                            <button
-                              className={`ct-item-btn ${item.id === activeItemId ? 'is-active' : ''} ${item.status === 'COMPLETED' ? 'is-done' : ''}`}
-                              onClick={() => setActiveItemId((actual) => (actual === item.id ? null : item.id))}
-                            >
-                              <i className={`fa-solid ${icono}`} />
-                              <span>{item.titulo}</span>
-                              {item.status === 'COMPLETED' && <i className="fa-solid fa-circle-check ct-check" />}
-                            </button>
-
-                            {item.id === activeItemId && (
-                              <div className="ctw-item-contenido">
-                                {item.item_type === 'VIDEO' && (
-                                  <VideoPlayer contentItem={item} onProgressUpdate={(r) => r.just_completed && cargar()} />
-                                )}
-                                {item.item_type === 'DOCUMENT' && (
-                                  <div className="lms-document">
-                                    {item.body_text && <p className="cv-lectura-texto">{item.body_text}</p>}
-                                    <button
-                                      className="lms-btn-primary"
-                                      disabled={item.status === 'COMPLETED'}
-                                      onClick={async () => { await lmsService.marcarDocumentoLeido(item.id); cargar(); }}
-                                    >
-                                      {item.status === 'COMPLETED' ? 'Ya marcado como leído' : 'Marcar como leído'}
-                                    </button>
-                                  </div>
-                                )}
-                                {item.item_type === 'QUIZ' && <QuizRunner contentItem={item} onCompleted={cargar} />}
-                                {item.item_type === 'ASSIGNMENT' && <EntregaTarea contentItem={item} />}
-                              </div>
-                            )}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  );
-                })}
-              </div>
+            {moduloActivo === 'general' ? (
+              <GeneralTab detalle={detalle} onAbrirItem={irAItem} />
+            ) : moduloObj ? (
+              <ModuloContenido
+                modulo={moduloObj}
+                activeItemId={activeItemId}
+                onAbrirItem={(item) => setActiveItemId((actual) => (actual === item.id ? null : item.id))}
+                onProgreso={cargar}
+              />
+            ) : (
+              <p className="lms-empty">Este módulo ya no está disponible.</p>
             )}
           </>
         )}
+
+        {tab === 'participantes' && <ParticipantesTab courseId={courseId} />}
 
         {tab === 'notas' && (
           <div className="ct-notas">
@@ -206,6 +167,133 @@ const CursoTradicional = () => {
       </main>
 
       <MoodleFooter />
+    </div>
+  );
+};
+
+// "General": sin dato de curso-wide (foros, etc. no existen en nuestro
+// modelo) — se muestra la descripción del curso + todo el contenido de
+// todos los módulos, como accesos directos.
+const GeneralTab = ({ detalle, onAbrirItem }) => {
+  const todos = detalle.modules.flatMap((m) => m.content_items.map((i) => ({ ...i, moduloId: m.id })));
+  return (
+    <div className="ctw-general">
+      {detalle.course.descripcion && <p className="ctw-mod-intro">{detalle.course.descripcion}</p>}
+      {todos.length === 0 && <p className="lms-empty">Todavía no hay contenido publicado en este curso.</p>}
+      <ul className="ctw-tarjetas">
+        {todos.map((item) => (
+          <li key={item.id}>
+            <button className="ctw-tarjeta" onClick={() => onAbrirItem(item, item.moduloId)}>
+              <span className={`ctw-tarjeta-icono ctw-tarjeta-icono--${item.item_type === 'VIDEO' || item.item_type === 'DOCUMENT' ? 'recurso' : 'actividad'}`}>
+                <i className={`fa-solid ${ICONOS[item.item_type]}`} />
+              </span>
+              <span className="ctw-tarjeta-texto">
+                <small>{ETIQUETAS[item.item_type]}</small>
+                <strong>{item.titulo}</strong>
+              </span>
+            </button>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+};
+
+const ModuloContenido = ({ modulo, activeItemId, onAbrirItem, onProgreso }) => {
+  const actividades = modulo.content_items.filter((i) => i.item_type === 'ASSIGNMENT' || i.item_type === 'QUIZ');
+  const recursos = modulo.content_items.filter((i) => i.item_type === 'VIDEO' || i.item_type === 'DOCUMENT');
+
+  return (
+    <div className="ctw-mod-contenido">
+      <div className="ctw-mod-banner"><i className="fa-solid fa-thumbtack" /> <strong>{modulo.titulo}</strong>{modulo.descripcion && `: ${modulo.descripcion}`}</div>
+
+      {actividades.length > 0 && (
+        <>
+          <div className="ctw-seccion-banner">ACTIVIDADES</div>
+          <ul className="ctw-tarjetas">
+            {actividades.map((item) => (
+              <TarjetaItem key={item.id} item={item} activo={item.id === activeItemId} onAbrirItem={onAbrirItem} onProgreso={onProgreso} />
+            ))}
+          </ul>
+        </>
+      )}
+
+      {recursos.length > 0 && (
+        <>
+          <div className="ctw-seccion-banner">RECURSOS</div>
+          <ul className="ctw-tarjetas">
+            {recursos.map((item) => (
+              <TarjetaItem key={item.id} item={item} activo={item.id === activeItemId} onAbrirItem={onAbrirItem} onProgreso={onProgreso} />
+            ))}
+          </ul>
+        </>
+      )}
+
+      {actividades.length === 0 && recursos.length === 0 && (
+        <p className="lms-empty">Este módulo todavía no tiene contenido publicado.</p>
+      )}
+    </div>
+  );
+};
+
+const TarjetaItem = ({ item, activo, onAbrirItem, onProgreso }) => (
+  <li>
+    <button className={`ctw-tarjeta ${activo ? 'is-active' : ''} ${item.status === 'COMPLETED' ? 'is-done' : ''}`} onClick={() => onAbrirItem(item)}>
+      <span className={`ctw-tarjeta-icono ctw-tarjeta-icono--${item.item_type === 'VIDEO' || item.item_type === 'DOCUMENT' ? 'recurso' : 'actividad'}`}>
+        <i className={`fa-solid ${item.status === 'COMPLETED' ? 'fa-circle-check' : ICONOS[item.item_type]}`} />
+      </span>
+      <span className="ctw-tarjeta-texto">
+        <small>{ETIQUETAS[item.item_type]}</small>
+        <strong>{item.titulo}</strong>
+      </span>
+    </button>
+
+    {activo && (
+      <div className="ctw-item-contenido">
+        {item.item_type === 'VIDEO' && (
+          <VideoPlayer contentItem={item} onProgressUpdate={(r) => r.just_completed && onProgreso()} />
+        )}
+        {item.item_type === 'DOCUMENT' && (
+          <div className="lms-document">
+            {item.body_text && <p className="cv-lectura-texto">{item.body_text}</p>}
+            <button
+              className="lms-btn-primary"
+              disabled={item.status === 'COMPLETED'}
+              onClick={async () => { await lmsService.marcarDocumentoLeido(item.id); onProgreso(); }}
+            >
+              {item.status === 'COMPLETED' ? 'Ya marcado como leído' : 'Marcar como leído'}
+            </button>
+          </div>
+        )}
+        {item.item_type === 'QUIZ' && <QuizRunner contentItem={item} onCompleted={onProgreso} />}
+        {item.item_type === 'ASSIGNMENT' && <EntregaTarea contentItem={item} />}
+      </div>
+    )}
+  </li>
+);
+
+const ParticipantesTab = ({ courseId }) => {
+  const [participantes, setParticipantes] = useState(null);
+
+  useEffect(() => {
+    lmsService.getParticipantes(courseId).then(setParticipantes).catch(() => setParticipantes([]));
+  }, [courseId]);
+
+  return (
+    <div className="ctw-participantes">
+      {participantes === null && <p>Cargando…</p>}
+      {participantes?.length === 0 && <p className="lms-empty">No hay otros estudiantes inscritos todavía.</p>}
+      <ul className="ctw-participantes-lista">
+        {participantes?.map((p) => (
+          <li key={p.id} className={p.soy_yo ? 'es-yo' : ''}>
+            <span className="ctw-participante-avatar">{(p.nombre || '?')[0]}</span>
+            <div>
+              <strong>{p.nombre}{p.soy_yo ? ' (tú)' : ''}</strong>
+              <small>{p.correo}</small>
+            </div>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 };

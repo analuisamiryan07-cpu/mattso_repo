@@ -20,6 +20,11 @@ export const lmsService = {
     return data;
   },
 
+  async getParticipantes(courseId) {
+    const { data } = await apiClient.get(`/lms/courses/${courseId}/participantes`);
+    return data;
+  },
+
   // Línea de tiempo / calendario de Moodle — actividades con fecha límite de
   // todos los cursos Moodle vigentes, con el estado ya resuelto en el backend.
   async getLineaDeTiempo() {

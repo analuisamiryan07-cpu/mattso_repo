@@ -47,4 +47,10 @@ export class CoursesController {
     }
     return this.coursesService.getCourseDetail(courseId, req.user.id, mode as DeliveryModeValue);
   }
+
+  /** Pestaña "Participantes" — otros estudiantes vigentes en este mismo curso. */
+  @Get(':courseId/participantes')
+  listarParticipantes(@Param('courseId') courseId: string, @Req() req: any) {
+    return this.coursesService.listarParticipantes(courseId, req.user.id);
+  }
 }
