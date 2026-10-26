@@ -215,6 +215,31 @@ export class CoursesService {
     return grant;
   }
 
+  /** Otros estudiantes inscritos (vigentes) en este mismo curso — pestaña "Participantes". */
+  async listarParticipantes(courseId: string, usuarioId: number) {
+    await this.assertAccesoVigente(courseId, usuarioId);
+
+    const grants = await this.prisma.accessGrant.findMany({
+      where: {
+        course_id: courseId,
+        redeemed_at: { not: null },
+        revoked_at: null,
+        expires_at: { gt: new Date() },
+      },
+      include: { usuario: { select: { id: true, correo: true, cliente: { select: { nombre: true } } } } },
+      distinct: ['usuario_id'],
+    });
+
+    return grants
+      .map((g) => ({
+        id: Number(g.usuario.id),
+        nombre: g.usuario.cliente?.nombre || 'Estudiante',
+        correo: g.usuario.correo,
+        soy_yo: Number(g.usuario.id) === usuarioId,
+      }))
+      .sort((a, b) => a.nombre.localeCompare(b.nombre));
+  }
+
   async getCourseDetail(courseId: string, usuarioId: number, mode: DeliveryModeValue) {
     await this.assertAccesoVigente(courseId, usuarioId);
 
