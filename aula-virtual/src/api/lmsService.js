@@ -89,13 +89,10 @@ export const lmsService = {
   },
 
   // ── Profesor ────────────────────────────────────────────────────────
+  // El profesor nunca crea cursos — el admin los crea y se los asigna desde
+  // el sistema interno. Esto solo lee lo que ya le asignaron.
   async getMisCursosProfesor() {
     const { data } = await apiClient.get('/lms/professor/courses');
-    return data;
-  },
-
-  async crearCursoProfesor(curso) {
-    const { data } = await apiClient.post('/lms/professor/courses', curso);
     return data;
   },
 

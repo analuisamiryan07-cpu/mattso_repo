@@ -1,8 +1,14 @@
-// Lado profesor: un profesor logueado en el Aula Virtual solo puede tocar SUS
-// propios cursos — la propiedad se guarda en Course.profesor_usuario_id. No
-// puede crear otros profesores, usuarios ni tocar cursos ajenos: eso es lo
-// que pidió el negocio (Moodles/lms/docs/REQUISITOS_SISTEMA_INTERNO.md §3) y
-// aquí se aplica como verificación real, no como convención de UI.
+// Lado profesor: mismo modelo que EVA PUCE — el admin crea el curso y se lo
+// asigna desde el sistema interno (AdminCoursesService.createCourse /
+// asignarProfesor). El profesor nunca crea, renombra ni elimina un curso:
+// solo entra a administrar el contenido (módulos, tareas, exámenes,
+// calificaciones) del/los curso(s) que ya tiene asignados — y únicamente
+// del lado Moodle (TRADICIONAL). Coursera es "totalmente independiente"
+// (palabras de la usuaria): el profesor no tiene acceso a esa modalidad por
+// ningún motivo, ni para verla ni para tocarla, así el curso sea "ambos".
+// Toda verificación de abajo aplica esto como código real, no como
+// convención de UI — ver también admin-courses.service.ts, que tiene la
+// restricción espejo (el sistema interno no puede tocar contenido Moodle).
 
 import {
   BadRequestException,
@@ -13,13 +19,13 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { sanitizePlainText } from '../../common/sanitize.util';
-import { CreateCourseDto } from '../courses/dto/create-course.dto';
 import { CreateModuleDto } from '../courses/dto/create-module.dto';
 import { CreateContentItemDto } from '../courses/dto/create-content-item.dto';
 import { CreateQuizDto } from '../courses/dto/create-quiz.dto';
 import { ProfessorGradeSubmissionDto } from './dto/professor-grade-submission.dto';
-import { buildCloudinaryFolder } from '../courses/course-cloudinary.util';
 import { NotificationsService } from '../notifications/notifications.service';
+
+const MENSAJE_SOLO_MOODLE = 'No tienes acceso a Coursera — esa modalidad la administra el sistema interno.';
 
 @Injectable()
 export class ProfessorCoursesService {
@@ -34,7 +40,14 @@ export class ProfessorCoursesService {
     return this.prisma.course.findMany({
       where: { profesor_usuario_id: BigInt(usuarioId) },
       orderBy: { created_at: 'desc' },
-      include: { _count: { select: { modules: true, enrollments: true } } },
+      include: {
+        _count: {
+          select: {
+            modules: { where: { delivery_mode: 'TRADICIONAL' } },
+            enrollments: true,
+          },
+        },
+      },
     });
   }
 
@@ -44,6 +57,7 @@ export class ProfessorCoursesService {
       where: { id: courseId },
       include: {
         modules: {
+          where: { delivery_mode: 'TRADICIONAL' },
           orderBy: { sequence_order: 'asc' },
           include: {
             content_items: {
@@ -52,31 +66,6 @@ export class ProfessorCoursesService {
             },
           },
         },
-      },
-    });
-  }
-
-  async crearCurso(usuarioId: number, dto: CreateCourseDto) {
-    const modoMoodle = dto.modo_moodle ?? false;
-    const modoCoursera = dto.modo_coursera ?? false;
-    if (!modoMoodle && !modoCoursera) {
-      throw new BadRequestException('El curso debe ofrecerse en Moodle, en Coursera, o en ambos.');
-    }
-
-    const titulo = sanitizePlainText(dto.titulo)!;
-    const cloudinaryFolder = await buildCloudinaryFolder(this.prisma, titulo);
-
-    return this.prisma.course.create({
-      data: {
-        profesor_usuario_id: BigInt(usuarioId),
-        producto_id: dto.producto_id ? BigInt(dto.producto_id) : null,
-        titulo,
-        descripcion: sanitizePlainText(dto.descripcion),
-        modo_moodle: modoMoodle,
-        modo_coursera: modoCoursera,
-        cloudinary_folder: cloudinaryFolder,
-        duracion_meses: dto.duracion_meses ?? null,
-        is_active: dto.is_active ?? true,
       },
     });
   }
@@ -93,11 +82,9 @@ export class ProfessorCoursesService {
 
   async crearModulo(usuarioId: number, courseId: string, dto: CreateModuleDto) {
     const course = await this.verificarDuenoCurso(usuarioId, courseId);
-    const modoHabilitado = dto.delivery_mode === 'TRADICIONAL' ? course.modo_moodle : course.modo_coursera;
-    if (!modoHabilitado) {
-      throw new BadRequestException(
-        `Este curso no tiene habilitada la modalidad ${dto.delivery_mode === 'TRADICIONAL' ? 'Moodle' : 'Coursera'}.`,
-      );
+    if (dto.delivery_mode !== 'TRADICIONAL') throw new ForbiddenException(MENSAJE_SOLO_MOODLE);
+    if (!course.modo_moodle) {
+      throw new BadRequestException('Este curso no tiene habilitada la modalidad Moodle.');
     }
 
     const existing = await this.prisma.module.findUnique({
@@ -124,13 +111,14 @@ export class ProfessorCoursesService {
     });
   }
 
-  /** Verifica que el módulo pertenezca a un curso del profesor. Devuelve el módulo si es válido. */
+  /** Verifica que el módulo pertenezca a un curso del profesor Y sea Moodle. Devuelve el módulo si es válido. */
   private async verificarDuenoModulo(usuarioId: number, moduleId: string) {
     const module = await this.prisma.module.findUnique({ where: { id: moduleId }, include: { course: true } });
     if (!module) throw new NotFoundException('Módulo no encontrado.');
     if (module.course.profesor_usuario_id === null || Number(module.course.profesor_usuario_id) !== usuarioId) {
       throw new ForbiddenException('Este módulo no pertenece a uno de tus cursos.');
     }
+    if (module.delivery_mode !== 'TRADICIONAL') throw new ForbiddenException(MENSAJE_SOLO_MOODLE);
     return module;
   }
 
@@ -166,6 +154,7 @@ export class ProfessorCoursesService {
     if (contentItem.module.course.profesor_usuario_id === null || Number(contentItem.module.course.profesor_usuario_id) !== usuarioId) {
       throw new ForbiddenException('Este contenido no pertenece a uno de tus cursos.');
     }
+    if (contentItem.module.delivery_mode !== 'TRADICIONAL') throw new ForbiddenException(MENSAJE_SOLO_MOODLE);
     if (contentItem.item_type !== 'QUIZ') {
       throw new BadRequestException('El content_item debe ser de tipo QUIZ para adjuntarle un cuestionario.');
     }
@@ -212,7 +201,7 @@ export class ProfessorCoursesService {
     return this.prisma.studentSubmission.findMany({
       where: {
         grade: null,
-        content_item: { module: { course: { profesor_usuario_id: BigInt(usuarioId) } } },
+        content_item: { module: { delivery_mode: 'TRADICIONAL', course: { profesor_usuario_id: BigInt(usuarioId) } } },
       },
       orderBy: { submitted_at: 'asc' },
       include: {
@@ -236,6 +225,7 @@ export class ProfessorCoursesService {
         || Number(submission.content_item.module.course.profesor_usuario_id) !== usuarioId) {
       throw new ForbiddenException('Esta entrega no pertenece a uno de tus cursos.');
     }
+    if (submission.content_item.module.delivery_mode !== 'TRADICIONAL') throw new ForbiddenException(MENSAJE_SOLO_MOODLE);
     if (submission.grade) throw new BadRequestException('Esta entrega ya fue calificada.');
 
     const [grade] = await this.prisma.$transaction([

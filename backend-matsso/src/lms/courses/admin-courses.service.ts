@@ -1,8 +1,16 @@
 // Contrato M2M Laravel -> NestJS (Moodles/arquitectura_lms.md §5.B). Todo
 // texto libre pasa por sanitizePlainText — mismo patrón que catalog/contact/
 // qr-certs (Moodles/HALLAZGOS_SEGURIDAD_CATALOGO_ORDENES.md).
+//
+// Mismo modelo que EVA PUCE: el contenido de Moodle (TRADICIONAL) lo
+// administra el profesor desde la Aula Virtual, nunca el sistema interno —
+// Coursera es "totalmente independiente" y va al revés: solo el sistema
+// interno crea/edita su contenido (video, lecturas, tareas, examen), el
+// profesor no tiene acceso a esa modalidad por ningún motivo. Candado
+// espejo del de professor-courses.service.ts — createModule/
+// createContentItem/createQuiz rechazan TRADICIONAL aquí.
 
-import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { StorageService } from '../../storage/storage.service';
 import { sanitizePlainText } from '../../common/sanitize.util';
@@ -12,6 +20,8 @@ import { CreateContentItemDto } from './dto/create-content-item.dto';
 import { CreateQuizDto } from './dto/create-quiz.dto';
 import { CourseImageSlot } from './dto/upload-course-image.dto';
 import { buildCloudinaryFolder } from './course-cloudinary.util';
+
+const MENSAJE_SOLO_COURSERA = 'El contenido de Moodle lo administra el profesor desde la Aula Virtual, no el sistema interno.';
 
 @Injectable()
 export class AdminCoursesService {
@@ -141,11 +151,9 @@ export class AdminCoursesService {
 
   async createModule(courseId: string, dto: CreateModuleDto, actor: string) {
     const course = await this.ensureCourseExists(courseId);
-    const modoHabilitado = dto.delivery_mode === 'TRADICIONAL' ? course.modo_moodle : course.modo_coursera;
-    if (!modoHabilitado) {
-      throw new BadRequestException(
-        `Este curso no tiene habilitada la modalidad ${dto.delivery_mode === 'TRADICIONAL' ? 'Moodle' : 'Coursera'}.`,
-      );
+    if (dto.delivery_mode !== 'ASINCRONO_VOD') throw new ForbiddenException(MENSAJE_SOLO_COURSERA);
+    if (!course.modo_coursera) {
+      throw new BadRequestException('Este curso no tiene habilitada la modalidad Coursera.');
     }
 
     const existing = await this.prisma.module.findUnique({
@@ -178,6 +186,7 @@ export class AdminCoursesService {
   async createContentItem(moduleId: string, dto: CreateContentItemDto, actor: string) {
     const module = await this.prisma.module.findUnique({ where: { id: moduleId } });
     if (!module) throw new NotFoundException('Módulo no encontrado.');
+    if (module.delivery_mode !== 'ASINCRONO_VOD') throw new ForbiddenException(MENSAJE_SOLO_COURSERA);
 
     const existing = await this.prisma.contentItem.findUnique({
       where: { module_id_sequence_order: { module_id: moduleId, sequence_order: dto.sequence_order } },
@@ -205,8 +214,12 @@ export class AdminCoursesService {
   }
 
   async createQuiz(contentItemId: string, dto: CreateQuizDto, actor: string) {
-    const contentItem = await this.prisma.contentItem.findUnique({ where: { id: contentItemId } });
+    const contentItem = await this.prisma.contentItem.findUnique({
+      where: { id: contentItemId },
+      include: { module: { select: { delivery_mode: true } } },
+    });
     if (!contentItem) throw new NotFoundException('Contenido no encontrado.');
+    if (contentItem.module.delivery_mode !== 'ASINCRONO_VOD') throw new ForbiddenException(MENSAJE_SOLO_COURSERA);
     if (contentItem.item_type !== 'QUIZ') {
       throw new BadRequestException('El content_item debe ser de tipo QUIZ para adjuntarle un cuestionario.');
     }

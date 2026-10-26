@@ -3,12 +3,15 @@ import { JwtAuthGuard } from '../../auth/jwt-auth.guard';
 import { RolesGuard } from '../../auth/roles.guard';
 import { Roles } from '../../auth/roles.decorator';
 import { ProfessorCoursesService } from './professor-courses.service';
-import { CreateCourseDto } from '../courses/dto/create-course.dto';
 import { CreateModuleDto } from '../courses/dto/create-module.dto';
 import { CreateContentItemDto } from '../courses/dto/create-content-item.dto';
 import { CreateQuizDto } from '../courses/dto/create-quiz.dto';
 import { ProfessorGradeSubmissionDto } from './dto/professor-grade-submission.dto';
 
+// El profesor nunca crea cursos — el admin los crea y se los asigna desde
+// el sistema interno (AdminCoursesService.createCourse / asignarProfesor).
+// Por eso no hay POST 'courses' aquí: solo lectura de lo ya asignado +
+// administración del contenido Moodle de esos cursos.
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles('PROFESOR')
 @Controller('api/lms/professor')
@@ -18,11 +21,6 @@ export class ProfessorCoursesController {
   @Get('courses')
   listarMisCursos(@Req() req: any) {
     return this.professorCoursesService.listarMisCursos(req.user.id);
-  }
-
-  @Post('courses')
-  crearCurso(@Body() dto: CreateCourseDto, @Req() req: any) {
-    return this.professorCoursesService.crearCurso(req.user.id, dto);
   }
 
   @Get('courses/:courseId')

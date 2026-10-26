@@ -1,10 +1,14 @@
-// Flujo TRADICIONAL (Moodles/arquitectura_lms_nube.md §3): el estudiante sube
-// un archivo, un humano lo califica. El progreso NO se marca COMPLETED al
-// entregar — solo cuando `gradeSubmission()` registra la nota, tal como
-// corresponde a "calificación humana" (no autocompletar por el solo hecho de
-// entregar algo).
+// El estudiante sube un archivo, un humano lo califica. El progreso NO se
+// marca COMPLETED al entregar — solo cuando `gradeSubmission()` registra la
+// nota, tal como corresponde a "calificación humana" (no autocompletar por
+// el solo hecho de entregar algo).
+//
+// Este service es el lado M2M (Laravel/admin) — mismo modelo que EVA PUCE:
+// Moodle (TRADICIONAL) lo califica el profesor desde la Aula Virtual (ver
+// ProfessorCoursesService.calificar), nunca el sistema interno. Esto solo
+// califica entregas de Coursera (ASINCRONO_VOD), que no tiene profesor.
 
-import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { StorageService } from '../../storage/storage.service';
 import { CoursesService } from '../courses/courses.service';
@@ -69,7 +73,7 @@ export class SubmissionsService {
   // como las de escritura en admin-courses.service.ts.
   async listPendingSubmissions() {
     return this.prisma.studentSubmission.findMany({
-      where: { grade: null },
+      where: { grade: null, content_item: { module: { delivery_mode: 'ASINCRONO_VOD' } } },
       orderBy: { submitted_at: 'asc' },
       include: {
         content_item: { select: { titulo: true, module: { select: { titulo: true, course: { select: { titulo: true } } } } } },
@@ -84,10 +88,13 @@ export class SubmissionsService {
       include: {
         grade: true,
         enrollment: { select: { usuario_id: true } },
-        content_item: { select: { titulo: true } },
+        content_item: { select: { titulo: true, module: { select: { delivery_mode: true } } } },
       },
     });
     if (!submission) throw new NotFoundException('Entrega no encontrada.');
+    if (submission.content_item.module.delivery_mode !== 'ASINCRONO_VOD') {
+      throw new ForbiddenException('Esta entrega es de Moodle — la califica el profesor desde la Aula Virtual, no el sistema interno.');
+    }
     if (submission.grade) throw new ConflictException('Esta entrega ya fue calificada.');
 
     const grader = await this.prisma.usuarioWeb.findUnique({
