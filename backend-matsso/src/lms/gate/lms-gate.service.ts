@@ -36,6 +36,16 @@ export class LmsGateService {
     const resultado = await this.authService.login(correo, password);
     const usuarioId = BigInt(resultado.user.id);
 
+    // El profesor no compra nada — nunca va a tener una Orden pagada. Su
+    // "legitimidad" para entrar no es haber pagado, es que un admin le puso
+    // rol PROFESOR desde el sistema interno (AdminProfessorsService, M2M, no
+    // autoservicio) — eso YA lo garantiza AuthService.login. Sin esta rama,
+    // todo profesor quedaba bloqueado con SIN_INSCRIPCION igual que un
+    // estudiante que nunca compró nada.
+    if (resultado.user.rol === 'PROFESOR') {
+      return resultado;
+    }
+
     const ordenPagada = await this.prisma.orden.findFirst({
       where: { usuario_id: usuarioId, estado: 'PAGADA' },
       select: { id: true },

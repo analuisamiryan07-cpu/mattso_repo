@@ -170,6 +170,46 @@ export class AuthService {
     }
   }
 
+  /**
+   * Aviso de "te asignaron el curso X", no de "olvidaste tu contraseña" —
+   * lo llama AdminCoursesService.asignarProfesor cada vez que un admin
+   * vincula un profesor a un curso (al crear la cuenta Y en cada asignación
+   * posterior, incluso a cursos distintos). Reusa el mismo mecanismo de
+   * token (hash en BD, 30 min) que forgotPassword, pero con la plantilla y
+   * el remitente correctos para un profesor, no para el sitio público.
+   */
+  async enviarBienvenidaProfesor(correo: string, cursoTitulo: string): Promise<{ correo_enviado: boolean; aviso?: string }> {
+    correo = correo.trim().toLowerCase();
+
+    const user = await this.prisma.usuarioWeb.findUnique({
+      where: { correo },
+      include: { cliente: true },
+    });
+    if (!user || user.activo === false) {
+      return { correo_enviado: false, aviso: 'No existe ninguna cuenta activa con ese correo.' };
+    }
+
+    const token   = crypto.randomBytes(32).toString('hex');
+    const expires = new Date(Date.now() + 30 * 60 * 1000);
+    await this.prisma.usuarioWeb.update({
+      where: { id: user.id },
+      data: { reset_token: token, reset_token_expires_at: expires },
+    });
+
+    const frontendUrl = (process.env.FRONTEND_URL || 'https://sapper-industries.com').replace(/\/$/, '');
+    const resetUrl = `${frontendUrl}/reset-password?token=${token}`;
+    const aulaUrl  = (process.env.AULA_VIRTUAL_URL || 'https://aula.sapper-industries.com').replace(/\/$/, '');
+    const nombre   = user.cliente?.nombre || correo;
+
+    try {
+      await this.emailService.sendProfessorCourseWelcome({ to: correo, nombre, cursoTitulo, aulaUrl, resetUrl });
+      return { correo_enviado: true };
+    } catch (err: any) {
+      this.logger.error(`Error enviando aviso de asignación de curso (usuario ${user.id}): ${err?.message}`);
+      return { correo_enviado: false, aviso: 'No se pudo enviar el correo de aviso al profesor.' };
+    }
+  }
+
   async resetPassword(token: string, newPassword: string): Promise<void> {
     if (!token) throw new BadRequestException('Token requerido.');
 

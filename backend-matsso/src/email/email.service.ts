@@ -231,6 +231,56 @@ export class EmailService {
     });
   }
 
+  /**
+   * Se manda cada vez que un admin vincula un profesor a un curso (no solo
+   * al crear la cuenta) — así el profesor sabe exactamente qué curso le
+   * tocó, no solo que "tiene una cuenta". No hay forma de saber si ya puso
+   * su propia contraseña alguna vez, así que el paso de definirla se ofrece
+   * siempre como opcional ("si es tu primera vez") en vez de mandar dos
+   * plantillas distintas según el caso.
+   */
+  async sendProfessorCourseWelcome(data: {
+    to: string;
+    nombre: string;
+    cursoTitulo: string;
+    aulaUrl: string;
+    resetUrl: string;
+  }) {
+    const pasoPassword = `<li>Si es tu primera vez: define tu contraseña aquí — <a href="${data.resetUrl}" style="color:#0A2463;font-weight:700;">crear contraseña</a> (válido por 30 minutos). Si ya tienes una, puedes saltar este paso.</li>`;
+
+    await this.send({
+      to: data.to,
+      subject: `Te asignaron el curso "${data.cursoTitulo}" — ${this.senderName}`,
+      html: `
+        <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;color:#1f2937;">
+          <div style="background:#0A2463;padding:24px;border-radius:8px 8px 0 0;text-align:center;">
+            <h1 style="color:#FFD700;margin:0;font-size:20px;">${this.senderName}</h1>
+            <p style="color:#93c5fd;margin:4px 0 0;font-size:13px;">Aula Virtual</p>
+          </div>
+          <div style="padding:28px;border:1px solid #e5e7eb;border-top:none;border-radius:0 0 8px 8px;background:#fff;">
+            <h2 style="color:#0A2463;margin-top:0;">¡Bienvenido, profesor ${data.nombre}!</h2>
+            <p>Se te asignó como profesor del curso <strong>${data.cursoTitulo}</strong>. Ya puedes acceder al Aula Virtual para gestionarlo: subir recursos, crear tareas y calificar a tus estudiantes.</p>
+            <ol style="font-size:14px;color:#374151;line-height:1.6;padding-left:20px;">
+              ${pasoPassword}
+              <li>Entra al Aula Virtual: <a href="${data.aulaUrl}" style="color:#0A2463;font-weight:700;">${data.aulaUrl}</a></li>
+              <li>Inicia sesión con tu correo (<strong>${data.to}</strong>) y tu contraseña.</li>
+              <li>Ve a "Mis cursos" — ahí vas a ver <strong>${data.cursoTitulo}</strong> listo para trabajar.</li>
+            </ol>
+            <div style="text-align:center;margin:28px 0;">
+              <a href="${data.aulaUrl}"
+                 style="background:#0A2463;color:#FFD700;padding:14px 32px;border-radius:50px;font-weight:700;font-size:15px;text-decoration:none;display:inline-block;">
+                Ir al Aula Virtual
+              </a>
+            </div>
+            <p style="font-size:13px;color:#6b7280;">
+              ¿Dudas? Escríbenos a
+              <a href="mailto:info@sapper-industries.com" style="color:#0A2463;">info@sapper-industries.com</a>.
+            </p>
+          </div>
+        </div>`,
+    });
+  }
+
   async sendPaymentApprovedWithPdf(data: {
     to: string;
     nombre: string;
