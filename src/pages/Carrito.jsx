@@ -310,7 +310,7 @@ const Carrito = () => {
                           <input type="radio" readOnly checked={paymentMethod === 'paypal'} onChange={() => {}} />
                           <label>PayPal</label>
                         </div>
-                        <span className="payment-option__badge" style={{ background: '#003087', color: '#fff' }}>Tarjeta o PayPal</span>
+                        <span className="payment-option__badge" style={{ background: '#003087', color: '#fff' }}>PayPal</span>
                       </div>
                     </div>
 
@@ -380,7 +380,7 @@ const Carrito = () => {
                       <div className="paypal-panel">
                         <div className="payment-alert" style={{ marginBottom: 16 }}>
                           <i className="fa-solid fa-circle-info" />
-                          <span>Pagarás <strong>{fmt(total)}</strong> de forma segura con PayPal. Puedes usar tu cuenta PayPal o tarjeta de crédito/débito.</span>
+                          <span>Pagarás <strong>{fmt(total)}</strong> de forma segura con tu cuenta PayPal.</span>
                         </div>
 
                         {!paypalReady ? (

@@ -4,6 +4,8 @@ import {
   NotFoundException,
   BadRequestException,
   ConflictException,
+  OnModuleInit,
+  OnModuleDestroy,
 } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { PaypalApiService } from './paypal-api.service';
@@ -14,9 +16,19 @@ import { encodeId } from '../../common/id-hasher';
 const CURRENCY = process.env.PAYPAL_CURRENCY ?? 'USD';
 const TASA_IVA = 0.15;
 
+// Cuánto tiempo se espera antes de dar por abandonada una orden PayPal que
+// nunca se capturó (el comprador cerró el popup, se quedó sin fondos, etc.).
+// PayPal expira sus propias órdenes ~3h después de creadas, así que no tiene
+// sentido esperar menos: mientras tanto el comprador podría seguir en medio
+// del checkout. No usamos @nestjs/schedule (no está en package.json y no hay
+// forma de instalar dependencias nuevas aquí) — un setInterval simple basta.
+const PAYPAL_ABANDONED_HOURS   = Number(process.env.PAYPAL_ABANDONED_ORDER_HOURS ?? 3);
+const CLEANUP_INTERVAL_MS      = 30 * 60 * 1000; // revisa cada 30 min
+
 @Injectable()
-export class PaypalService {
+export class PaypalService implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(PaypalService.name);
+  private cleanupInterval?: NodeJS.Timeout;
 
   constructor(
     private readonly prisma: PrismaService,
@@ -24,6 +36,49 @@ export class PaypalService {
     private readonly emailService: EmailService,
     private readonly enrollmentService: EnrollmentService,
   ) {}
+
+  onModuleInit() {
+    this.expireAbandonedOrders().catch((err) =>
+      this.logger.error('Error expirando órdenes PayPal abandonadas:', err),
+    );
+    this.cleanupInterval = setInterval(() => {
+      this.expireAbandonedOrders().catch((err) =>
+        this.logger.error('Error expirando órdenes PayPal abandonadas:', err),
+      );
+    }, CLEANUP_INTERVAL_MS);
+  }
+
+  onModuleDestroy() {
+    if (this.cleanupInterval) clearInterval(this.cleanupInterval);
+  }
+
+  // ── Limpieza: rechaza órdenes PayPal que quedaron PENDIENTE (nunca se
+  // capturaron) más allá del tiempo de espera — evita que se acumulen en el
+  // panel de Aprobación de Pagos como si fueran ventas reales sin resolver.
+  // Nunca toca PAGADA ni otros métodos de pago.
+  private async expireAbandonedOrders() {
+    const cutoff = new Date(Date.now() - PAYPAL_ABANDONED_HOURS * 60 * 60 * 1000);
+
+    const stale = await this.prisma.orden.findMany({
+      where: { metodo_pago: 'PAYPAL', estado: 'PENDIENTE', fecha_orden: { lt: cutoff } },
+      select: { id: true },
+    });
+    if (stale.length === 0) return;
+
+    const ids = stale.map((o) => o.id);
+    await this.prisma.$transaction([
+      this.prisma.orden.updateMany({
+        where: { id: { in: ids } },
+        data: { estado: 'RECHAZADA' },
+      }),
+      this.prisma.pago.updateMany({
+        where: { orden_id: { in: ids }, estado: { not: 'COMPLETADO' } },
+        data: { estado: 'EXPIRADO', updated_at: new Date() },
+      }),
+    ]);
+
+    this.logger.log(`Expiradas ${ids.length} orden(es) PayPal abandonadas (sin capturar en ${PAYPAL_ABANDONED_HOURS}h).`);
+  }
 
   // ── Crear orden interna + orden PayPal en un solo paso ──────
   async createPaypalOrder(items: { id: number; cantidad: number }[], usuarioId: number) {

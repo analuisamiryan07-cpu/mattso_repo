@@ -122,10 +122,12 @@ const CursoDetail = () => {
                       <span>{curso.horas}</span>
                     </div>
                   )}
-                  <div className="cap-info-item">
-                    <i className="fa-solid fa-screwdriver-wrench" />
-                    <span>{curso.modalidad || 'Virtual'}</span>
-                  </div>
+                  {curso.modalidad && (
+                    <div className="cap-info-item">
+                      <i className="fa-solid fa-screwdriver-wrench" />
+                      <span>{curso.modalidad}</span>
+                    </div>
+                  )}
                   {modalidades && (
                     <div className="cap-info-item">
                       <i className="fa-solid fa-graduation-cap" />

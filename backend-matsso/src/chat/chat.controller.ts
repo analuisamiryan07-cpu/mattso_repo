@@ -12,7 +12,7 @@ export class ChatController {
   @Post()
   @HttpCode(200)
   async sendMessage(@Body() dto: SendMessageDto) {
-    const botResponse = await this.chatService.processMessage(dto.message);
+    const botResponse = await this.chatService.processMessage(dto.message, dto.sesion);
     return botResponse;
   }
 }
