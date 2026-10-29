@@ -106,12 +106,21 @@ export class QuizzesService {
       throw new BadRequestException('Este intento ya fue calificado.');
     }
 
+    // El acceso al curso pudo vencer o revocarse desde que empezó el intento.
+    await this.coursesService.assertContentItemUnlockedForStudent(attempt.quiz.content_item_id, usuarioId);
+
+    // Tiempo límite verificado en el servidor (el cronómetro del navegador se puede manipular).
+    // Se da un margen de 30 s por latencia de red.
+    const limite = attempt.quiz.time_limit_seconds;
+    const fueraDeTiempo =
+      limite != null && Date.now() - attempt.started_at.getTime() > (limite + 30) * 1000;
+
     const questionsById = new Map(attempt.quiz.questions.map((q) => [q.id, q]));
     let earnedPoints = 0;
     let totalPoints = 0;
     const perQuestionResult: { question_id: string; correct: boolean }[] = [];
 
-    const answerWrites: any[] = [];
+    const answerWrites: Array<(tx: any) => Promise<unknown>> = [];
 
     for (const question of attempt.quiz.questions) {
       totalPoints += Number(question.points);
@@ -120,6 +129,7 @@ export class QuizzesService {
       const selectedIds = new Set(answer?.selected_option_ids ?? []);
 
       const isCorrect =
+        !fueraDeTiempo &&
         selectedIds.size === correctOptionIds.size &&
         [...selectedIds].every((id) => correctOptionIds.has(id));
 
@@ -134,13 +144,14 @@ export class QuizzesService {
             throw new BadRequestException(`La opción ${optId} no pertenece a la pregunta ${question.id}.`);
           }
         }
-        answerWrites.push(
-          this.prisma.quizAttemptAnswer.create({
+        const opciones = [...new Set(answer.selected_option_ids)];
+        answerWrites.push((tx) =>
+          tx.quizAttemptAnswer.create({
             data: {
               attempt_id: attemptId,
               question_id: question.id,
               selected_options: {
-                create: answer.selected_option_ids.map((optionId) => ({ option_id: optionId })),
+                create: opciones.map((optionId) => ({ option_id: optionId })),
               },
             },
           }),
@@ -151,33 +162,39 @@ export class QuizzesService {
     const score = totalPoints > 0 ? (earnedPoints / totalPoints) * 100 : 0;
     const passed = score >= Number(attempt.quiz.passing_score);
 
-    await this.prisma.$transaction([
-      ...answerWrites,
-      this.prisma.quizAttempt.update({
-        where: { id: attemptId },
+    await this.prisma.$transaction(async (tx) => {
+      // La condición status='IN_PROGRESS' va dentro del UPDATE: si el mismo intento
+      // se envía dos veces en paralelo, solo uno se califica.
+      const { count } = await tx.quizAttempt.updateMany({
+        where: { id: attemptId, status: 'IN_PROGRESS' },
         data: { status: 'GRADED', score, passed, submitted_at: new Date() },
-      }),
-      ...(passed
-        ? [
-            this.prisma.studentProgress.upsert({
-              where: {
-                enrollment_id_content_item_id: {
-                  enrollment_id: attempt.enrollment.id,
-                  content_item_id: attempt.quiz.content_item_id,
-                },
-              },
-              update: { status: 'COMPLETED', completed_at: new Date() },
-              create: {
-                enrollment_id: attempt.enrollment.id,
-                content_item_id: attempt.quiz.content_item_id,
-                status: 'COMPLETED',
-                completed_at: new Date(),
-              },
-            }),
-          ]
-        : []),
-    ]);
+      });
+      if (count !== 1) throw new BadRequestException('Este intento ya fue calificado.');
+      for (const write of answerWrites) await write(tx);
+      if (passed) {
+        await tx.studentProgress.upsert({
+          where: {
+            enrollment_id_content_item_id: {
+              enrollment_id: attempt.enrollment.id,
+              content_item_id: attempt.quiz.content_item_id,
+            },
+          },
+          update: { status: 'COMPLETED', completed_at: new Date() },
+          create: {
+            enrollment_id: attempt.enrollment.id,
+            content_item_id: attempt.quiz.content_item_id,
+            status: 'COMPLETED',
+            completed_at: new Date(),
+          },
+        });
+      }
+    });
 
-    return { score: Math.round(score * 100) / 100, passed, details: perQuestionResult };
+    return {
+      score: Math.round(score * 100) / 100,
+      passed,
+      details: perQuestionResult,
+      ...(fueraDeTiempo ? { fuera_de_tiempo: true } : {}),
+    };
   }
 }

@@ -231,12 +231,16 @@ export class CoursesService {
     });
 
     return grants
-      .map((g) => ({
-        id: Number(g.usuario.id),
-        nombre: g.usuario.cliente?.nombre || 'Estudiante',
-        correo: g.usuario.correo,
-        soy_yo: Number(g.usuario.id) === usuarioId,
-      }))
+      .map((g) => {
+        const soyYo = Number(g.usuario.id) === usuarioId;
+        return {
+          id: Number(g.usuario.id),
+          nombre: g.usuario.cliente?.nombre || 'Estudiante',
+          // Privacidad: el correo de los demás estudiantes no se comparte.
+          correo: soyYo ? g.usuario.correo : null,
+          soy_yo: soyYo,
+        };
+      })
       .sort((a, b) => a.nombre.localeCompare(b.nombre));
   }
 

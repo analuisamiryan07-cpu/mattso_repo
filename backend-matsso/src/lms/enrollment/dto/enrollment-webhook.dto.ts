@@ -1,5 +1,13 @@
 
-import { IsIn, IsInt, IsNotEmpty, IsOptional, IsString, Min } from 'class-validator';
+import {
+  IsIn,
+  IsInt,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  Min,
+  MaxLength,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class EnrollmentWebhookDto {
@@ -9,6 +17,7 @@ export class EnrollmentWebhookDto {
   // una segunda barrera y sirve para auditar reintentos.
   @IsString()
   @IsNotEmpty()
+  @MaxLength(100)
   event_id: string;
 
   @Type(() => Number)

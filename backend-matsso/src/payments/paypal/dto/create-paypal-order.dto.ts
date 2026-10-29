@@ -1,4 +1,4 @@
-import { IsArray, IsInt, IsPositive, ValidateNested, ArrayNotEmpty } from 'class-validator';
+import { IsArray, IsInt, IsPositive, ValidateNested, ArrayNotEmpty, ArrayMaxSize, Max } from 'class-validator';
 import { Type, Transform } from 'class-transformer';
 import { decodeId } from '../../../common/id-hasher';
 
@@ -12,12 +12,14 @@ class OrderItemDto {
 
   @IsInt()
   @IsPositive()
+  @Max(10, { message: 'La cantidad máxima por producto es 10.' })
   cantidad: number;
 }
 
 export class CreatePaypalOrderDto {
   @IsArray()
   @ArrayNotEmpty()
+  @ArrayMaxSize(20)
   @ValidateNested({ each: true })
   @Type(() => OrderItemDto)
   items: OrderItemDto[];

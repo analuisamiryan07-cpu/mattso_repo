@@ -21,7 +21,8 @@ export class PaypalWebhookController {
   @Post('webhook')
   @HttpCode(200)
   async handleWebhook(@Req() req: Request, @Res() res: Response) {
-    const rawBody = (req as any).rawBody as string | undefined;
+    const raw = (req as any).rawBody as Buffer | string | undefined;
+    const rawBody = raw ? raw.toString() : undefined;
 
     if (!rawBody) {
       this.logger.warn('Webhook recibido sin rawBody — ignorado.');

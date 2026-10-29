@@ -13,6 +13,9 @@ import {
   IsString,
   Min,
   ValidateIf,
+  MaxLength,
+  Matches,
+  Max,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 
@@ -23,6 +26,7 @@ export class CreateContentItemDto {
 
   @IsString()
   @IsNotEmpty({ message: 'El título del contenido es obligatorio.' })
+  @MaxLength(255)
   titulo: string;
 
   @Type(() => Number)
@@ -36,11 +40,17 @@ export class CreateContentItemDto {
   @ValidateIf((o) => o.item_type === 'VIDEO')
   @IsString()
   @IsNotEmpty({ message: 'cloudinary_public_id es obligatorio para contenido VIDEO.' })
+  @MaxLength(255)
   cloudinary_public_id?: string;
 
   @ValidateIf((o) => o.item_type === 'VIDEO')
   @IsString()
   @IsNotEmpty({ message: 'cloudinary_url es obligatorio para contenido VIDEO.' })
+  @MaxLength(1000)
+  // Solo URLs https de Cloudinary — el reproductor del estudiante carga esta URL directamente.
+  @Matches(/^https:\/\/res\.cloudinary\.com\/[^\s"'<>]+$/, {
+    message: 'cloudinary_url debe ser una URL https de res.cloudinary.com.',
+  })
   cloudinary_url?: string;
 
   // Duración real conocida del video — la valida progress.service.ts contra lo
@@ -49,11 +59,13 @@ export class CreateContentItemDto {
   @Type(() => Number)
   @IsInt()
   @Min(1, { message: 'video_duration_seconds debe ser mayor a 0.' })
+  @Max(86400)
   video_duration_seconds?: number;
 
   @ValidateIf((o) => o.item_type === 'ASSIGNMENT')
   @IsString()
   @IsNotEmpty({ message: 'assignment_instructions es obligatorio para contenido ASSIGNMENT.' })
+  @MaxLength(20000)
   assignment_instructions?: string;
 
   // Texto directo, escrito a mano (no un archivo subido) — para
@@ -61,6 +73,7 @@ export class CreateContentItemDto {
   @ValidateIf((o) => o.item_type === 'DOCUMENT')
   @IsString()
   @IsNotEmpty({ message: 'body_text es obligatorio para contenido DOCUMENT.' })
+  @MaxLength(50000)
   body_text?: string;
 
   // Opcional, cualquier tipo (sobre todo ASSIGNMENT/QUIZ) — alimenta la línea

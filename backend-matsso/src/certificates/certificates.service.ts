@@ -68,7 +68,9 @@ export class CertificatesService {
     // El service account solo tiene acceso a lo que fue compartido (Certificados/),
     // así que buscar por nombre sin filtro de carpeta devuelve solo esos archivos.
     const res = await this.drive.files.list({
-      q: `name contains '${nombre}' and mimeType != 'application/vnd.google-apps.folder' and trashed = false`,
+      // `nombre` ya viene limitado a letras y espacios (sin comillas) por el controller;
+      // se escapa igualmente por defensa en profundidad.
+      q: `name contains '${nombre.replace(/['\\]/g, '')}' and mimeType != 'application/vnd.google-apps.folder' and trashed = false`,
       fields: 'files(id, name, mimeType, size, modifiedTime, parents)',
       pageSize: 100,
     });
@@ -95,6 +97,12 @@ export class CertificatesService {
       modifiedTime: f.modifiedTime ?? null,
     }));
 
+    // Caché acotada: sin límite, búsquedas con nombres distintos harían crecer la memoria sin fin.
+    if (this.cache.size >= 500) {
+      const ahora = Date.now();
+      for (const [k, v] of this.cache) if (v.expires <= ahora) this.cache.delete(k);
+      if (this.cache.size >= 500) this.cache.delete(this.cache.keys().next().value as string);
+    }
     this.cache.set(cacheKey, { data: files, expires: Date.now() + this.CACHE_TTL });
     return files;
   }

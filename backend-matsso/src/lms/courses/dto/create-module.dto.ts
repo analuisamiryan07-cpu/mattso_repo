@@ -1,13 +1,24 @@
-import { IsIn, IsInt, IsNotEmpty, IsOptional, IsString, Min } from 'class-validator';
+import {
+  IsIn,
+  IsInt,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  Min,
+  MaxLength,
+  Max,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class CreateModuleDto {
   @IsString()
   @IsNotEmpty({ message: 'El título del módulo es obligatorio.' })
+  @MaxLength(255)
   titulo: string;
 
   @IsOptional()
   @IsString()
+  @MaxLength(10000)
   descripcion?: string;
 
   // A qué árbol de contenido pertenece este módulo — el curso debe tener esa
@@ -23,5 +34,6 @@ export class CreateModuleDto {
   @Type(() => Number)
   @IsInt()
   @Min(1)
+  @Max(1000)
   sequence_order: number;
 }

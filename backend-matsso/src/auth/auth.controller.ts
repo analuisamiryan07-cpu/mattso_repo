@@ -6,40 +6,36 @@ import {
   HttpStatus,
   Get,
   Query,
-  Headers,
   UseGuards,
   Req,
-  UnauthorizedException,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
-import { SkipThrottle, Throttle } from '@nestjs/throttler';
+import { Throttle } from '@nestjs/throttler';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
+import { ForgotPasswordDto, ResetPasswordDto } from './dto/password-reset.dto';
+import { AdminKeyGuard } from '../common/admin-key.guard';
 
 @Controller('api/auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  private checkAdminKey(key: string) {
-    if (!process.env.ADMIN_API_KEY || key !== process.env.ADMIN_API_KEY) {
-      throw new UnauthorizedException('Clave de administrador inválida.');
-    }
-  }
-
-  @SkipThrottle()
+  // Antes tenía @SkipThrottle(): permitía probar claves de admin sin límite.
+  @UseGuards(AdminKeyGuard)
+  @Throttle({ global: { limit: 30, ttl: 60000 } })
   @Get('admin/users')
   async listUsers(
-    @Headers('x-admin-key') adminKey: string,
     @Query('page') page?: string,
     @Query('limit') limit?: string,
     @Query('buscar') search?: string,
   ) {
-    this.checkAdminKey(adminKey);
+    const p = Number.parseInt(page ?? '', 10);
+    const l = Number.parseInt(limit ?? '', 10);
     return this.authService.listUsers(
-      page ? Math.max(1, parseInt(page)) : 1,
-      limit ? Math.min(100, Math.max(1, parseInt(limit))) : 25,
-      search || undefined,
+      Number.isFinite(p) ? Math.max(1, p) : 1,
+      Number.isFinite(l) ? Math.min(100, Math.max(1, l)) : 25,
+      typeof search === 'string' && search ? search : undefined,
     );
   }
 
@@ -61,8 +57,8 @@ export class AuthController {
   @Throttle({ global: { limit: 3, ttl: 60000 } })
   @Post('forgot-password')
   @HttpCode(HttpStatus.OK)
-  async forgotPassword(@Body('correo') correo: string) {
-    await this.authService.forgotPassword(correo ?? '');
+  async forgotPassword(@Body() dto: ForgotPasswordDto) {
+    await this.authService.forgotPassword(dto.correo);
     // Siempre responder OK — no revelar si el correo existe
     return { message: 'Si el correo está registrado, recibirás el enlace en breve.' };
   }
@@ -70,11 +66,8 @@ export class AuthController {
   @Throttle({ global: { limit: 5, ttl: 60000 } })
   @Post('reset-password')
   @HttpCode(HttpStatus.OK)
-  async resetPassword(
-    @Body('token') token: string,
-    @Body('password') password: string,
-  ) {
-    await this.authService.resetPassword(token, password);
+  async resetPassword(@Body() dto: ResetPasswordDto) {
+    await this.authService.resetPassword(dto.token, dto.password);
     return { message: 'Contraseña actualizada correctamente.' };
   }
 
@@ -89,6 +82,7 @@ export class AuthController {
   // nuevo — si no hay actividad, el frontend deja de llamarlo y la sesión
   // se cierra sola (no hay nada que "revocar" aquí, es solo no renovar).
   @UseGuards(AuthGuard('jwt'))
+  @Throttle({ global: { limit: 10, ttl: 60000 } })
   @Post('refresh')
   @HttpCode(HttpStatus.OK)
   async refresh(@Req() req: any) {

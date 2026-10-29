@@ -29,6 +29,9 @@ export class PaypalService {
   async createPaypalOrder(items: { id: number; cantidad: number }[], usuarioId: number) {
     // Obtener precios reales desde la BD
     const productIds = items.map((i) => BigInt(i.id));
+    if (new Set(items.map((i) => i.id)).size !== items.length) {
+      throw new BadRequestException('Hay productos repetidos en la orden; usa la cantidad.');
+    }
     const productos = await this.prisma.producto.findMany({
       where: { id: { in: productIds }, activo: true },
       select: { id: true, precio: true, titulo: true, tipo: true },
@@ -37,7 +40,7 @@ export class PaypalService {
     if (productos.length !== productIds.length) {
       const found = new Set(productos.map((p) => Number(p.id)));
       const missing = items.filter((i) => !found.has(i.id)).map((i) => i.id);
-      throw new BadRequestException(`Productos no encontrados o inactivos: ${missing.join(', ')}`);
+      throw new BadRequestException(`Productos no encontrados o inactivos: ${missing.length} producto(s).`);
     }
 
     const precioMap = new Map(productos.map((p) => [Number(p.id), Number(p.precio)]));
@@ -125,6 +128,8 @@ export class PaypalService {
       throw new BadRequestException('La orden no pertenece al usuario autenticado.');
     if (orden.estado === 'PAGADA')
       throw new ConflictException('Esta orden ya fue pagada.');
+    if (orden.metodo_pago !== 'PAYPAL')
+      throw new BadRequestException('Esta orden no es de PayPal.');
 
     const pago = await this.prisma.pago.findUnique({ where: { paypal_order_id: paypalOrderId } });
     if (!pago) throw new NotFoundException('Registro de pago no encontrado.');
@@ -161,7 +166,14 @@ export class PaypalService {
     const expectedTotal = parseFloat((subtotal + subtotalCap * TASA_IVA).toFixed(2));
 
     if (Math.abs(capturedAmount - expectedTotal) > 0.01)
-      throw new BadRequestException(`Monto capturado (${capturedAmount}) no coincide con el esperado (${expectedTotal}).`);
+    {
+      this.logger.error(`Monto capturado ${capturedAmount} distinto del esperado ${expectedTotal} — orden ${internalOrderId}`);
+      await this.prisma.pago.update({
+        where: { paypal_order_id: paypalOrderId },
+        data:  { estado: 'REVISION_REQUERIDA', respuesta_raw: captured },
+      });
+      throw new BadRequestException('El monto pagado no coincide con la orden. Contacte soporte.');
+    }
     if (capturedCurrency !== CURRENCY)
       throw new BadRequestException(`Moneda incorrecta: ${capturedCurrency}`);
     if (customId && customId !== internalOrderId.toString())
@@ -184,10 +196,13 @@ export class PaypalService {
         },
       });
 
-      await tx.orden.update({
-        where: { id: BigInt(internalOrderId) },
+      // Condición dentro del UPDATE: dos capturas simultáneas no pueden
+      // marcar la orden dos veces (ni inscribir/enviar correos por duplicado).
+      const { count } = await tx.orden.updateMany({
+        where: { id: BigInt(internalOrderId), estado: { not: 'PAGADA' } },
         data:  { estado: 'PAGADA' },
       });
+      if (count !== 1) throw new ConflictException('Esta orden ya fue pagada.');
     });
 
     this.logger.log(`Pago completado — orden ${internalOrderId}, capture ${captureId}`);

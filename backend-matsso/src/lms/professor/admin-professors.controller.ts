@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Patch, Post, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, ParseIntPipe, Patch, Post, Req, UseGuards } from '@nestjs/common';
 import { LmsM2mGuard } from '../common/lms-m2m.guard';
 import { AdminProfessorsService } from './admin-professors.service';
 import { CreateProfessorDto } from './dto/create-professor.dto';
@@ -20,7 +20,7 @@ export class AdminProfessorsController {
   }
 
   @Patch(':usuarioId')
-  cambiarActivo(@Param('usuarioId') usuarioId: string, @Body() dto: SetProfessorActiveDto, @Req() req: any) {
-    return this.adminProfessorsService.cambiarActivo(Number(usuarioId), dto.activo, req.m2mActor);
+  cambiarActivo(@Param('usuarioId', ParseIntPipe) usuarioId: number, @Body() dto: SetProfessorActiveDto, @Req() req: any) {
+    return this.adminProfessorsService.cambiarActivo(usuarioId, dto.activo, req.m2mActor);
   }
 }

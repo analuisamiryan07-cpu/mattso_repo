@@ -3,13 +3,13 @@ FROM node:22-alpine AS builder
 
 WORKDIR /app
 
-RUN apk add --no-cache openssl
+# Parches de seguridad del sistema base + openssl para Prisma
+RUN apk upgrade --no-cache && apk add --no-cache openssl
 
-# Instalar dependencias primero (aprovecha el cache de Docker)
+# Instalar dependencias exactamente como están en package-lock.json (reproducible)
 COPY package*.json ./
 COPY prisma ./prisma/
-
-RUN npm install
+RUN npm ci
 
 # Copiar fuente y compilar TypeScript
 COPY . .
@@ -21,22 +21,27 @@ FROM node:22-alpine AS production
 
 WORKDIR /app
 
-RUN apk add --no-cache openssl
+RUN apk upgrade --no-cache && apk add --no-cache openssl
 
 ENV NODE_ENV=production
 
-# Solo instalar dependencias de producción (incluye prisma CLI ahora en dependencies)
+# Solo dependencias de producción
 COPY package*.json ./
 COPY prisma ./prisma/
-RUN npm install --omit=dev && npm cache clean --force
+RUN npm ci --omit=dev && npm cache clean --force
 
 # Copiar binarios Prisma y build compilado
 COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 COPY --from=builder /app/dist ./dist
 
-# Crear carpeta para comprobantes de pago
-RUN mkdir -p uploads
+# No ejecutar como root: si alguien lograra ejecutar código dentro del
+# contenedor, no tendría privilegios de administrador.
+RUN chown -R node:node /app
+USER node
 
 EXPOSE 3000
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=40s --retries=3 \
+  CMD wget -qO- http://127.0.0.1:${PORT:-3000}/api/health || exit 1
 
 CMD ["node", "dist/main.js"]

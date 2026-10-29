@@ -1,4 +1,4 @@
-import { IsIn, IsNotEmpty, IsNumber, IsOptional, IsString, Min } from 'class-validator';
+import { IsIn, IsNotEmpty, IsNumber, IsOptional, IsString, Min, Matches, MaxLength, Max } from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class UpdateProductDto {
@@ -10,20 +10,24 @@ export class UpdateProductDto {
   @IsOptional()
   @IsString()
   @IsNotEmpty({ message: 'El título no puede quedar vacío.' })
+  @MaxLength(255)
   titulo?: string;
 
   @IsOptional()
   @IsString()
+  @MaxLength(5000)
   descripcion?: string;
 
   @IsOptional()
   @IsString()
+  @MaxLength(20000)
   descripcion_larga?: string;
 
   @IsOptional()
   @Type(() => Number)
   @IsNumber({}, { message: 'El precio debe ser un número.' })
   @Min(0.01, { message: 'El precio debe ser mayor a 0.' })
+  @Max(100000, { message: 'El precio no puede superar 100000.' })
   precio?: number;
 
   @IsOptional()
@@ -34,18 +38,24 @@ export class UpdateProductDto {
 
   @IsOptional()
   @IsString()
+  @MaxLength(100)
   modalidad?: string;
 
   @IsOptional()
   @IsString()
+  @MaxLength(100)
   fecha?: string;
 
   @IsOptional()
   @IsString()
+  @MaxLength(100)
   horario?: string;
 
   @IsOptional()
   @IsString()
+  @Matches(/^(|\d{1,4}|https:\/\/[^\s"'<>]{1,500})$/, {
+    message: 'imagen_url debe ser un número de imagen de Cloudinary o una URL https.',
+  })
   imagen_url?: string;
 
   @IsOptional()

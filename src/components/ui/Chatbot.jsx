@@ -3,6 +3,10 @@ import './Chatbot.css';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
 
+// Solo enlaces http(s) o rutas internas del sitio — nunca `javascript:`, `data:`, etc.
+const safeUrl = (url) =>
+  typeof url === 'string' && /^(https?:\/\/|\/(?!\/))/i.test(url.trim()) ? url.trim() : '#';
+
 const SALUDOS = ['hola', 'buenos', 'buenas', 'hey', 'hi', 'saludos', 'como estas', 'buen dia'];
 
 function esSaludo(msg) {
@@ -89,7 +93,7 @@ export default function Chatbot() {
                     {itemCards.length > 0 && (
                       <div className="chat-items-list">
                         {itemCards.map((item, i) => (
-                          <a key={i} href={item.url} className="chat-item-card">
+                          <a key={i} href={safeUrl(item.url)} className="chat-item-card">
                             <span className="chat-item-name">{item.label}</span>
                             <div className="chat-item-meta">
                               <span className="chat-item-price">${item.precio}</span>
@@ -103,13 +107,14 @@ export default function Chatbot() {
                   {regularBtns.length > 0 && (
                     <div className="chat-buttons">
                       {regularBtns.map((btn, i) => {
-                        const isExternal = btn.url.startsWith('http');
+                        const href = safeUrl(btn.url);
+                        const isExternal = href.startsWith('http');
                         return isExternal ? (
-                          <a key={i} href={btn.url} target="_blank" rel="noopener noreferrer" className="chat-btn">
+                          <a key={i} href={href} target="_blank" rel="noopener noreferrer" className="chat-btn">
                             {btn.label}
                           </a>
                         ) : (
-                          <a key={i} href={btn.url} className="chat-btn">
+                          <a key={i} href={href} className="chat-btn">
                             {btn.label}
                           </a>
                         );

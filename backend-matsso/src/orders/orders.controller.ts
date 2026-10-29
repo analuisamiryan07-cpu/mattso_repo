@@ -8,11 +8,13 @@ import {
   UseInterceptors,
   UploadedFile,
   BadRequestException,
-  Headers,
-  UnauthorizedException,
+  ParseIntPipe,
   UseGuards,
   Req,
 } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
+import { AdminKeyGuard } from '../common/admin-key.guard';
+import { sanitizePlainText } from '../common/sanitize.util';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { memoryStorage } from 'multer';
 import { plainToInstance } from 'class-transformer';
@@ -27,9 +29,9 @@ const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 
 // Primeros 8 bytes (magic bytes) esperados por tipo MIME
 const MAGIC_BYTES: Record<string, (buf: Buffer) => boolean> = {
-  'image/jpeg': (b) => b[0] === 0xff && b[1] === 0xd8,
+  'image/jpeg': (b) => b.length > 2 && b[0] === 0xff && b[1] === 0xd8 && b[2] === 0xff,
   'image/png':  (b) => b[0] === 0x89 && b[1] === 0x50 && b[2] === 0x4e && b[3] === 0x47,
-  'image/webp': (b) => b[8] === 0x57 && b[9] === 0x45 && b[10] === 0x42 && b[11] === 0x50,
+  'image/webp': (b) => b.length > 11 && b.subarray(0, 4).toString('latin1') === 'RIFF' && b.subarray(8, 12).toString('latin1') === 'WEBP',
 };
 
 function verifyMagicBytes(file: Express.Multer.File): boolean {
@@ -47,6 +49,7 @@ export class OrdersController {
   // ── POST /api/ordenes — Crear orden (requiere JWT) ─────────────────────────
   @Post()
   @UseGuards(JwtAuthGuard)
+  @Throttle({ global: { limit: 5, ttl: 60000 } })
   @UseInterceptors(
     FileInterceptor('comprobante', {
       storage: memoryStorage(),
@@ -57,7 +60,7 @@ export class OrdersController {
           cb(new BadRequestException('Tipo de archivo no permitido. Solo imágenes JPG, PNG o WebP.'), false);
         }
       },
-      limits: { fileSize: 5 * 1024 * 1024 },
+      limits: { fileSize: 5 * 1024 * 1024, files: 1, fields: 5, fieldSize: 64 * 1024 },
     }),
   )
   async createOrder(
@@ -74,7 +77,7 @@ export class OrdersController {
       throw new BadRequestException('El archivo no corresponde al tipo declarado.');
     }
 
-    if (!dataString) throw new BadRequestException('Falta el cuerpo de datos de la orden.');
+    if (typeof dataString !== 'string' || !dataString) throw new BadRequestException('Falta el cuerpo de datos de la orden.');
 
     let parsedBody: any;
     try {
@@ -103,40 +106,34 @@ export class OrdersController {
   // ── POST /api/ordenes/admin — Crear orden ya PAGADA (venta por teléfono) ──
   // Mismo x-admin-key que el resto de este controller (no LMS_M2M_API_KEY:
   // esto no es exclusivo del LMS, sirve para cualquier tipo de producto).
+  @UseGuards(AdminKeyGuard)
   @Post('admin')
-  async createAdminOrder(@Body() dto: CreateAdminOrderDto, @Headers('x-admin-key') adminKey: string) {
-    if (!process.env.ADMIN_API_KEY || adminKey !== process.env.ADMIN_API_KEY) {
-      throw new UnauthorizedException('Clave de administrador inválida.');
-    }
+  async createAdminOrder(@Body() dto: CreateAdminOrderDto) {
     return this.ordersService.createAdminOrder(dto, 'sistema-interno');
   }
 
   // ── GET /api/ordenes — Listar órdenes (panel admin — clave temporal) ───────
+  @UseGuards(AdminKeyGuard)
   @Get()
-  async getAllOrders(@Headers('x-admin-key') adminKey: string) {
-    if (!process.env.ADMIN_API_KEY || adminKey !== process.env.ADMIN_API_KEY) {
-      throw new UnauthorizedException('Clave de administrador inválida.');
-    }
+  async getAllOrders() {
     return this.ordersService.getAllOrders();
   }
 
   // ── PATCH /api/ordenes/:id/estado — Aprobar o rechazar orden ──────────────
+  @UseGuards(AdminKeyGuard)
   @Patch(':id/estado')
   async updateStatus(
-    @Param('id') id: string,
-    @Body('estado') estado: string,
-    @Body('motivo') motivo: string,
-    @Headers('x-admin-key') adminKey: string,
+    @Param('id', ParseIntPipe) id: number,
+    @Body('estado') estado: unknown,
+    @Body('motivo') motivo: unknown,
   ) {
-    if (!process.env.ADMIN_API_KEY || adminKey !== process.env.ADMIN_API_KEY) {
-      throw new UnauthorizedException('Clave de administrador inválida.');
-    }
-    if (!['PAGADA', 'RECHAZADA'].includes(estado)) {
+    if (estado !== 'PAGADA' && estado !== 'RECHAZADA') {
       throw new BadRequestException('Estado debe ser PAGADA o RECHAZADA.');
     }
-    if (estado === 'RECHAZADA' && !motivo?.trim()) {
+    const motivoLimpio = typeof motivo === 'string' ? sanitizePlainText(motivo).slice(0, 500) : '';
+    if (estado === 'RECHAZADA' && !motivoLimpio) {
       throw new BadRequestException('Se debe indicar el motivo del rechazo.');
     }
-    return this.ordersService.updateOrderStatus(Number(id), estado as 'PAGADA' | 'RECHAZADA', motivo);
+    return this.ordersService.updateOrderStatus(id, estado, motivoLimpio || undefined);
   }
 }

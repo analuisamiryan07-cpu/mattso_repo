@@ -26,6 +26,10 @@ export class PaypalWebhookService {
     const event = JSON.parse(rawBody);
     const eventoId   = event.id as string;
     const tipoEvento = event.event_type as string;
+    if (typeof eventoId !== 'string' || !eventoId || eventoId.length > 100) {
+      this.logger.warn('Webhook PayPal sin id de evento válido — ignorado.');
+      return;
+    }
 
     // ── 2. Idempotencia — ignorar duplicados ─────────────────
     const existe = await this.prisma.webhookEvent.findUnique({
@@ -82,17 +86,35 @@ export class PaypalWebhookService {
     if (paypalOrderId) {
       const pagoPorOrder = await this.prisma.pago.findUnique({ where: { paypal_order_id: paypalOrderId } });
       if (pagoPorOrder) {
+        // Defensa adicional: el monto/moneda del evento debe coincidir con lo registrado.
+        const monto = parseFloat(event.resource?.amount?.value ?? 'NaN');
+        const moneda = event.resource?.amount?.currency_code;
+        if (!Number.isFinite(monto) || Math.abs(monto - Number(pagoPorOrder.monto)) > 0.01 || moneda !== pagoPorOrder.moneda) {
+          this.logger.error(`Webhook CAPTURE.COMPLETED con monto/moneda inesperados para orden ${pagoPorOrder.orden_id} — requiere revisión.`);
+          await this.prisma.pago.update({
+            where: { paypal_order_id: paypalOrderId },
+            data: { estado: 'REVISION_REQUERIDA', updated_at: new Date() },
+          });
+          return;
+        }
+
         const orden = await this.prisma.$transaction(async (tx) => {
           await tx.pago.update({
             where: { paypal_order_id: paypalOrderId },
             data: { capture_id: captureId, estado: 'COMPLETADO', paid_at: new Date(), updated_at: new Date() },
           });
-          return tx.orden.update({
-            where: { id: pagoPorOrder.orden_id },
+          // Solo transiciona si aún no estaba PAGADA (la captura síncrona pudo ganar la carrera).
+          const { count } = await tx.orden.updateMany({
+            where: { id: pagoPorOrder.orden_id, estado: { not: 'PAGADA' } },
             data:  { estado: 'PAGADA' },
-            include: { items: true },
           });
+          if (count !== 1) return null;
+          return tx.orden.findUniqueOrThrow({ where: { id: pagoPorOrder.orden_id }, include: { items: true } });
         });
+        if (!orden) {
+          this.logger.log(`Orden ${pagoPorOrder.orden_id} ya estaba PAGADA — webhook solo reconcilió el pago.`);
+          return;
+        }
         this.logger.log(`Orden ${pagoPorOrder.orden_id} marcada PAGADA vía webhook.`);
 
         await this.enrollmentService.enrollAllItemsFromOrder(

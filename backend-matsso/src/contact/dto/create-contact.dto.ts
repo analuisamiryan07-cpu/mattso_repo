@@ -7,6 +7,7 @@ export class CreateContactDto {
   nombre: string;
 
   @IsEmail({}, { message: 'Correo inválido.' })
+  @MaxLength(255)
   email: string;
 
   @IsOptional()

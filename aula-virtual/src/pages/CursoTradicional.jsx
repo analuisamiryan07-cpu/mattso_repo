@@ -289,7 +289,7 @@ const ParticipantesTab = ({ courseId }) => {
             <span className="ctw-participante-avatar">{(p.nombre || '?')[0]}</span>
             <div>
               <strong>{p.nombre}{p.soy_yo ? ' (tú)' : ''}</strong>
-              <small>{p.correo}</small>
+              {p.correo && <small>{p.correo}</small>}
             </div>
           </li>
         ))}
