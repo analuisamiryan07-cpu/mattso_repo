@@ -426,6 +426,7 @@
                     <a href="{{ route('capacitaciones.index') }}" @class(['active' => request()->routeIs('capacitaciones.*')])>Capacitaciones</a>
                     <a href="{{ route('cursos.index') }}" @class(['active' => request()->routeIs('cursos.*')])>Cursos</a>
                     <a href="{{ route('catalog.index') }}" @class(['active' => request()->routeIs('catalog.*')])>Certificaciones</a>
+                    <a href="{{ route('profesores.index') }}" @class(['active' => request()->routeIs('profesores.*')])>Profesores</a>
                 </div>
             </div>
             <a href="{{ route('qr-certs.index') }}" @class(['active' => request()->routeIs('qr-certs.*')])>QR Certs</a>
