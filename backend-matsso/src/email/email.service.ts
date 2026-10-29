@@ -21,6 +21,16 @@ export class EmailService {
     }
   }
 
+  /**
+   * Para flujos que de verdad necesitan saber si un correo se puede enviar
+   * (ej. alta de profesor) en vez de que `send()` simplemente no haga nada
+   * — eso se queda igual para el resto (no todo el proyecto debe romperse
+   * si falta la clave en un entorno sin Brevo configurado).
+   */
+  isConfigured(): boolean {
+    return !!this.apiKey;
+  }
+
   async sendOrderConfirmation(data: {
     to: string;
     nombre: string;

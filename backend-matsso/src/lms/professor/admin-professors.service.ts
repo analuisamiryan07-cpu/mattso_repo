@@ -8,6 +8,7 @@ import { randomBytes } from 'crypto';
 import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AuthService } from '../../auth/auth.service';
+import { EmailService } from '../../email/email.service';
 import { CreateProfessorDto } from './dto/create-professor.dto';
 
 @Injectable()
@@ -17,6 +18,7 @@ export class AdminProfessorsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly authService: AuthService,
+    private readonly emailService: EmailService,
   ) {}
 
   /** Para el desplegable de "asignar profesor" del panel de Cursos. */
@@ -79,6 +81,13 @@ export class AdminProfessorsService {
 
   /** No deja que un correo que no llega pase desapercibido — ver AuthService.forgotPassword. */
   private async enviarAvisoCorreo(correo: string): Promise<{ correo_enviado: boolean; aviso?: string }> {
+    if (!this.emailService.isConfigured()) {
+      this.logger.error(`No se pudo enviar el correo de bienvenida a ${correo}: Brevo no está configurado (falta BREVO_API_KEY en Render).`);
+      return {
+        correo_enviado: false,
+        aviso: 'El profesor se guardó correctamente, pero el servidor todavía no tiene configurado el envío de correos (falta la clave de Brevo en Render). Avisa para configurarlo — mientras tanto, nadie va a poder recibir el correo para poner su contraseña.',
+      };
+    }
     try {
       await this.authService.forgotPassword(correo, { silencioso: false });
       return { correo_enviado: true };
