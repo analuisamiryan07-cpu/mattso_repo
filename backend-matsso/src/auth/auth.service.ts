@@ -127,13 +127,26 @@ export class AuthService {
     };
   }
 
-  async forgotPassword(correo: string): Promise<void> {
+  /**
+   * `silencioso` (default true, el comportamiento de siempre): /forgot-password
+   * público nunca debe revelar si un correo existe ni si el envío falló — por
+   * eso responde igual pase lo que pase. Pero AdminProfessorsService llama a
+   * esto mismo para avisarle a un profesor nuevo que puede poner su
+   * contraseña, y ahí SÍ hace falta que un fallo real (correo no existe,
+   * Brevo caído, etc.) se note — si no, el sistema interno "crea" al
+   * profesor pero nadie se entera por qué nunca le llegó nada.
+   */
+  async forgotPassword(correo: string, opciones: { silencioso?: boolean } = {}): Promise<void> {
+    const silencioso = opciones.silencioso ?? true;
+
     const user = await this.prisma.usuarioWeb.findUnique({
       where: { correo },
       include: { cliente: true },
     });
-    // Responder igual exista o no el correo (evita enumeración de emails)
-    if (!user) return;
+    if (!user) {
+      if (!silencioso) throw new BadRequestException('No existe ninguna cuenta con ese correo.');
+      return; // Responder igual exista o no el correo (evita enumeración de emails)
+    }
 
     const token   = crypto.randomBytes(32).toString('hex');
     const expires = new Date(Date.now() + 60 * 60 * 1000); // expira en 1 hora
@@ -147,12 +160,13 @@ export class AuthService {
     const resetUrl = `${frontendUrl}/reset-password?token=${token}`;
     const nombre   = user.cliente?.nombre || correo;
 
-    // No debe propagarse: /forgot-password siempre responde igual, exista o no el correo
-    // (evita enumeración). Si el envío falla, se registra pero la respuesta no cambia.
     try {
       await this.emailService.sendPasswordReset({ to: correo, nombre, resetUrl });
     } catch (err: any) {
       this.logger.error(`Error enviando correo de recuperación a ${correo}: ${err?.message}`);
+      // /forgot-password público no debe propagarse (evita enumeración); el
+      // alta de profesor sí necesita saberlo, para no reportar éxito en falso.
+      if (!silencioso) throw new BadRequestException('No se pudo enviar el correo. Intenta de nuevo o revisa el correo escrito.');
     }
   }
 

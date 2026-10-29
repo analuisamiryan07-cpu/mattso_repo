@@ -8,6 +8,7 @@ import { randomBytes } from 'crypto';
 import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AuthService } from '../../auth/auth.service';
+import { EmailService } from '../../email/email.service';
 import { CreateProfessorDto } from './dto/create-professor.dto';
 
 @Injectable()
@@ -17,6 +18,7 @@ export class AdminProfessorsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly authService: AuthService,
+    private readonly emailService: EmailService,
   ) {}
 
   /** Para el desplegable de "asignar profesor" del panel de Cursos. */
@@ -46,7 +48,11 @@ export class AdminProfessorsService {
         data: { rol: 'PROFESOR' },
       });
       this.logger.log(`[${actor}] ascendió a profesor la cuenta existente ${dto.correo}`);
-      return { id: Number(actualizado.id), correo: actualizado.correo, rol: actualizado.rol, creado: false };
+      // Ya tiene contraseña (era cliente/otra cuenta) — el correo aquí es solo
+      // un aviso de bienvenida con el mismo enlace de siempre, no obligatorio
+      // para que pueda entrar (ya podía, con la contraseña que ya tenía).
+      const avisoEmail = await this.enviarAvisoCorreo(dto.correo);
+      return { id: Number(actualizado.id), correo: actualizado.correo, rol: actualizado.rol, creado: false, ...avisoEmail };
     }
 
     // Contraseña aleatoria que nadie conoce — el profesor la define él mismo
@@ -63,10 +69,35 @@ export class AdminProfessorsService {
       },
     });
 
-    await this.authService.forgotPassword(dto.correo);
+    // Aquí sí es indispensable: sin este correo el profesor no tiene ninguna
+    // forma de poner su contraseña y entrar. Si falla, igual se devuelve el
+    // profesor ya creado (no se revierte) pero con el aviso explícito — antes
+    // esto fallaba en silencio y nadie se enteraba de que nunca llegó nada.
+    const avisoEmail = await this.enviarAvisoCorreo(dto.correo);
 
-    this.logger.log(`[${actor}] creó profesor nuevo ${dto.correo} — se envió correo para definir contraseña`);
-    return { id: Number(nuevo.id), correo: nuevo.correo, rol: nuevo.rol, creado: true };
+    this.logger.log(`[${actor}] creó profesor nuevo ${dto.correo}${avisoEmail.correo_enviado ? ' — se envió correo para definir contraseña' : ' — NO se pudo enviar el correo'}`);
+    return { id: Number(nuevo.id), correo: nuevo.correo, rol: nuevo.rol, creado: true, ...avisoEmail };
+  }
+
+  /** No deja que un correo que no llega pase desapercibido — ver AuthService.forgotPassword. */
+  private async enviarAvisoCorreo(correo: string): Promise<{ correo_enviado: boolean; aviso?: string }> {
+    if (!this.emailService.isConfigured()) {
+      this.logger.error(`No se pudo enviar el correo de bienvenida a ${correo}: Brevo no está configurado (falta BREVO_API_KEY en Render).`);
+      return {
+        correo_enviado: false,
+        aviso: 'El profesor se guardó correctamente, pero el servidor todavía no tiene configurado el envío de correos (falta la clave de Brevo en Render). Avisa para configurarlo — mientras tanto, nadie va a poder recibir el correo para poner su contraseña.',
+      };
+    }
+    try {
+      await this.authService.forgotPassword(correo, { silencioso: false });
+      return { correo_enviado: true };
+    } catch (err: any) {
+      this.logger.error(`No se pudo enviar el correo de bienvenida a ${correo}: ${err?.message}`);
+      return {
+        correo_enviado: false,
+        aviso: 'El profesor se guardó correctamente, pero no se pudo enviar el correo para que defina su contraseña. Pídele que use "¿Olvidaste tu contraseña?" en el sitio con este mismo correo, o avísanos para revisarlo.',
+      };
+    }
   }
 
   async cambiarActivo(usuarioId: number, activo: boolean, actor: string) {

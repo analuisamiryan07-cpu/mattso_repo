@@ -36,9 +36,15 @@ class ProfesoresController extends Controller
         ]);
 
         try {
-            $this->lms->crearOAscenderProfesor($validated['correo'], $validated['cliente_id'] ?? null);
+            $resultado = $this->lms->crearOAscenderProfesor($validated['correo'], $validated['cliente_id'] ?? null);
         } catch (Throwable $e) {
             return back()->withInput()->with('error', 'No se pudo crear el profesor: '.$e->getMessage());
+        }
+
+        // El backend ahora sí intenta enviar el correo de verdad y avisa si
+        // falló — antes esto siempre decía "enviado" sin importar qué pasara.
+        if (($resultado['correo_enviado'] ?? true) === false) {
+            return back()->with('error', $resultado['aviso'] ?? 'El profesor se guardó, pero no se pudo enviar el correo.');
         }
 
         return back()->with('status', 'Profesor creado — se le mandó un correo para definir su contraseña.');
