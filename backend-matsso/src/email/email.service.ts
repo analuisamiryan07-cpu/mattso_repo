@@ -2,6 +2,29 @@ import { Injectable, Logger } from '@nestjs/common';
 import axios from 'axios';
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const PDFDocument = require('pdfkit') as typeof import('pdfkit');
+import { escapeHtml } from '../common/sanitize.util';
+
+/**
+ * Copia de `data` con todos los textos escapados para HTML (nombres, direcciones,
+ * motivos, títulos de producto...). Antes se interpolaban tal cual: alguien podía
+ * registrarse con un "nombre" que contuviera HTML (enlaces falsos, imágenes) y ese
+ * HTML aparecía dentro de un correo oficial. `to` no se toca (es el destinatario).
+ */
+function escData<T extends Record<string, any>>(data: T): T {
+  const out: Record<string, any> = {};
+  for (const [k, v] of Object.entries(data)) {
+    if (k === 'to') out[k] = v;
+    else if (typeof v === 'string') out[k] = escapeHtml(v);
+    else if (Array.isArray(v)) {
+      out[k] = v.map((item) =>
+        item && typeof item === 'object'
+          ? Object.fromEntries(Object.entries(item).map(([ik, iv]) => [ik, typeof iv === 'string' ? escapeHtml(iv) : iv]))
+          : item,
+      );
+    } else out[k] = v;
+  }
+  return out as T;
+}
 
 @Injectable()
 export class EmailService {
@@ -39,6 +62,7 @@ export class EmailService {
     iva?: number;
     items: Array<{ producto: string; precio: number }>;
   }) {
+    data = escData(data);
     const rows = data.items
       .map(
         (i) => `<tr>
@@ -89,6 +113,7 @@ export class EmailService {
     telefono?: string;
     direccion?: string;
   }) {
+    data = escData(data);
     const certs = data.items.map((i) => `<li style="margin:4px 0;">${i.producto}</li>`).join('');
 
     const datosPersonales = `
@@ -138,6 +163,7 @@ export class EmailService {
     orderId: number;
     motivo?: string;
   }) {
+    data = escData(data);
     const motivoHtml = data.motivo
       ? `<div style="background:#fef2f2;border:1px solid #fca5a5;border-radius:6px;padding:14px;margin:20px 0;font-size:13px;color:#991b1b;">
            <strong>Motivo:</strong> ${data.motivo}
@@ -170,6 +196,7 @@ export class EmailService {
   }
 
   async sendPasswordReset(data: { to: string; nombre: string; resetUrl: string }) {
+    data = escData(data);
     await this.send({
       to: data.to,
       subject: `Recuperación de contraseña — ${this.senderName}`,
@@ -188,7 +215,7 @@ export class EmailService {
               </a>
             </div>
             <p style="font-size:13px;color:#6b7280;">
-              Este enlace es válido por <strong>1 hora</strong>. Si no solicitaste este cambio, ignora este correo — tu cuenta sigue segura.
+              Este enlace es válido por <strong>30 minutos</strong> y solo se puede usar una vez. Si no solicitaste este cambio, ignora este correo — tu cuenta sigue segura.
             </p>
             <p style="font-size:12px;color:#9ca3af;word-break:break-all;">
               Si el botón no funciona, copia este enlace en tu navegador:<br>${data.resetUrl}
@@ -203,9 +230,10 @@ export class EmailService {
   // ya no cabe como texto grande a la vista, se entrega en una caja
   // copiable con salto de línea.
   async sendAccessGrant(data: { to: string; nombre: string; cursoTitulo: string; duracionMeses: number; codigo: string }) {
+    data = escData(data);
     await this.send({
       to: data.to,
-      subject: `Tu clave de acceso a "${data.cursoTitulo}" — ${this.senderName}`,
+      subject: `Tu clave de acceso a "${data.cursoTitulo.replace(/[\r\n]/g, ' ')}" — ${this.senderName}`,
       html: `
         <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;color:#1f2937;">
           <div style="background:#0A2463;padding:24px;border-radius:8px 8px 0 0;text-align:center;">
@@ -295,7 +323,9 @@ export class EmailService {
     direccion?: string;
     ciudad?: string;
   }) {
+    // El PDF no es HTML: usa los datos originales. El cuerpo del correo usa la copia escapada.
     const pdfBuffer = await this.generateReceiptPdf(data);
+    data = escData(data);
     const rows = data.items
       .map(
         (i) => `<tr>

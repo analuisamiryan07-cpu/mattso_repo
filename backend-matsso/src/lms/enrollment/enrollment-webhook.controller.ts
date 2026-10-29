@@ -16,7 +16,7 @@ import {
   Req,
   UnauthorizedException,
 } from '@nestjs/common';
-import { SkipThrottle } from '@nestjs/throttler';
+import { Throttle } from '@nestjs/throttler';
 import { EnrollmentService } from './enrollment.service';
 import { EnrollmentWebhookDto } from './dto/enrollment-webhook.dto';
 import { verifyWebhookSignature } from '../common/hmac.util';
@@ -27,11 +27,10 @@ export class EnrollmentWebhookController {
 
   constructor(private readonly enrollmentService: EnrollmentService) {}
 
-  // El propio webhook ya es una defensa anti-abuso (HMAC); se excluye del
-  // throttling global de 60/min porque un lote de inscripciones corporativas
-  // (una llamada por persona, ver enrollment.service.ts) puede superar ese
-  // límite en ráfaga legítima.
-  @SkipThrottle()
+  // Límite más alto que el global (60/min) porque un lote de inscripciones
+  // corporativas (una llamada por persona) puede llegar en ráfaga legítima,
+  // pero sin quitarlo del todo: así un atacante no puede inundarlo.
+  @Throttle({ global: { limit: 300, ttl: 60000 } })
   @Post('enrollment')
   @HttpCode(HttpStatus.OK)
   async handleEnrollmentWebhook(

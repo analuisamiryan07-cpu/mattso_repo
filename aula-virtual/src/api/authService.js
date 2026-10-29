@@ -33,8 +33,13 @@ export const authService = {
   },
 
   getCurrentUser() {
-    const user = localStorage.getItem('matsso_user');
-    return user ? JSON.parse(user) : null;
+    try {
+      const user = localStorage.getItem('matsso_user');
+      return user ? JSON.parse(user) : null;
+    } catch {
+      localStorage.removeItem('matsso_user');
+      return null;
+    }
   },
 
   isAuthenticated() {

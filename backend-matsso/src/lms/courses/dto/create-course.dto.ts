@@ -1,4 +1,13 @@
-import { IsBoolean, IsInt, IsNotEmpty, IsOptional, IsString, Min } from 'class-validator';
+import {
+  IsBoolean,
+  IsInt,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  Min,
+  MaxLength,
+  Max,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 
 // Un curso ya no tiene un solo "delivery_mode": puede ofrecer Moodle,
@@ -14,10 +23,12 @@ export class CreateCourseDto {
 
   @IsString()
   @IsNotEmpty({ message: 'El título del curso es obligatorio.' })
+  @MaxLength(255)
   titulo: string;
 
   @IsOptional()
   @IsString()
+  @MaxLength(10000)
   descripcion?: string;
 
   @IsOptional()
@@ -35,6 +46,7 @@ export class CreateCourseDto {
   @Type(() => Number)
   @IsInt()
   @Min(1, { message: 'duracion_meses debe ser mayor a 0.' })
+  @Max(120)
   duracion_meses?: number;
 
   @IsOptional()
@@ -46,10 +58,12 @@ export class UpdateCourseDto {
   @IsOptional()
   @IsString()
   @IsNotEmpty()
+  @MaxLength(255)
   titulo?: string;
 
   @IsOptional()
   @IsString()
+  @MaxLength(10000)
   descripcion?: string;
 
   @IsOptional()
@@ -64,6 +78,7 @@ export class UpdateCourseDto {
   @Type(() => Number)
   @IsInt()
   @Min(1, { message: 'duracion_meses debe ser mayor a 0.' })
+  @Max(120)
   duracion_meses?: number;
 
   @IsOptional()

@@ -34,6 +34,9 @@ export class OrdersService {
 
     // Obtener precios reales desde la base de datos — nunca del cliente
     const productIds = items.map((i) => BigInt(i.id));
+    if (new Set(items.map((i) => i.id)).size !== items.length) {
+      throw new BadRequestException('Hay productos repetidos en la orden; usa la cantidad.');
+    }
     const productos = await this.prisma.producto.findMany({
       where: { id: { in: productIds }, activo: true },
       select: { id: true, precio: true, titulo: true, tipo: true },
@@ -42,7 +45,7 @@ export class OrdersService {
     if (productos.length !== productIds.length) {
       const found = new Set(productos.map((p) => Number(p.id)));
       const missing = items.filter((i) => !found.has(i.id)).map((i) => i.id);
-      throw new BadRequestException(`Productos no encontrados o inactivos: ${missing.join(', ')}`);
+      throw new BadRequestException(`Productos no encontrados o inactivos: ${missing.length} producto(s).`);
     }
 
     const precioMap = new Map(productos.map((p) => [Number(p.id), Number(p.precio)]));
@@ -294,9 +297,18 @@ export class OrdersService {
       );
     }
 
-    const updated = await this.prisma.orden.update({
-      where: { id: BigInt(id) },
+    // La condición estado='PENDIENTE' va dentro del propio UPDATE: si dos
+    // administradores aprueban a la vez, solo uno cambia la fila (evita
+    // inscripciones y correos duplicados).
+    const { count } = await this.prisma.orden.updateMany({
+      where: { id: BigInt(id), estado: 'PENDIENTE' },
       data: { estado },
+    });
+    if (count !== 1) {
+      throw new ConflictException(`La orden ${id} ya fue procesada. No se puede modificar.`);
+    }
+    const updated = await this.prisma.orden.findUniqueOrThrow({
+      where: { id: BigInt(id) },
       include: { usuario: { include: { cliente: true } } },
     });
 

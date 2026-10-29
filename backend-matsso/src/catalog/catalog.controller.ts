@@ -8,11 +8,12 @@ import {
   Query,
   Param,
   Body,
-  Headers,
   NotFoundException,
-  UnauthorizedException,
   HttpCode,
+  ParseIntPipe,
+  UseGuards,
 } from '@nestjs/common';
+import { AdminKeyGuard } from '../common/admin-key.guard';
 import { CatalogService } from './catalog.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
@@ -20,12 +21,6 @@ import { UpdateProductDto } from './dto/update-product.dto';
 @Controller('api/catalog')
 export class CatalogController {
   constructor(private readonly catalogService: CatalogService) {}
-
-  private checkAdminKey(adminKey: string) {
-    if (!process.env.ADMIN_API_KEY || adminKey !== process.env.ADMIN_API_KEY) {
-      throw new UnauthorizedException('Clave de administrador inválida.');
-    }
-  }
 
   // ── Endpoints públicos ────────────────────────────────────────────────────
 
@@ -36,53 +31,49 @@ export class CatalogController {
   ) {
     const destacadoBool =
       destacado === 'true' ? true : destacado === 'false' ? false : undefined;
-    return this.catalogService.getCatalog(tipo, destacadoBool);
+    return this.catalogService.getCatalog(typeof tipo === 'string' ? tipo.slice(0, 30) : undefined, destacadoBool);
   }
 
   // ── Endpoints admin (DEBEN ir antes de :slug para evitar conflictos) ──────
 
+  @UseGuards(AdminKeyGuard)
   @Get('admin')
-  async getAllAdmin(@Headers('x-admin-key') adminKey: string) {
-    this.checkAdminKey(adminKey);
+  async getAllAdmin() {
     return this.catalogService.getAllProducts();
   }
 
+  @UseGuards(AdminKeyGuard)
   @Post('admin')
   async createProduct(
-    @Headers('x-admin-key') adminKey: string,
     @Body() dto: CreateProductDto,
   ) {
-    this.checkAdminKey(adminKey);
     return this.catalogService.createProduct(dto);
   }
 
+  @UseGuards(AdminKeyGuard)
   @Put('admin/:id')
   async updateProduct(
-    @Param('id') id: string,
-    @Headers('x-admin-key') adminKey: string,
+    @Param('id', ParseIntPipe) id: number,
     @Body() dto: UpdateProductDto,
   ) {
-    this.checkAdminKey(adminKey);
     return this.catalogService.updateProduct(BigInt(id), dto);
   }
 
+  @UseGuards(AdminKeyGuard)
   @Patch('admin/:id/toggle')
   @HttpCode(200)
   async toggleProduct(
-    @Param('id') id: string,
-    @Headers('x-admin-key') adminKey: string,
+    @Param('id', ParseIntPipe) id: number,
   ) {
-    this.checkAdminKey(adminKey);
     return this.catalogService.toggleProduct(BigInt(id));
   }
 
+  @UseGuards(AdminKeyGuard)
   @Delete('admin/:id')
   @HttpCode(200)
   async deleteProduct(
-    @Param('id') id: string,
-    @Headers('x-admin-key') adminKey: string,
+    @Param('id', ParseIntPipe) id: number,
   ) {
-    this.checkAdminKey(adminKey);
     return this.catalogService.deleteProduct(BigInt(id));
   }
 
@@ -90,6 +81,7 @@ export class CatalogController {
 
   @Get(':slug')
   async getProductBySlug(@Param('slug') slug: string) {
+    if (typeof slug !== 'string' || slug.length > 200) throw new NotFoundException('Producto no encontrado');
     const product = await this.catalogService.getProductBySlug(slug);
     if (!product) {
       throw new NotFoundException('Producto no encontrado');

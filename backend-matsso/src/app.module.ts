@@ -16,7 +16,7 @@ import { PaymentsModule } from './payments/payments.module';
 import { QrCertsModule } from './qr-certs/qr-certs.module';
 import { LmsModule } from './lms/lms.module';
 
-@SkipThrottle()
+@SkipThrottle({ global: true })
 @Controller('api')
 export class HealthController {
   @Get('health')

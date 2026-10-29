@@ -4,7 +4,15 @@
 // login de backoffice). Laravel debe conocer y enviar el id de UsuarioWeb
 // correspondiente al admin que calificó — ver Moodles/lms/docs/DECISIONES.md.
 
-import { IsInt, IsNumber, IsOptional, IsString, Max, Min } from 'class-validator';
+import {
+  IsInt,
+  IsNumber,
+  IsOptional,
+  IsString,
+  Max,
+  Min,
+  MaxLength,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class GradeSubmissionDto {
@@ -20,5 +28,6 @@ export class GradeSubmissionDto {
 
   @IsOptional()
   @IsString()
+  @MaxLength(5000)
   feedback?: string;
 }

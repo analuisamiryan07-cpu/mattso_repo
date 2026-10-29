@@ -12,20 +12,70 @@ services:
     branch: main
     healthCheckPath: /api/health
 
+    # Todos los secretos se configuran a mano en el dashboard de Render (sync: false).
+    # Genera cada uno con: openssl rand -hex 32  — y que sean DISTINTOS entre sí.
+    # El servidor no arranca si falta JWT_SECRET / DATABASE_URL, o si alguno
+    # conserva un valor de ejemplo (ver src/common/env.validation.ts).
     envVars:
       - key: NODE_ENV
         value: production
       - key: PORT
         value: 3000
+      - key: TRUST_PROXY_HOPS
+        value: 1
       - key: DATABASE_URL
-        sync: false         # Se configura manualmente en el dashboard de Render
+        sync: false
+      - key: DIRECT_URL
+        sync: false
       - key: JWT_SECRET
-        generateValue: true # Render genera un valor aleatorio automáticamente
+        generateValue: true
       - key: ADMIN_API_KEY
-        sync: false         # Se configura manualmente
+        sync: false
+      - key: ID_HASH_SECRET
+        sync: false
+      - key: LMS_M2M_API_KEY
+        sync: false
+      - key: LMS_CLAVE_JWT_SECRET
+        sync: false
+      - key: LMS_ENROLLMENT_WEBHOOK_SECRET
+        sync: false
       - key: FRONTEND_URL
-        sync: false         # URL de Vercel una vez desplegado el frontend
+        sync: false         # Lista separada por comas: https://sapper-industries.com,https://aula.sapper-industries.com
+      - key: PUBLIC_SITE_URL
+        sync: false         # Sitio público para los enlaces de "restablecer contraseña"
+      - key: CLOUDINARY_CLOUD_NAME
+        sync: false
+      - key: CLOUDINARY_API_KEY
+        sync: false
+      - key: CLOUDINARY_API_SECRET
+        sync: false
+      - key: BREVO_API_KEY
+        sync: false
+      - key: BREVO_SENDER_EMAIL
+        sync: false
+      - key: PAYPAL_MODE
+        sync: false
+      - key: PAYPAL_CLIENT_ID
+        sync: false
+      - key: PAYPAL_CLIENT_SECRET
+        sync: false
+      - key: PAYPAL_WEBHOOK_ID
+        sync: false
+      - key: CERTIBOT_URL
+        sync: false
+      - key: CERTIBOT_API_KEY
+        sync: false
+      - key: GOOGLE_SERVICE_ACCOUNT_JSON
+        sync: false
+      - key: GOOGLE_DRIVE_FOLDER_ID
+        sync: false
+      - key: REDIS_URL
+        sync: false
 
+    # La carpeta /uploads YA NO se publica por HTTP (exponía comprobantes con datos
+    # personales) y los comprobantes nuevos solo van a Cloudinary. El disco se
+    # mantiene declarado para no borrar automáticamente archivos antiguos: revisa
+    # su contenido, respáldalo si hace falta y luego elimínalo desde el dashboard.
     disk:
       name: uploads
       mountPath: /app/uploads
