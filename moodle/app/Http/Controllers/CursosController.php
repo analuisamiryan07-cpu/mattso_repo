@@ -123,7 +123,10 @@ class CursosController extends Controller
         // completa lo que falte desde "Editar curso".
         if ($profesor) {
             try {
-                $this->lms->asignarProfesor($cursoId, $profesor);
+                $resultadoProfesor = $this->lms->asignarProfesor($cursoId, $profesor);
+                if (($resultadoProfesor['correo_enviado'] ?? true) === false) {
+                    $avisos[] = 'Profesor asignado, pero no se pudo avisarle por correo: '.($resultadoProfesor['aviso'] ?? 'motivo desconocido.');
+                }
             } catch (Throwable $e) {
                 Log::error('Cursos::store — no se pudo asignar profesor: '.$e->getMessage());
                 $avisos[] = 'El curso se creó, pero no se pudo asignar el profesor: '.$e->getMessage();
@@ -381,12 +384,21 @@ class CursosController extends Controller
         $validated = $request->validate(['profesor_usuario_id' => ['required', 'integer', 'min:1']]);
 
         try {
-            $this->lms->asignarProfesor($course, $validated['profesor_usuario_id']);
+            $resultado = $this->lms->asignarProfesor($course, $validated['profesor_usuario_id']);
         } catch (Throwable $e) {
             return back()->with('error', 'No se pudo asignar el profesor: '.$e->getMessage());
         }
 
-        return redirect()->route('cursos.edit', $course)->with('status', 'Profesor asignado.');
+        // El backend ahora avisa al profesor por correo en cada asignación —
+        // si ese aviso falla, se informa aquí (la asignación en sí ya quedó hecha).
+        if (($resultado['correo_enviado'] ?? true) === false) {
+            return redirect()->route('cursos.edit', $course)->with(
+                'error',
+                'Profesor asignado, pero no se pudo avisarle por correo: '.($resultado['aviso'] ?? 'motivo desconocido.'),
+            );
+        }
+
+        return redirect()->route('cursos.edit', $course)->with('status', 'Profesor asignado — se le avisó por correo.');
     }
 
     public function uploadImagen(Request $request, string $course)

@@ -13,6 +13,7 @@
 import { BadRequestException, ForbiddenException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { StorageService } from '../../storage/storage.service';
+import { AuthService } from '../../auth/auth.service';
 import { sanitizePlainText } from '../../common/sanitize.util';
 import { CreateCourseDto, UpdateCourseDto } from './dto/create-course.dto';
 import { CreateModuleDto } from './dto/create-module.dto';
@@ -30,6 +31,7 @@ export class AdminCoursesService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly storage: StorageService,
+    private readonly authService: AuthService,
   ) {}
 
   async listCourses() {
@@ -295,7 +297,7 @@ export class AdminCoursesService {
     await this.ensureCourseExists(courseId);
     const profesor = await this.prisma.usuarioWeb.findUnique({
       where: { id: BigInt(profesorUsuarioId) },
-      select: { id: true, rol: true, activo: true },
+      select: { id: true, correo: true, rol: true, activo: true },
     });
     if (!profesor || profesor.rol !== 'PROFESOR') {
       throw new BadRequestException('El usuario indicado no es un profesor.');
@@ -309,7 +311,16 @@ export class AdminCoursesService {
       data: { profesor_usuario_id: profesor.id },
     });
     this.logger.log(`[${actor}] asignó profesor ${profesorUsuarioId} al curso ${courseId}`);
-    return course;
+
+    // Cada vinculación avisa al profesor qué curso le tocó — no solo la
+    // primera vez. Si el correo falla, la asignación ya quedó hecha (no se
+    // revierte); el aviso de error solo informa al admin para que reintente.
+    const avisoEmail = await this.authService.enviarBienvenidaProfesor(profesor.correo, course.titulo);
+    if (!avisoEmail.correo_enviado) {
+      this.logger.error(`No se pudo avisar al profesor ${profesor.correo} de la asignación al curso ${courseId}: ${avisoEmail.aviso}`);
+    }
+
+    return { ...course, ...avisoEmail };
   }
 
   private async ensureCourseExists(courseId: string) {
